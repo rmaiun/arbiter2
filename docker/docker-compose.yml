@@ -1,0 +1,15 @@
+version: '3'
+services:
+  arbmysql:
+    image: mysql:5.7
+    container_name: arbmysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'arbiter'
+      MYSQL_USER: 'dev'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'rootpassword'
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
