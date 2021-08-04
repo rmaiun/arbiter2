@@ -12,11 +12,11 @@ lazy val tftypes = (project in file("support/tftypes"))
   )
   .disablePlugins(AssemblyPlugin)
 
-lazy val mongocore = (project in file("support/mongocore"))
+lazy val datamanager = (project in file("services/datamanager"))
   .settings(
-    name := "mongocore",
+    name := "datamanager",
     settings,
-    libraryDependencies ++= mongoCoreDependencies
+    libraryDependencies ++= dataManagerDependencies
   )
   .dependsOn(tftypes)
   .disablePlugins(AssemblyPlugin)
@@ -30,30 +30,31 @@ lazy val dependencies =
     val MunitCatsEffectVersion = "0.13.0"
     val CatsCoreVersion        = "2.1.0"
     val CatsEffectVersion      = "2.3.1"
-    val Mongo4CatsVersion      = "0.2.16"
     val Specs2Version          = "4.10.0"
     val ScalaTestVersion       = "3.2.2"
 
-    val catsCore         = "org.typelevel"         %% "cats-core"           % CatsCoreVersion
-    val catsEffect       = "org.typelevel"         %% "cats-effect"         % CatsEffectVersion
-    val blazeServer      = "org.http4s"            %% "http4s-blaze-server" % Http4sVersion
-    val blazeClient      = "org.http4s"            %% "http4s-blaze-client" % Http4sVersion
-    val http4sCirce      = "org.http4s"            %% "http4s-circe"        % Http4sVersion
-    val httpDsl          = "org.http4s"            %% "http4s-dsl"          % Http4sVersion
-    val circeGeneric     = "io.circe"              %% "circe-generic"       % CirceVersion
-    val circeParser      = "io.circe"              %% "circe-parser"        % CirceVersion
-    val circeOptics      = "io.circe"              %% "circe-optics"        % CirceVersion
-    val munit            = "org.scalameta"         %% "munit"               % MunitVersion           % Test
-    val munitCE2         = "org.typelevel"         %% "munit-cats-effect-2" % MunitCatsEffectVersion % Test
-    val logbackClassic   = "ch.qos.logback"         % "logback-classic"     % LogbackVersion
-    val log4cats         = "io.chrisdavenport"     %% "log4cats-slf4j"      % "1.1.1"
-    val svmSubs          = "org.scalameta"         %% "svm-subs"            % "20.2.0"
-    val pureConfig       = "com.github.pureconfig" %% "pureconfig"          % "0.14.0"
-    val mongoScalaDriver = "org.mongodb.scala"     %% "mongo-scala-driver"  % "4.3.0"
-    val fs2Core          = "co.fs2"                %% "fs2-core"            % "2.4.4"
-    val fs2IO            = "co.fs2"                %% "fs2-io"              % "2.4.2"
-    val scalatest        = "org.scalatest"         %% "scalatest"           % ScalaTestVersion       % Test
-    val spec2Core        = "org.specs2"            %% "specs2-core"         % Specs2Version          % Test
+    val catsCore       = "org.typelevel"         %% "cats-core"            % CatsCoreVersion
+    val catsEffect     = "org.typelevel"         %% "cats-effect"          % CatsEffectVersion
+    val blazeServer    = "org.http4s"            %% "http4s-blaze-server"  % Http4sVersion
+    val blazeClient    = "org.http4s"            %% "http4s-blaze-client"  % Http4sVersion
+    val http4sCirce    = "org.http4s"            %% "http4s-circe"         % Http4sVersion
+    val httpDsl        = "org.http4s"            %% "http4s-dsl"           % Http4sVersion
+    val circeGeneric   = "io.circe"              %% "circe-generic"        % CirceVersion
+    val circeParser    = "io.circe"              %% "circe-parser"         % CirceVersion
+    val circeOptics    = "io.circe"              %% "circe-optics"         % CirceVersion
+    val munit          = "org.scalameta"         %% "munit"                % MunitVersion           % Test
+    val munitCE2       = "org.typelevel"         %% "munit-cats-effect-2"  % MunitCatsEffectVersion % Test
+    val logbackClassic = "ch.qos.logback"         % "logback-classic"      % LogbackVersion
+    val log4cats       = "io.chrisdavenport"     %% "log4cats-slf4j"       % "1.1.1"
+    val svmSubs        = "org.scalameta"         %% "svm-subs"             % "20.2.0"
+    val pureConfig     = "com.github.pureconfig" %% "pureconfig"           % "0.14.0"
+    val mysql          = "mysql"                  % "mysql-connector-java" % "8.0.11"
+    val doobieCore     = "org.tpolecat"          %% "doobie-core"          % "0.9.0"
+    val doobieHikari   = "org.tpolecat"          %% "doobie-hikari"        % "0.9.0"
+    val fs2Core        = "co.fs2"                %% "fs2-core"             % "2.4.4"
+    val fs2IO          = "co.fs2"                %% "fs2-io"               % "2.4.2"
+    val scalatest      = "org.scalatest"         %% "scalatest"            % ScalaTestVersion       % Test
+    val spec2Core      = "org.specs2"            %% "specs2-core"          % Specs2Version          % Test
   }
 
 lazy val tfTypesDependencies = Seq(
@@ -62,12 +63,20 @@ lazy val tfTypesDependencies = Seq(
   dependencies.log4cats
 )
 
-lazy val mongoCoreDependencies = Seq(
+lazy val dataManagerDependencies = Seq(
+  dependencies.blazeServer,
+  dependencies.blazeClient,
+  dependencies.http4sCirce,
+  dependencies.httpDsl,
+  dependencies.circeGeneric,
+  dependencies.circeParser,
+  dependencies.circeOptics,
   dependencies.logbackClassic,
-  dependencies.catsCore,
-  dependencies.catsEffect,
-  dependencies.mongoScalaDriver,
-  dependencies.fs2Core,
+  dependencies.log4cats,
+  dependencies.pureConfig,
+  dependencies.mysql,
+  dependencies.doobieCore,
+  dependencies.doobieHikari,
   dependencies.scalatest,
   dependencies.spec2Core
 )
