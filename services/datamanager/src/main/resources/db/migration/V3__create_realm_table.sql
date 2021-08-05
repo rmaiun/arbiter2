@@ -2,11 +2,11 @@ use arbiter;
 
 create table if not exists realm
 (
-    id      bigint primary key auto_increment,
-    surname varchar(20) not null,
-    expected_players int not null,
-    algorithm bigint not null,
-    foreign key fk_algorithm (algorithm) references algorithm (id)
+    id                 bigint primary key auto_increment,
+    name            varchar(20) not null,
+    team_size          int         not null,
+    selected_algorithm bigint      not null,
+    foreign key fk_algorithm (selected_algorithm) references algorithm (id)
 );
 
 ALTER TABLE realm

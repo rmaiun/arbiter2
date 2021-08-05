@@ -2,11 +2,12 @@ use arbiter;
 
 create table if not exists user
 (
-    id       bigint primary key auto_increment,
-    name     varchar(20) not null,
-    nickname varchar(20) default null,
-    tid      bigint      default null,
-    active   boolean     default true
+    id         bigint primary key auto_increment,
+    name       varchar(20) not null,
+    nickname   varchar(20) default null,
+    tid        bigint      default null,
+    active     boolean     default true,
+    created_at timestamp   not null
 );
 
 ALTER TABLE user

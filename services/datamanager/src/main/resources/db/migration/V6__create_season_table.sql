@@ -2,8 +2,10 @@ use arbiter;
 
 create table if not exists season
 (
-    id   bigint primary key auto_increment,
-    name varchar(20) not null
+    id               bigint primary key auto_increment,
+    name             varchar(20) not null,
+    algorithm        varchar(20) not null,
+    end_notification timestamp default null
 );
 
 ALTER TABLE season
