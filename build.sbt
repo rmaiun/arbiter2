@@ -18,7 +18,14 @@ lazy val datamanager = (project in file("services/datamanager"))
     settings,
     libraryDependencies ++= dataManagerDependencies
   )
+  .settings(
+    flywayUrl := "jdbc:mysql://localhost:3306/arbiter",
+    flywayUser := "root",
+    flywayPassword := "rootpassword",
+    flywayLocations += "db/migration"
+  )
   .dependsOn(tftypes)
+  .enablePlugins(FlywayPlugin)
   .disablePlugins(AssemblyPlugin)
 
 lazy val dependencies =

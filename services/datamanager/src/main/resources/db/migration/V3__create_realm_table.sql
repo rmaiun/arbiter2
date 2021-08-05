@@ -6,7 +6,7 @@ create table if not exists realm
     surname varchar(20) not null,
     expected_players int not null,
     algorithm bigint not null,
-    foreign key fk_algorithm (algorithm) references algorithm (id),
+    foreign key fk_algorithm (algorithm) references algorithm (id)
 );
 
 ALTER TABLE realm
