@@ -11,18 +11,11 @@
 //import doobie.implicits._
 //import io.chrisdavenport.log4cats.Logger
 //
-//trait SeasonRepository[F[_]] extends GenericRepository[F, Season] {
-//  def getByName(name: String): Flow[F, Option[Season]]
+//trait SeasonRepository[F[_]]{
 //
-//  def insert(name: String): Flow[F, Long]
-//
-//  def update(data: Season): Flow[F, Season]
 //}
 //
 //object SeasonRepository {
-//
-//  import GenericRepository._
-//
 //  def apply[F[_]](implicit ev: SeasonRepository[F]): SeasonRepository[F] = ev
 //
 //  def impl[F[_] : Logger : Sync : Monad](xa: HikariTransactor[F]): SeasonRepository[F] = new SeasonRepository[F] {

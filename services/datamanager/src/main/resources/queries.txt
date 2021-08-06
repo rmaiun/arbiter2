@@ -2,7 +2,8 @@ realm
 1.get realm by id
 2. create realm
 3. list all realms
-4. remove all
+4. update realm
+5. remove all
 
 algoritm
 1. create
