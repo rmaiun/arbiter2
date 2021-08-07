@@ -3,7 +3,7 @@ use arbiter;
 create table if not exists algorithm
 (
     id    bigint primary key auto_increment,
-    value varchar(20) not null
+    value varchar(20) not null unique
 );
 
 ALTER TABLE algorithm

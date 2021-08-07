@@ -22,8 +22,8 @@ object RealmQueries {
          | UPDATE realm
          | SET name=${realm.name},
          |     team_size=${realm.teamSize},
-         |     selected_algorithm=${realm.teamSize}
-         | WHERE id = ${realm.selectedAlgorithm}
+         |     selected_algorithm=${realm.selectedAlgorithm}
+         | WHERE id = ${realm.id}
     """.stripMargin.update
 
   def listAll: doobie.Query0[Realm] =
@@ -33,9 +33,9 @@ object RealmQueries {
   def deleteByIdList(idList: List[Long]): doobie.Update0 =
     NonEmptyList.fromList(idList) match {
       case Some(ids) =>
-        val query = fr"DELETE FROM season where season.id in" ++ Fragments.in(fr"player.surname", ids)
+        val query = fr"DELETE FROM realm where " ++ Fragments.in(fr"realm.id", ids)
         query.update
       case None =>
-        sql"DELETE FROM season".update
+        sql"DELETE FROM realm".update
     }
 }

@@ -4,7 +4,7 @@ import java.time.ZonedDateTime
 
 case class User(
   id: Long,
-  name: String,
+  surname: String,
   nickname: Option[String],
   tid: Option[Long],
   active: Boolean,

@@ -33,9 +33,10 @@ user
 6. find user by active, realm, name || nickname
 7. create
 8. update
-9. assign user to realm
-10. assign user to role
-11. remove all
+9. find last user id
+10. assign user to realm
+11. assign user to role
+12. remove all
 
 round
 1. list rounds by realm and season
