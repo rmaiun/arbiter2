@@ -4,7 +4,7 @@ create table if not exists season
 (
     id               bigint primary key auto_increment,
     name             varchar(20) not null unique,
-    algorithm        varchar(20) not null,
+    algorithm        bigint      not null,
     end_notification timestamp
 );
 

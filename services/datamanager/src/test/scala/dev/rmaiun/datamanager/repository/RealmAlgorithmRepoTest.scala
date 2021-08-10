@@ -13,7 +13,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{ BeforeAndAfterEach, Inside }
 
-class RealmRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach with Inside {
+class RealmAlgorithmRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach with Inside {
 
   implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContexts.synchronous)
 
