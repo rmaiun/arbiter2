@@ -26,16 +26,15 @@ season
 
 user
 1. find user by id
-2. find user by name and realm
+2. find user by surname and realm
 3. find user by nickname and realm
-4. find users by names and realm
-5. find users by nickname and realm
-6. find user by active, realm, name || nickname
+4. find users by surnames and realm
+5. find users by nicknames and realm
+6. find user by active, realm, surname || nickname
 7. create
 8. update
 9. find last user id
 10. assign user to realm
-11. assign user to role
 12. remove all
 
 round
