@@ -50,7 +50,7 @@ class SeasonRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach w
       .unsafeRunSync()
     updSeason.endNotification.value should be(now)
   }
-  it should "successfully delete 1 of 3 Realms" in {
+  it should "successfully delete 1 of 3 seasons" in {
     val action = for {
       _  <- createTestAlgorithm
       r  <- seasonRepo.create(season)

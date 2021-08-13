@@ -70,7 +70,7 @@ class RealmAlgorithmRepoTest extends AnyFlatSpec with Matchers with BeforeAndAft
     updResult.teamSize should be(6)
   }
 
-  it should "successfully delete 2 of 3 Realms" in {
+  it should "successfully delete 2 of 3 realms" in {
     val action = for {
       _  <- createTestAlgorithm
       r  <- realmRepo.create(realm)

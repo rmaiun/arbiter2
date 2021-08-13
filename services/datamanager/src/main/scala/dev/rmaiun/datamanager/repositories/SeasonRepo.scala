@@ -16,7 +16,7 @@ trait SeasonRepo[F[_]] {
 object SeasonRepo {
   def apply[F[_]](implicit ev: SeasonRepo[F]): SeasonRepo[F] = ev
 
-  def impl[F[_]: Sync: Monad]: SeasonRepo[F] = new SeasonRepo[F] {
+  def impl[F[_]: Monad]: SeasonRepo[F] = new SeasonRepo[F] {
     override def getById(id: Long): ConnectionIO[Option[Season]] = SeasonQueries.getById(id).option
 
     override def create(season: Season): ConnectionIO[Season] = SeasonQueries

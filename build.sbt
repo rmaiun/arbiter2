@@ -4,7 +4,7 @@ version := "0.1"
 
 scalaVersion := "2.13.2"
 
-lazy val tftypes = (project in file("support/tftypes"))
+lazy val tftypes = (project in file("libs/tftypes"))
   .settings(
     name := "tftypes",
     settings,
