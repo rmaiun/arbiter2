@@ -1,4 +1,4 @@
-package dev.rmaiun.tftypes.types
+package dev.rmaiun.flowtypes
 
 import cats.data.EitherT
 import cats.implicits._
@@ -47,6 +47,8 @@ object Flow {
     }
     Flow.fromFRes(result)
   }
+
+  def unit[F[_]: Monad]: Flow[F, Unit] = Flow.pure(())
 
   def log[F[_]: Monad](logF: F[Unit]): Flow[F, Unit] =
     EitherT(Monad[F].map(logF)(x => x.asRight[Throwable]))

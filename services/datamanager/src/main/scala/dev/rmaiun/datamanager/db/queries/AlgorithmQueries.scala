@@ -11,6 +11,10 @@ object AlgorithmQueries {
     sql"SELECT * FROM algorithm WHERE algorithm.id = $id LIMIT 1"
       .query[Algorithm]
 
+  def getByValue(value: String): doobie.Query0[Algorithm] =
+    sql"SELECT * FROM algorithm WHERE algorithm.value = $value LIMIT 1"
+      .query[Algorithm]
+
   def insert(algorithm: Algorithm): doobie.Update0 =
     sql"""
          | INSERT into algorithm (id,value)

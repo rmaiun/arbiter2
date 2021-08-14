@@ -8,6 +8,7 @@ import doobie.ConnectionIO
 
 trait AlgorithmRepo[F[_]] {
   def getById(id: Long): ConnectionIO[Option[Algorithm]]
+  def getByName(value: String): ConnectionIO[Option[Algorithm]]
   def create(algorithm: Algorithm): ConnectionIO[Algorithm]
   def update(algorithm: Algorithm): ConnectionIO[Algorithm]
   def listAll: ConnectionIO[List[Algorithm]]
@@ -18,6 +19,8 @@ object AlgorithmRepo {
 
   def impl[F[_]: Sync: Monad]: AlgorithmRepo[F] = new AlgorithmRepo[F] {
     override def getById(id: Long): ConnectionIO[Option[Algorithm]] = AlgorithmQueries.getById(id).option
+
+    override def getByName(value: String): ConnectionIO[Option[Algorithm]] = AlgorithmQueries.getByValue(value).option
 
     override def create(algorithm: Algorithm): ConnectionIO[Algorithm] = AlgorithmQueries
       .insert(algorithm)
@@ -34,4 +37,3 @@ object AlgorithmRepo {
     override def removeN(idList: List[Long]): ConnectionIO[Int] = AlgorithmQueries.deleteByIdList(idList).run
   }
 }
-

@@ -17,7 +17,7 @@ trait RealmRepo[F[_]] {
 object RealmRepo {
   def apply[F[_]](implicit ev: RealmRepo[F]): RealmRepo[F] = ev
 
-  def impl[F[_]: Sync: Monad]: RealmRepo[F] = new RealmRepo[F] {
+  def impl[F[_]: Monad]: RealmRepo[F] = new RealmRepo[F] {
     override def getById(id: Long): ConnectionIO[Option[Realm]] = RealmQueries.getById(id).option
 
     override def create(realm: Realm): ConnectionIO[Realm] = RealmQueries

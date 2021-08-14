@@ -4,11 +4,29 @@ version := "0.1"
 
 scalaVersion := "2.13.2"
 
-lazy val tftypes = (project in file("libs/tftypes"))
+lazy val tftypes = (project in file("libs/flowtypes"))
   .settings(
-    name := "tftypes",
+    name := "flowtypes",
     settings,
     libraryDependencies ++= tfTypesDependencies
+  )
+  .dependsOn(errorHandling)
+  .disablePlugins(AssemblyPlugin)
+
+lazy val validation = (project in file("libs/validation"))
+  .settings(
+    name := "validation",
+    settings,
+    libraryDependencies ++= validationDependencies
+  )
+  .dependsOn(tftypes, errorHandling)
+  .disablePlugins(AssemblyPlugin)
+
+lazy val errorHandling = (project in file("libs/errorhandling"))
+  .settings(
+    name := "errorhandling",
+    settings,
+    libraryDependencies ++= errorHandlingDependencies
   )
   .disablePlugins(AssemblyPlugin)
 
@@ -24,7 +42,7 @@ lazy val datamanager = (project in file("services/datamanager"))
     flywayPassword := "rootpassword",
     flywayLocations += "db/migration"
   )
-  .dependsOn(tftypes)
+  .dependsOn(tftypes, validation, errorHandling)
   .enablePlugins(FlywayPlugin)
   .disablePlugins(AssemblyPlugin)
 
@@ -60,6 +78,7 @@ lazy val dependencies =
     val doobieHikari   = "org.tpolecat"          %% "doobie-hikari"        % "0.12.1"
     val fs2Core        = "co.fs2"                %% "fs2-core"             % "2.4.4"
     val fs2IO          = "co.fs2"                %% "fs2-io"               % "2.4.2"
+    val accordCore     = "com.wix"               %% "accord-core"          % "0.7.6"
     val scalatest      = "org.scalatest"         %% "scalatest"            % ScalaTestVersion       % Test
     val spec2Core      = "org.specs2"            %% "specs2-core"          % Specs2Version          % Test
   }
@@ -68,6 +87,19 @@ lazy val tfTypesDependencies = Seq(
   dependencies.catsCore,
   dependencies.catsEffect,
   dependencies.log4cats
+)
+
+lazy val validationDependencies = Seq(
+  dependencies.catsCore,
+  dependencies.accordCore
+)
+
+lazy val errorHandlingDependencies = Seq(
+  dependencies.catsCore,
+  dependencies.catsEffect,
+  dependencies.circeGeneric,
+  dependencies.circeParser,
+  dependencies.circeOptics
 )
 
 lazy val dataManagerDependencies = Seq(
