@@ -2,19 +2,24 @@ package dev.rmaiun.datamanager.routes
 
 import cats.effect.Sync
 import cats.implicits._
-import cats.{Applicative, Monad}
-import dev.rmaiun.datamanager.dtos.AlgorithmDtos.{CreateAlgorithmDtoIn, GetAlgorithmDtoIn}
-import dev.rmaiun.datamanager.dtos.RealmDtos.{GetRealmDtoIn, RegisterRealmDtoIn}
-import dev.rmaiun.datamanager.services.{AlgorithmService, RealmService}
+import cats.{ Applicative, Monad }
+import dev.rmaiun.datamanager.dtos.AlgorithmDtos.{ CreateAlgorithmDtoIn, DeleteAlgorithmDtoIn, GetAlgorithmDtoIn }
+import dev.rmaiun.datamanager.dtos.RealmDtos.{
+  DropRealmDtoIn,
+  GetRealmDtoIn,
+  RegisterRealmDtoIn,
+  UpdateRealmAlgorithmDtoIn
+}
+import dev.rmaiun.datamanager.services.{ AlgorithmService, RealmService }
 import dev.rmaiun.errorhandling.errors.AppRuntimeException
 import dev.rmaiun.errorhandling.errors.codec._
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
 import io.chrisdavenport.log4cats.Logger
-import io.circe.{Decoder, Encoder}
-import org.http4s.circe.{jsonEncoderOf, jsonOf}
+import io.circe.{ Decoder, Encoder }
+import org.http4s.circe.{ jsonEncoderOf, jsonOf }
 import org.http4s.dsl.Http4sDsl
-import org.http4s.{EntityDecoder, EntityEncoder, HttpRoutes, Response}
+import org.http4s.{ EntityDecoder, EntityEncoder, HttpRoutes, Response }
 object DataManagerRoutes {
 
   implicit def errorEntityEncoder[F[_]: Applicative, T: Encoder]: EntityEncoder[F, T] = jsonEncoderOf[F, T]
@@ -59,6 +64,13 @@ object DataManagerRoutes {
           res   <- algorithmService.createAlgorithm(dtoIn)
         } yield res
         flowToResponse(dtoOut)
+
+      case req @ POST -> Root / "delete" =>
+        val dtoOut = for {
+          dtoIn <- Flow.fromF(req.as[DeleteAlgorithmDtoIn])
+          res   <- algorithmService.deleteAlgorithm(dtoIn)
+        } yield res
+        flowToResponse(dtoOut)
     }
   }
 
@@ -75,6 +87,20 @@ object DataManagerRoutes {
         val dtoOut = for {
           dtoIn <- Flow.fromF(req.as[RegisterRealmDtoIn])
           res   <- realmService.registerRealm(dtoIn)
+        } yield res
+        flowToResponse(dtoOut)
+
+      case req @ POST -> Root / "updateAlgorithm" =>
+        val dtoOut = for {
+          dtoIn <- Flow.fromF(req.as[UpdateRealmAlgorithmDtoIn])
+          res   <- realmService.updateRealmAlgorithm(dtoIn)
+        } yield res
+        flowToResponse(dtoOut)
+
+      case req @ POST -> Root / "delete" =>
+        val dtoOut = for {
+          dtoIn <- Flow.fromF(req.as[DropRealmDtoIn])
+          res   <- realmService.dropRealm(dtoIn)
         } yield res
         flowToResponse(dtoOut)
     }

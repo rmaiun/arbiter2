@@ -2,7 +2,7 @@ package dev.rmaiun.datamanager.validations
 
 import com.wix.accord.dsl._
 import com.wix.accord.transform.ValidationTransform.TransformedValidator
-import dev.rmaiun.datamanager.dtos.AlgorithmDtos.{CreateAlgorithmDtoIn, GetAlgorithmDtoIn}
+import dev.rmaiun.datamanager.dtos.AlgorithmDtos.{ CreateAlgorithmDtoIn, DeleteAlgorithmDtoIn, GetAlgorithmDtoIn }
 import dev.rmaiun.validation.CustomValidationRules
 
 object AlgorithmValidationSet extends CustomValidationRules {
@@ -14,5 +14,10 @@ object AlgorithmValidationSet extends CustomValidationRules {
   implicit val CreateAlgorithmDtoInValidator: TransformedValidator[CreateAlgorithmDtoIn] =
     validator[CreateAlgorithmDtoIn] { dto =>
       dto.algorithm is oneOf("WinRate", "OldPoints")
+    }
+
+  implicit val DeleteAlgorithmDtoInValidator: TransformedValidator[DeleteAlgorithmDtoIn] =
+    validator[DeleteAlgorithmDtoIn] { dto =>
+      dto.id should be > 0L
     }
 }

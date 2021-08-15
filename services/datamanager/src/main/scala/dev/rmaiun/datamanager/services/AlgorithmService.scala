@@ -3,12 +3,7 @@ package dev.rmaiun.datamanager.services
 import cats.Monad
 import cats.effect.Sync
 import dev.rmaiun.datamanager.db.entities.Algorithm
-import dev.rmaiun.datamanager.dtos.AlgorithmDtos.{
-  CreateAlgorithmDtoIn,
-  CreateAlgorithmDtoOut,
-  GetAlgorithmDtoIn,
-  GetAlgorithmDtoOut
-}
+import dev.rmaiun.datamanager.dtos.AlgorithmDtos._
 import dev.rmaiun.datamanager.errors.AlgorithmErrors.AlgorithmNotFoundRuntimeException
 import dev.rmaiun.datamanager.repositories.AlgorithmRepo
 import dev.rmaiun.datamanager.validations.AlgorithmValidationSet._
@@ -23,6 +18,7 @@ import io.chrisdavenport.log4cats.Logger
 trait AlgorithmService[F[_]] {
   def getAlgorithmByName(dtoIn: GetAlgorithmDtoIn): Flow[F, GetAlgorithmDtoOut]
   def createAlgorithm(dtoIn: CreateAlgorithmDtoIn): Flow[F, CreateAlgorithmDtoOut]
+  def deleteAlgorithm(dtoIn: DeleteAlgorithmDtoIn): Flow[F, DeleteAlgorithmDtoOut]
 }
 
 object AlgorithmService {
@@ -47,5 +43,11 @@ object AlgorithmService {
           _   <- Validator.validateDto[F, CreateAlgorithmDtoIn](dtoIn)
           alg <- algorithmRepo.create(Algorithm(0, dtoIn.algorithm)).transact(xa).attemptSql.adaptError
         } yield CreateAlgorithmDtoOut(alg.id, alg.value)
+
+      override def deleteAlgorithm(dtoIn: DeleteAlgorithmDtoIn): Flow[F, DeleteAlgorithmDtoOut] =
+        for {
+          _ <- Validator.validateDto[F, DeleteAlgorithmDtoIn](dtoIn)
+          n <- algorithmRepo.removeN(List(dtoIn.id)).transact(xa).attemptSql.adaptError
+        } yield DeleteAlgorithmDtoOut(dtoIn.id, n)
     }
 }

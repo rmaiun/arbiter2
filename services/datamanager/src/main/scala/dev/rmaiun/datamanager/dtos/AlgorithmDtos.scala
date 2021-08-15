@@ -6,8 +6,12 @@ import io.circe.{ Decoder, Encoder }
 object AlgorithmDtos {
   case class GetAlgorithmDtoIn(algorithm: String)
   case class GetAlgorithmDtoOut(id: Long, algorithm: String)
+
   case class CreateAlgorithmDtoIn(algorithm: String)
   case class CreateAlgorithmDtoOut(id: Long, algorithm: String)
+
+  case class DeleteAlgorithmDtoIn(id:Long)
+  case class DeleteAlgorithmDtoOut(id:Long, quantity:Int)
 
   object codec {
     implicit val GetAlgorithmDtoInEncoder: Encoder[GetAlgorithmDtoIn] = deriveEncoder[GetAlgorithmDtoIn]
@@ -21,5 +25,11 @@ object AlgorithmDtos {
 
     implicit val CreateAlgorithmDtoOutEncoder: Encoder[CreateAlgorithmDtoOut] = deriveEncoder[CreateAlgorithmDtoOut]
     implicit val CreateAlgorithmDtoOutDecoder: Decoder[CreateAlgorithmDtoOut] = deriveDecoder[CreateAlgorithmDtoOut]
+
+    implicit val DeleteAlgorithmDtoInEncoder: Encoder[DeleteAlgorithmDtoIn] = deriveEncoder[DeleteAlgorithmDtoIn]
+    implicit val DeleteAlgorithmDtoInDecoder: Decoder[DeleteAlgorithmDtoIn] = deriveDecoder[DeleteAlgorithmDtoIn]
+
+    implicit val DeleteAlgorithmDtoOutEncoder: Encoder[DeleteAlgorithmDtoOut] = deriveEncoder[DeleteAlgorithmDtoOut]
+    implicit val DeleteAlgorithmDtoOutDecoder: Decoder[DeleteAlgorithmDtoOut] = deriveDecoder[DeleteAlgorithmDtoOut]
   }
 }
