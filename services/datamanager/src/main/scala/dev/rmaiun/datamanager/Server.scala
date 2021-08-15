@@ -21,7 +21,7 @@ object Server {
   def stream[F[_]: ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F], M: Monad[F]): Stream[F, Nothing] = {
     for {
       //general
-      client  <- BlazeClientBuilder[F](global).withMaxWaitQueueLimit(1000).stream
+      client <- BlazeClientBuilder[F](global).withMaxWaitQueueLimit(1000).stream
       httpApp = Module.initHttpApp(client)
 
       // With Middlewares in place

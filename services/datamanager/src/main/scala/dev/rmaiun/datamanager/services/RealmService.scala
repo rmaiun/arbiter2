@@ -18,6 +18,7 @@ import io.chrisdavenport.log4cats.Logger
 trait RealmService[F[_]] {
   def registerRealm(dtoIn: RegisterRealmDtoIn): Flow[F, RegisterRealmDtoOut]
   def updateRealmAlgorithm(dtoIn: UpdateRealmAlgorithmDtoIn): Flow[F, UpdateRealmAlgorithmDtoOut]
+  def getRealm(name: GetRealmDtoIn): Flow[F, GetRealmDtoOut]
   def dropRealm(dtoIn: DropRealmDtoIn): Flow[F, DropRealmDtoOut]
 }
 
@@ -49,6 +50,14 @@ object RealmService {
         _ <- Validator.validateDto[F, DropRealmDtoIn](dtoIn)
         n <- removeRealms(dtoIn.id :: Nil)
       } yield DropRealmDtoOut(dtoIn.id, n)
+
+
+    override def getRealm(dtoIn: GetRealmDtoIn): Flow[F, GetRealmDtoOut] = {
+      realmRepo.getByName(dtoIn.realm).transact(xa).attemptSql.adaptError.flatMap {
+        case Some(value) => Flow.pure(value)
+        case None        => Flow.error(RealmNotFoundRuntimeException(Map("name" -> s"${dtoIn.realm}")))
+      }
+    }
 
     private def updateRealm(realm: Realm): Flow[F, Realm] =
       realmRepo.update(realm).transact(xa).attemptSql.adaptError

@@ -11,6 +11,10 @@ object RealmQueries {
     sql"SELECT * FROM realm WHERE realm.id = $id LIMIT 1"
       .query[Realm]
 
+  def getByName(name: String): doobie.Query0[Realm] =
+    sql"SELECT * FROM realm WHERE realm.name = $name LIMIT 1"
+      .query[Realm]
+
   def insert(realm: Realm): doobie.Update0 =
     sql"""
          | INSERT into realm (id, name, team_size, selected_algorithm)
