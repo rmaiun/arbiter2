@@ -2,20 +2,13 @@ package dev.rmaiun.datamanager.db.queries
 
 import cats.data.NonEmptyList
 import dev.rmaiun.datamanager.db.entities.Season
-import doobie.{ Fragments, Meta }
+import doobie.Fragments
 import doobie.implicits._
-import doobie.implicits.javasql._
 
-import java.sql.Timestamp
-import java.time.{ ZoneOffset, ZonedDateTime }
-
-object SeasonQueries {
-  implicit val metaInstance: Meta[ZonedDateTime] = Meta[Timestamp]
-    .imap(ts => ZonedDateTime.ofInstant(ts.toInstant, ZoneOffset.UTC))(zdt => Timestamp.from(zdt.toInstant))
-
+object SeasonQueries extends CustomMeta {
   def getById(id: Long): doobie.Query0[Season] =
     sql"""
-         | select id, name, algorithm, realm, end_notification as endNotification 
+         | select id, name, algorithm, realm, end_notification as endNotification
          | from season where season.id = $id limit 1
     """.stripMargin.query[Season]
 

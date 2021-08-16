@@ -1,68 +1,104 @@
-//package dev.rmaiun.datamanager.db.queries
-//
-//import cats.data.NonEmptyList
-//import com.mairo.ukl.domains.Player
-//import doobie._
-//import doobie.implicits._
-//
-//object UserQueries {
-//  val invalidPlayer = "n/a"
-//
-//  def findAllPlayers: doobie.Query0[Player] = {
-//    sql"SELECT id,surname,tid,admin,enable_notifications as notificationsEnabled FROM player"
-//      .query[Player]
-//  }
-//
-//  def deletePlayerById(id: Long): doobie.Update0 = {
-//    sql"DELETE FROM player where player.id = $id"
-//      .update
-//  }
-//
-//  def clearTable: doobie.Update0 = {
-//    sql"DELETE FROM player"
-//      .update
-//  }
-//
-//  def findPlayers(surnames: NonEmptyList[String]): doobie.Query0[Player] = {
-//    val fragment = fr" SELECT id,surname,tid,admin,enable_notifications as notificationsEnabled FROM player WHERE " ++ Fragments.in(fr"player.surname", surnames)
-//    fragment.query[Player]
-//  }
-//
-//  def getPlayerByName(name: String): doobie.Query0[Player] = {
-//    sql"SELECT id,surname,tid,admin,enable_notifications as notificationsEnabled FROM player WHERE player.surname = $name LIMIT 1"
-//      .query[Player]
-//  }
-//
-//  def getPlayerByTid(tid: String): doobie.Query0[Player] = {
-//    sql"SELECT id,surname,tid,admin,enable_notifications as notificationsEnabled FROM player WHERE player.tid = $tid LIMIT 1"
-//      .query[Player]
-//  }
-//
-//  def getPlayerById(id: Long): doobie.Query0[Player] = {
-//    sql"SELECT id,surname,tid,admin,enable_notifications as notificationsEnabled FROM player WHERE player.id = $id LIMIT 1"
-//      .query[Player]
-//  }
-//
-//  def insertPlayer(id: Long, surname: String, tid: Option[String], admin: Boolean, notificationsEnabled:Boolean): doobie.Update0 = {
-//    sql"INSERT into player (id, surname, tid, admin, enable_notifications) VALUES ($id, $surname, $tid, $admin, $notificationsEnabled)"
-//      .update
-//  }
-//
-//  def updatePlayer(player: Player): doobie.Update0 = {
-//    sql"""
-//         |UPDATE player
-//         | SET surname=${player.surname},
-//         |  tid = ${player.tid},
-//         |  admin = ${player.admin},
-//         |  enable_notifications = ${player.notificationsEnabled}
-//         | WHERE id = ${player.id}
-//    """.stripMargin
-//      .update
-//  }
-//
-//  def getLastPlayerId: doobie.Query0[Long] = {
-//    sql"SELECT player.id FROM player ORDER BY player.id DESC LIMIT 1"
-//      .query[Long]
-//  }
-//
-//}
+package dev.rmaiun.datamanager.db.queries
+
+import cats.data.NonEmptyList
+import dev.rmaiun.datamanager.db.entities.User
+import doobie.Fragments
+import doobie.implicits._
+import doobie.util.fragment
+
+object UserQueries extends CustomMeta {
+
+  def getById(id: Long): doobie.Query0[User] =
+    sql"""
+         | select id, surname, nickname, tid, active, created_at as createdAt
+         | from user where user.id = $id limit 1
+    """.stripMargin.query[User]
+
+  def getByTid(tid: Long): doobie.Query0[User] =
+    sql"""
+         | select id, surname, nickname, tid, active, created_at as createdAt
+         | from user where user.tid = $tid limit 1
+    """.stripMargin.query[User]
+
+  def getActiveByName(name: String, active: Option[Boolean] = None): doobie.Query0[User] = {
+    val baseQuery   = fr"""
+                        | select id, surname, nickname, tid, active, created_at as createdAt
+                        | from user
+                        | where user.name = $name
+                 """.stripMargin
+    val resultQuery = activeBasedFragment(baseQuery, active) ++ limitFragment
+    resultQuery.query[User]
+  }
+
+  def getActiveByNickname(nickname: String, active: Option[Boolean] = None): doobie.Query0[User] = {
+    val baseQuery   = fr"""
+                        | select id, surname, nickname, tid, active, created_at as createdAt
+                        | from user
+                        | where user.nickname = $nickname
+                 """.stripMargin
+    val resultQuery = activeBasedFragment(baseQuery, active) ++ limitFragment
+    resultQuery.query[User]
+  }
+
+  def getActiveByNames(names: NonEmptyList[String], active: Option[Boolean] = None): doobie.Query0[User] = {
+    val baseQuery   = fr"""
+                        | select id, surname, nickname, tid, active, created_at as createdAt
+                        | from user
+                        | where
+                 """.stripMargin ++ Fragments.in(fr"user.name", names)
+    val resultQuery = activeBasedFragment(baseQuery, active)
+    resultQuery.query[User]
+  }
+
+  def getActiveByNicknames(nicknames: NonEmptyList[String], active: Option[Boolean] = None): doobie.Query0[User] = {
+    val baseQuery   = fr"""
+                        | select id, surname, nickname, tid, active, created_at as createdAt
+                        | from user
+                        | where
+                 """.stripMargin ++ Fragments.in(fr"user.nickname", nicknames)
+    val resultQuery = activeBasedFragment(baseQuery, active)
+    resultQuery.query[User]
+  }
+
+  def insert(user: User): doobie.Update0 =
+    sql"""
+         | insert into user (id, surname, nickname, tid, active, created_at)
+         | values (${user.id}, ${user.surname}, ${user.nickname}, ${user.tid}, ${user.active}, ${user.createdAt})
+        """.stripMargin.update
+
+  def update(user: User): doobie.Update0 =
+    sql"""
+         | update user
+         | set surname=${user.surname},
+         |     nickname=${user.nickname},
+         |     tid=${user.tid},
+         |     active=${user.active},
+         |     created_at=${user.createdAt}
+         | where id = ${user.id}
+    """.stripMargin.update
+
+  def listAll: doobie.Query0[User] =
+    sql"select id, surname, nickname, tid, active, created_at as createdAt from user"
+      .query[User]
+
+  def deleteByIdList(idList: List[Long]): doobie.Update0 =
+    NonEmptyList.fromList(idList) match {
+      case Some(ids) =>
+        val query = fr"delete from user where " ++ Fragments.in(fr"user.id", ids)
+        query.update
+      case None =>
+        sql"delete from user".update
+    }
+
+  private def activeBasedFragment(f: fragment.Fragment, active: Option[Boolean]): fragment.Fragment =
+    active match {
+      case Some(true) =>
+        f ++ Fragments.and(fr"user.active = true")
+      case Some(false) =>
+        f ++ Fragments.and(fr"user.active = false")
+      case None =>
+        f
+    }
+
+  def limitFragment = fr"limit 1"
+}

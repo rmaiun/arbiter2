@@ -16,3 +16,6 @@ ALTER TABLE user
 create index user_id_idx on user (id);
 create index user_name_idx on user (surname);
 create index user_nickname_idx on user (nickname);
+create index user_tid_idx on user (tid);
+create index user_name_active_idx on user (surname, active);
+create index user_nickname_active_idx on user (nickname, active);
