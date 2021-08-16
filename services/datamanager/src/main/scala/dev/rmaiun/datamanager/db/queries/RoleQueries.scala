@@ -9,34 +9,34 @@ object RoleQueries {
 
   def getById(id: Long): doobie.Query0[Role] =
     sql"""
-         | SELECT id, value, permission
-         | FROM role WHERE role.id = $id LIMIT 1
+         | select id, value, permission
+         | from role where role.id = $id limit 1
     """.stripMargin.query[Role]
 
   def insert(role: Role): doobie.Update0 =
     sql"""
-         | INSERT into role (id, value, permission)
-         | VALUES (${role.id}, ${role.value},${role.permission})
+         | insert into role (id, value, permission)
+         | values (${role.id}, ${role.value},${role.permission})
         """.stripMargin.update
 
   def update(role: Role): doobie.Update0 =
     sql"""
-         | UPDATE role
-         | SET value=${role.value},
+         | update role
+         | set value=${role.value},
          |     permission=${role.permission}
-         | WHERE id = ${role.id}
+         | where id = ${role.id}
     """.stripMargin.update
 
   def listAll: doobie.Query0[Role] =
-    sql"SELECT id, value, permission FROM role"
+    sql"select id, value, permission from role"
       .query[Role]
 
   def deleteByIdList(idList: List[Long]): doobie.Update0 =
     NonEmptyList.fromList(idList) match {
       case Some(ids) =>
-        val query = fr"DELETE FROM role where " ++ Fragments.in(fr"role.id", ids)
+        val query = fr"delete from role where " ++ Fragments.in(fr"role.id", ids)
         query.update
       case None =>
-        sql"DELETE FROM role".update
+        sql"delete from role".update
     }
 }

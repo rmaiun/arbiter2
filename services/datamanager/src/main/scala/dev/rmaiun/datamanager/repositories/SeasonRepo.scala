@@ -1,13 +1,13 @@
 package dev.rmaiun.datamanager.repositories
 
 import cats.Monad
-import cats.effect.Sync
 import dev.rmaiun.datamanager.db.entities.Season
 import dev.rmaiun.datamanager.db.queries.SeasonQueries
 import doobie.ConnectionIO
 
 trait SeasonRepo[F[_]] {
   def getById(id: Long): ConnectionIO[Option[Season]]
+  def getBySeasonNameRealm(name: String, realm: String): ConnectionIO[Option[Season]]
   def create(season: Season): ConnectionIO[Season]
   def update(season: Season): ConnectionIO[Season]
   def listAll: ConnectionIO[List[Season]]
@@ -18,6 +18,9 @@ object SeasonRepo {
 
   def impl[F[_]: Monad]: SeasonRepo[F] = new SeasonRepo[F] {
     override def getById(id: Long): ConnectionIO[Option[Season]] = SeasonQueries.getById(id).option
+
+    override def getBySeasonNameRealm(name: String, realm: String): ConnectionIO[Option[Season]] =
+      SeasonQueries.getByNameRealm(name, realm).option
 
     override def create(season: Season): ConnectionIO[Season] = SeasonQueries
       .insert(season)

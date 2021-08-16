@@ -51,13 +51,11 @@ object RealmService {
         n <- removeRealms(dtoIn.id :: Nil)
       } yield DropRealmDtoOut(dtoIn.id, n)
 
-
-    override def getRealm(dtoIn: GetRealmDtoIn): Flow[F, GetRealmDtoOut] = {
+    override def getRealm(dtoIn: GetRealmDtoIn): Flow[F, GetRealmDtoOut] =
       realmRepo.getByName(dtoIn.realm).transact(xa).attemptSql.adaptError.flatMap {
-        case Some(value) => Flow.pure(value)
-        case None        => Flow.error(RealmNotFoundRuntimeException(Map("name" -> s"${dtoIn.realm}")))
+        case Some(r) => Flow.pure(GetRealmDtoOut(r.id, r.name, r.teamSize, r.selectedAlgorithm))
+        case None    => Flow.error(RealmNotFoundRuntimeException(Map("name" -> s"${dtoIn.realm}")))
       }
-    }
 
     private def updateRealm(realm: Realm): Flow[F, Realm] =
       realmRepo.update(realm).transact(xa).attemptSql.adaptError

@@ -8,38 +8,38 @@ import doobie.implicits._
 object RealmQueries {
 
   def getById(id: Long): doobie.Query0[Realm] =
-    sql"SELECT * FROM realm WHERE realm.id = $id LIMIT 1"
+    sql"select * from realm where realm.id = $id limit 1"
       .query[Realm]
 
   def getByName(name: String): doobie.Query0[Realm] =
-    sql"SELECT * FROM realm WHERE realm.name = $name LIMIT 1"
+    sql"select * from realm where realm.name = $name limit 1"
       .query[Realm]
 
   def insert(realm: Realm): doobie.Update0 =
     sql"""
-         | INSERT into realm (id, name, team_size, selected_algorithm)
-         | VALUES (${realm.id}, ${realm.name},${realm.teamSize},${realm.selectedAlgorithm})
+         | insert into realm (id, name, team_size, selected_algorithm)
+         | values (${realm.id}, ${realm.name},${realm.teamSize},${realm.selectedAlgorithm})
         """.stripMargin.update
 
   def update(realm: Realm): doobie.Update0 =
     sql"""
-         | UPDATE realm
-         | SET name=${realm.name},
+         | update realm
+         | set name=${realm.name},
          |     team_size=${realm.teamSize},
          |     selected_algorithm=${realm.selectedAlgorithm}
-         | WHERE id = ${realm.id}
+         | where id = ${realm.id}
     """.stripMargin.update
 
   def listAll: doobie.Query0[Realm] =
-    sql"SELECT * FROM realm"
+    sql"select * from realm"
       .query[Realm]
 
   def deleteByIdList(idList: List[Long]): doobie.Update0 =
     NonEmptyList.fromList(idList) match {
       case Some(ids) =>
-        val query = fr"DELETE FROM realm where " ++ Fragments.in(fr"realm.id", ids)
+        val query = fr"delete from realm where " ++ Fragments.in(fr"realm.id", ids)
         query.update
       case None =>
-        sql"DELETE FROM realm".update
+        sql"delete from realm".update
     }
 }
