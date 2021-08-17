@@ -2,10 +2,10 @@ use arbiter;
 
 create table if not exists user_realm_role
 (
-    realm bigint not null,
     user  bigint not null,
+    realm bigint not null,
     role  bigint not null,
-    PRIMARY KEY (realm, user, role)
+    PRIMARY KEY (user, realm, role)
 );
 
 ALTER TABLE user_realm_role

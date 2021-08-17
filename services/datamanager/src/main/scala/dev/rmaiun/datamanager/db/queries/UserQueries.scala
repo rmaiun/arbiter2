@@ -1,7 +1,7 @@
 package dev.rmaiun.datamanager.db.queries
 
 import cats.data.NonEmptyList
-import dev.rmaiun.datamanager.db.entities.User
+import dev.rmaiun.datamanager.db.entities.{User, UserRealmRole}
 import doobie.Fragments
 import doobie.implicits._
 import doobie.util.fragment
@@ -20,11 +20,11 @@ object UserQueries extends CustomMeta {
          | from user where user.tid = $tid limit 1
     """.stripMargin.query[User]
 
-  def getActiveByName(name: String, active: Option[Boolean] = None): doobie.Query0[User] = {
+  def getActiveBySurname(surname: String, active: Option[Boolean] = None): doobie.Query0[User] = {
     val baseQuery   = fr"""
                         | select id, surname, nickname, tid, active, created_at as createdAt
                         | from user
-                        | where user.name = $name
+                        | where user.surname = $surname
                  """.stripMargin
     val resultQuery = activeBasedFragment(baseQuery, active) ++ limitFragment
     resultQuery.query[User]
@@ -40,12 +40,12 @@ object UserQueries extends CustomMeta {
     resultQuery.query[User]
   }
 
-  def getActiveByNames(names: NonEmptyList[String], active: Option[Boolean] = None): doobie.Query0[User] = {
+  def getActiveBySurnames(surnames: NonEmptyList[String], active: Option[Boolean] = None): doobie.Query0[User] = {
     val baseQuery   = fr"""
                         | select id, surname, nickname, tid, active, created_at as createdAt
                         | from user
                         | where
-                 """.stripMargin ++ Fragments.in(fr"user.name", names)
+                 """.stripMargin ++ Fragments.in(fr"user.surname", surnames)
     val resultQuery = activeBasedFragment(baseQuery, active)
     resultQuery.query[User]
   }
@@ -77,9 +77,32 @@ object UserQueries extends CustomMeta {
          | where id = ${user.id}
     """.stripMargin.update
 
-  def listAll: doobie.Query0[User] =
-    sql"select id, surname, nickname, tid, active, created_at as createdAt from user"
-      .query[User]
+  def listAll(realm: String, surnames: List[String], active: Option[Boolean]): doobie.Query0[User] = {
+    val baseFragment           = fr"""
+                           | select user.id, user.surname, user.nickname, user.tid,user.active, user.created_at as createdAt
+                           | from user
+                           | inner join user_realm_role as urr on user.id = urr.user
+                           | inner join realm on urr.realm = realm.id
+                           | where realm.name = $realm
+    """.stripMargin
+    val baseWithActiveFragment = activeBasedFragment(baseFragment, active)
+    val orderFragment          = fr"order by user.id"
+    if (surnames.isEmpty) {
+      (baseWithActiveFragment ++ orderFragment).query[User]
+    } else {
+      val data                   = NonEmptyList(surnames.head, Nil)
+      val activeSurnamesFragment = baseWithActiveFragment ++ fr"and" ++ Fragments.in(fr"user.surname", data)
+      (activeSurnamesFragment ++ orderFragment).query[User]
+    }
+  }
+
+  def countUsers: doobie.ConnectionIO[Int] = sql"select count(id) from user".query[Int].unique
+
+  def insertUserRealmRole(urr: UserRealmRole): doobie.Update0 =
+    sql"""
+         | insert into user_realm_role
+         | value (${urr.user}, ${urr.realm}, ${urr.role})
+         """.stripMargin.update
 
   def deleteByIdList(idList: List[Long]): doobie.Update0 =
     NonEmptyList.fromList(idList) match {
@@ -90,12 +113,14 @@ object UserQueries extends CustomMeta {
         sql"delete from user".update
     }
 
+  def clearUserRealmRoles: doobie.Update0 = sql"delete from user_realm_role".update
+
   private def activeBasedFragment(f: fragment.Fragment, active: Option[Boolean]): fragment.Fragment =
     active match {
       case Some(true) =>
-        f ++ Fragments.and(fr"user.active = true")
+        f ++ fr"and user.active is true"
       case Some(false) =>
-        f ++ Fragments.and(fr"user.active = false")
+        f ++ fr"and user.active is false"
       case None =>
         f
     }
