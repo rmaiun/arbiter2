@@ -64,7 +64,7 @@ class UserRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     second.size should be(2)
   }
 
-  it should "find by identities" in {
+  it should "find correctly by listAll" in {
     val action = for {
       _      <- initTestDataSet
       _      <- roleRepo.create(role)
@@ -79,6 +79,15 @@ class UserRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     first.head.id should be(1)
     second.size should be(0)
     third.size should be(0)
+  }
+
+  it should "correctly find available Id" in {
+    val action = for {
+      _      <- initTestDataSet
+      id     <- userRepo.findAvailableId
+    } yield id
+    val id = action.transact(transactor).unsafeRunSync()
+    id should be(4)
   }
 
   private def initTestDataSet: ConnectionIO[(User, User, User)] =
