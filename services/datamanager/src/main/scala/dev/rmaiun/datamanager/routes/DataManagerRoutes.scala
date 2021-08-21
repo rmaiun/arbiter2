@@ -3,8 +3,8 @@ package dev.rmaiun.datamanager.routes
 import cats.effect.Sync
 import cats.implicits._
 import cats.{ Applicative, Monad }
-import dev.rmaiun.datamanager.dtos.AlgorithmDtos.{ CreateAlgorithmDtoIn, DeleteAlgorithmDtoIn, GetAlgorithmDtoIn }
-import dev.rmaiun.datamanager.dtos.RealmDtos.{
+import dev.rmaiun.datamanager.dtos.api.AlgorithmDtos.{ CreateAlgorithmDtoIn, DeleteAlgorithmDtoIn, GetAlgorithmDtoIn }
+import dev.rmaiun.datamanager.dtos.api.RealmDtos.{
   DropRealmDtoIn,
   GetRealmDtoIn,
   RegisterRealmDtoIn,
@@ -52,7 +52,7 @@ object DataManagerRoutes {
 
   def algorithmRoutes[F[_]: Sync: Monad: Logger](algorithmService: AlgorithmService[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
-    import dev.rmaiun.datamanager.dtos.AlgorithmDtos.codec._
+    import dev.rmaiun.datamanager.dtos.api.AlgorithmDtos.codec._
     import dsl._
     HttpRoutes.of[F] {
       case GET -> Root / "find" / name =>
@@ -76,7 +76,7 @@ object DataManagerRoutes {
 
   def realmRoutes[F[_]: Sync: Monad: Logger](realmService: RealmService[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
-    import dev.rmaiun.datamanager.dtos.RealmDtos.codec._
+    import dev.rmaiun.datamanager.dtos.api.RealmDtos.codec._
     import dsl._
 
     HttpRoutes.of[F] {

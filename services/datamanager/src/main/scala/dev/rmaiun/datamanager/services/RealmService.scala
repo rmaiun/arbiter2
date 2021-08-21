@@ -3,8 +3,8 @@ package dev.rmaiun.datamanager.services
 import cats.Monad
 import cats.effect.Sync
 import dev.rmaiun.datamanager.db.entities.Realm
-import dev.rmaiun.datamanager.dtos.AlgorithmDtos.GetAlgorithmDtoIn
-import dev.rmaiun.datamanager.dtos.RealmDtos._
+import dev.rmaiun.datamanager.dtos.api.AlgorithmDtos.GetAlgorithmDtoIn
+import dev.rmaiun.datamanager.dtos.api.RealmDtos._
 import dev.rmaiun.datamanager.errors.RealmErrors.RealmNotFoundRuntimeException
 import dev.rmaiun.datamanager.repositories.RealmRepo
 import dev.rmaiun.datamanager.validations.RealmValidationSet._

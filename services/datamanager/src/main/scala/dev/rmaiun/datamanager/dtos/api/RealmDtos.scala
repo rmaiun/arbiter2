@@ -1,4 +1,4 @@
-package dev.rmaiun.datamanager.dtos
+package dev.rmaiun.datamanager.dtos.api
 
 import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
 import io.circe.{ Decoder, Encoder }

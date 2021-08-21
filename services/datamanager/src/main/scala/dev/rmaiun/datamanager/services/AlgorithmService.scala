@@ -3,7 +3,7 @@ package dev.rmaiun.datamanager.services
 import cats.Monad
 import cats.effect.Sync
 import dev.rmaiun.datamanager.db.entities.Algorithm
-import dev.rmaiun.datamanager.dtos.AlgorithmDtos._
+import dev.rmaiun.datamanager.dtos.api.AlgorithmDtos._
 import dev.rmaiun.datamanager.errors.AlgorithmErrors.AlgorithmNotFoundRuntimeException
 import dev.rmaiun.datamanager.repositories.AlgorithmRepo
 import dev.rmaiun.datamanager.validations.AlgorithmValidationSet._

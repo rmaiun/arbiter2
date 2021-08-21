@@ -2,7 +2,7 @@ package dev.rmaiun.datamanager.validations
 
 import com.wix.accord.dsl._
 import com.wix.accord.transform.ValidationTransform.TransformedValidator
-import dev.rmaiun.datamanager.dtos.AlgorithmDtos.{ CreateAlgorithmDtoIn, DeleteAlgorithmDtoIn, GetAlgorithmDtoIn }
+import dev.rmaiun.datamanager.dtos.api.AlgorithmDtos.{ CreateAlgorithmDtoIn, DeleteAlgorithmDtoIn, GetAlgorithmDtoIn }
 import dev.rmaiun.validation.CustomValidationRules
 
 object AlgorithmValidationSet extends CustomValidationRules {

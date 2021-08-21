@@ -1,4 +1,4 @@
-package dev.rmaiun.datamanager.dtos
+package dev.rmaiun.datamanager.dtos.api
 
 import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
 import io.circe.{ Decoder, Encoder }
@@ -10,8 +10,8 @@ object AlgorithmDtos {
   case class CreateAlgorithmDtoIn(algorithm: String)
   case class CreateAlgorithmDtoOut(id: Long, algorithm: String)
 
-  case class DeleteAlgorithmDtoIn(id:Long)
-  case class DeleteAlgorithmDtoOut(id:Long, quantity:Int)
+  case class DeleteAlgorithmDtoIn(id: Long)
+  case class DeleteAlgorithmDtoOut(id: Long, quantity: Int)
 
   object codec {
     implicit val GetAlgorithmDtoInEncoder: Encoder[GetAlgorithmDtoIn] = deriveEncoder[GetAlgorithmDtoIn]
