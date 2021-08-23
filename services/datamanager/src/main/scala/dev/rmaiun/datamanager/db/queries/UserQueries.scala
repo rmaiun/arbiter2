@@ -101,7 +101,7 @@ object UserQueries extends CustomMeta {
   def insertUserRealmRole(urr: UserRealmRole): doobie.Update0 =
     sql"""
          | insert into user_realm_role
-         | value (${urr.user}, ${urr.realm}, ${urr.role})
+         | value (${urr.user}, ${urr.realm}, ${urr.role},${urr.botUsage})
          """.stripMargin.update
 
   def deleteByIdList(idList: List[Long]): doobie.Update0 =

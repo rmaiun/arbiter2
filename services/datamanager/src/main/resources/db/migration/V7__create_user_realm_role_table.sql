@@ -2,9 +2,10 @@ use arbiter;
 
 create table if not exists user_realm_role
 (
-    user  bigint not null,
-    realm bigint not null,
-    role  bigint not null,
+    user      bigint not null,
+    realm     bigint not null,
+    role      bigint not null,
+    bot_usage boolean default false,
     PRIMARY KEY (user, realm, role)
 );
 

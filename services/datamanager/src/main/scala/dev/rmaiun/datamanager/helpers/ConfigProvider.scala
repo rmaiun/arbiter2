@@ -9,7 +9,17 @@ object ConfigProvider {
 
   case class ServerConfig(port: Int)
 
-  case class Config(db: DbConfig, server: ServerConfig)
+  case class AppConfig(
+    privileged: String,
+    archiveReceiver: String,
+    notificationsEnabled: Boolean,
+    expectedGames: Int,
+    reportTimezone: String,
+    topPlayersLimit: Int,
+    minWritePermission: Int
+  )
+
+  case class Config(db: DbConfig, server: ServerConfig, app: AppConfig)
 
   def provideConfig: Config =
     ConfigSource.default.loadOrThrow[Config]
