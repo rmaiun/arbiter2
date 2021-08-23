@@ -27,9 +27,11 @@ object GameQueries extends CustomMeta {
                                     | inner join realm on gp.realm = realm.id
                                     | inner join season on gp.season = season.id
                                     | inner join user on gp.user = user.id
-                                    | where realm.name = ${c.realm}""".stripMargin
-    val withSeason            = c.season.fold(baseWithRealmFragment)(season => fr" and season.name = $season")
-    val withUser              = c.player.fold(withSeason)(player => fr" and user.surname = $player")
+                                    | where realm.name = ${c.realm}
+                                  """.stripMargin
+    val withSeason =
+      c.season.fold(baseWithRealmFragment)(season => baseWithRealmFragment ++ fr" and season.name = $season")
+    val withUser = c.player.fold(withSeason)(player => withSeason ++ fr" and user.surname = $player")
     withUser.query[GamePointsData]
   }
 
@@ -44,10 +46,10 @@ object GameQueries extends CustomMeta {
                                     | inner join user as u3 on gh.l1 = user.id
                                     | inner join user as u4 on gh.l2 = user.id
                                     | where realm.name = ${c.realm}""".stripMargin
-    val withSeason            = c.season.fold(baseWithRealmFragment)(season => fr" and season.name = $season")
+    val withSeason            = c.season.fold(baseWithRealmFragment)(season => baseWithRealmFragment ++ fr" and season.name = $season")
     val withShutout = c.shutout
       .map(flag => s"$flag")
-      .fold(withSeason)(shutout => fr" and gh.shutout is $shutout")
+      .fold(withSeason)(shutout => withSeason ++ fr" and gh.shutout is $shutout")
     withShutout.query[GameHistoryData]
   }
 
