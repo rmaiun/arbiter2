@@ -41,6 +41,12 @@ object Flow {
   def fromFRes[F[_], T](f: F[ErrorOr[T]]): Flow[F, T] =
     EitherT(f)
 
+  def fromFOpt[F[_]: Functor, T](f: F[Option[T]], err: Throwable): Flow[F, T] =
+    EitherT.fromOptionF(f, err)
+
+  def fromOpt[F[_]: Applicative, T](f: Option[T], err: Throwable): Flow[F, T] =
+    EitherT.fromOption(f, err)
+
   def fromF[F[_]: Monad, T](fa: F[T])(implicit ME: MonadThrowable[F]): Flow[F, T] = {
     val result = fa.map(_.asRight[Throwable]).recoverWith { case e =>
       ME.pure(e.asLeft[T])

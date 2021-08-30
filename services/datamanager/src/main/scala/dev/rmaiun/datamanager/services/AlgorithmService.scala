@@ -4,7 +4,7 @@ import cats.Monad
 import cats.effect.Sync
 import dev.rmaiun.datamanager.db.entities.Algorithm
 import dev.rmaiun.datamanager.dtos.api.AlgorithmDtos._
-import dev.rmaiun.datamanager.errors.AlgorithmErrors.AlgorithmNotFoundRuntimeException
+import dev.rmaiun.datamanager.errors.AlgorithmErrors.AlgorithmNotFoundException
 import dev.rmaiun.datamanager.repositories.AlgorithmRepo
 import dev.rmaiun.datamanager.validations.AlgorithmValidationSet._
 import dev.rmaiun.errorhandling.ThrowableOps._
@@ -17,6 +17,7 @@ import io.chrisdavenport.log4cats.Logger
 
 trait AlgorithmService[F[_]] {
   def getAlgorithmByName(dtoIn: GetAlgorithmDtoIn): Flow[F, GetAlgorithmDtoOut]
+  def getAlgorithmById(id: Long): Flow[F, GetAlgorithmDtoOut]
   def createAlgorithm(dtoIn: CreateAlgorithmDtoIn): Flow[F, CreateAlgorithmDtoOut]
   def deleteAlgorithm(dtoIn: DeleteAlgorithmDtoIn): Flow[F, DeleteAlgorithmDtoOut]
 }
@@ -34,7 +35,17 @@ object AlgorithmService {
         } yield maybeAlg
         algorithm.flatMap {
           case Some(alg) => Flow.pure(GetAlgorithmDtoOut(alg.id, alg.value))
-          case None      => Flow.error(AlgorithmNotFoundRuntimeException(Map("algorithm" -> s"${dtoIn.algorithm}")))
+          case None      => Flow.error(AlgorithmNotFoundException(Map("algorithm" -> s"${dtoIn.algorithm}")))
+        }
+      }
+
+      override def getAlgorithmById(id: Long): Flow[F, GetAlgorithmDtoOut] = {
+        val algorithm = for {
+          maybeAlg <- algorithmRepo.getById(id).transact(xa).attemptSql.adaptError
+        } yield maybeAlg
+        algorithm.flatMap {
+          case Some(alg) => Flow.pure(GetAlgorithmDtoOut(alg.id, alg.value))
+          case None      => Flow.error(AlgorithmNotFoundException(Map("algorithmId" -> s"${id}")))
         }
       }
 

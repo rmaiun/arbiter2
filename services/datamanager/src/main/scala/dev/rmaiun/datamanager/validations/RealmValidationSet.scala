@@ -7,7 +7,7 @@ import dev.rmaiun.validation.CustomValidationRules
 object RealmValidationSet extends CustomValidationRules {
   implicit val RegisterRealmDtoInValidator: TransformedValidator[RegisterRealmDtoIn] = validator[RegisterRealmDtoIn] {
     dto =>
-      dto.realmName is notEmpty and sizeBetween(2, 20)
+      dto.realmName is notEmpty and realm
       dto.algorithm is oneOf("WinRate", "OldPoints")
   }
 

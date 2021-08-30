@@ -4,19 +4,24 @@ import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
 import io.circe.{ Decoder, Encoder }
 
 object RealmDtos {
+  case class RealmDto(id: Long, name: String, selectedAlgorithm: String, teamSize: Int)
+
   case class RegisterRealmDtoIn(realmName: String, algorithm: String, teamSize: Int)
-  case class RegisterRealmDtoOut(id: Long, name: String, selectedAlgorithm: String, teamSize: Int)
+  case class RegisterRealmDtoOut(realm: RealmDto)
 
   case class UpdateRealmAlgorithmDtoIn(id: Long, algorithm: String)
-  case class UpdateRealmAlgorithmDtoOut(id: Long, name: String, algorithm: String, teamSize: Int)
+  case class UpdateRealmAlgorithmDtoOut(realm: RealmDto)
 
   case class DropRealmDtoIn(id: Long)
   case class DropRealmDtoOut(id: Long, removedQty: Int)
 
   case class GetRealmDtoIn(realm: String)
-  case class GetRealmDtoOut(id: Long, name: String, teamSize: Int, selectedAlgorithm: Long)
+  case class GetRealmDtoOut(realm: RealmDto)
 
   object codec {
+    implicit val RealmDtoEncoder: Encoder[RealmDto] = deriveEncoder[RealmDto]
+    implicit val RealmDtoDecoder: Decoder[RealmDto] = deriveDecoder[RealmDto]
+
     implicit val RegisterRealmDtoInEncoder: Encoder[RegisterRealmDtoIn] = deriveEncoder[RegisterRealmDtoIn]
     implicit val RegisterRealmDtoInDecoder: Decoder[RegisterRealmDtoIn] = deriveDecoder[RegisterRealmDtoIn]
 

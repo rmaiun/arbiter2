@@ -1,9 +1,10 @@
 package dev.rmaiun.datamanager.dtos.api
 
-import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
-import io.circe.{ Decoder, Encoder }
+import dev.rmaiun.datamanager.dtos.api.RealmDtos.RealmDto
+import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import io.circe.{Decoder, Encoder}
 
-import java.time.{ ZoneOffset, ZonedDateTime }
+import java.time.{ZoneOffset, ZonedDateTime}
 
 object UserDtos {
   case class UserDto(
@@ -15,29 +16,28 @@ object UserDtos {
     createdAt: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)
   )
 
-  case class RealmDto(name: String, role: String)
-
   case class RegisterUserDtoIn(surname: String, nickname: Option[String] = None, tid: Option[Long] = None)
   case class RegisterUserDtoOut(user: UserDto)
 
-  case class FindAllUsersDtoIn(activeStatus: Option[Boolean])
+  case class FindAllUsersDtoIn(realm: String, activeStatus: Option[Boolean])
   case class FindAllUsersDtoOut(items: List[UserDto])
 
-  case class FindUserDtoIn(surname: Option[String], tid: Option[Long])
+  case class FindUserDtoIn(surname: Option[String] = None, tid: Option[Long] = None)
   case class FindUserDtoOut(user: UserDto)
 
-  case class AssignUserToRealmDtoIn(user: String, realm: String, role: Option[String])
+  case class AssignUserToRealmDtoIn(user: String, realm: String, role: Option[String], switchAsActive: Option[Boolean])
   case class AssignUserToRealmDtoOut(
     user: String,
     realm: String,
     role: String,
-    assignedAt: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)
+    assignedAt: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC),
+    switchedAsActive: Option[Boolean]
   )
 
   case class SwitchActiveRealmDtoIn(user: String, realm: String)
   case class SwitchActiveRealmDtoOut(activeRealm: String)
 
-  case class ProcessActivationDtoIn(users: List[String], moderatorTid: Long, activate: Boolean)
+  case class ProcessActivationDtoIn(users: List[String], moderatorTid: Long, realm:String, activate: Boolean)
   case class ProcessActivationDtoOut(users: List[UserDto])
 
   case class LinkTidDtoIn(tid: Long, nameToLink: String, moderatorTid: Long)
@@ -61,9 +61,6 @@ object UserDtos {
   object codec {
     implicit val UserDtoEncoder: Encoder[UserDto] = deriveEncoder[UserDto]
     implicit val UserDtoDecoder: Decoder[UserDto] = deriveDecoder[UserDto]
-
-    implicit val RealmDtoEncoder: Encoder[RealmDto] = deriveEncoder[RealmDto]
-    implicit val RealmDtoDecoder: Decoder[RealmDto] = deriveDecoder[RealmDto]
 
     implicit val RegisterUserDtoInEncoder: Encoder[RegisterUserDtoIn] = deriveEncoder[RegisterUserDtoIn]
     implicit val RegisterUserDtoInDecoder: Decoder[RegisterUserDtoIn] = deriveDecoder[RegisterUserDtoIn]

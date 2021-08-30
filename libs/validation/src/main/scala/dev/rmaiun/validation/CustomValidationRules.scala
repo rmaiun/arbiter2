@@ -36,4 +36,6 @@ trait CustomValidationRules {
     test = data => data >= from && data <= to,
     failure = _ -> s"must be in range [$from, $to]"
   )
+
+  def realm: Validator[String] = sizeBetween(5,20)
 }

@@ -15,6 +15,7 @@ import dev.rmaiun.validation.Validator
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
 import io.chrisdavenport.log4cats.Logger
+
 trait RealmService[F[_]] {
   def registerRealm(dtoIn: RegisterRealmDtoIn): Flow[F, RegisterRealmDtoOut]
   def updateRealmAlgorithm(dtoIn: UpdateRealmAlgorithmDtoIn): Flow[F, UpdateRealmAlgorithmDtoOut]
@@ -35,7 +36,7 @@ object RealmService {
         _         <- Validator.validateDto[F, RegisterRealmDtoIn](dtoIn)
         algorithm <- algorithmService.getAlgorithmByName(GetAlgorithmDtoIn(dtoIn.algorithm))
         stored    <- createRealm(Realm(0, dtoIn.realmName, dtoIn.teamSize, algorithm.id))
-      } yield RegisterRealmDtoOut(stored.id, stored.name, algorithm.algorithm, stored.teamSize)
+      } yield RegisterRealmDtoOut(realmToDto(stored, algorithm.algorithm))
 
     override def updateRealmAlgorithm(dtoIn: UpdateRealmAlgorithmDtoIn): Flow[F, UpdateRealmAlgorithmDtoOut] =
       for {
@@ -43,7 +44,7 @@ object RealmService {
         algorithm <- algorithmService.getAlgorithmByName(GetAlgorithmDtoIn(dtoIn.algorithm))
         realm     <- getRealm(dtoIn.id)
         updRealm  <- updateRealm(realm.copy(selectedAlgorithm = algorithm.id))
-      } yield UpdateRealmAlgorithmDtoOut(updRealm.id, updRealm.name, algorithm.algorithm, updRealm.teamSize)
+      } yield UpdateRealmAlgorithmDtoOut(realmToDto(updRealm, algorithm.algorithm))
 
     override def dropRealm(dtoIn: DropRealmDtoIn): Flow[F, DropRealmDtoOut] =
       for {
@@ -51,11 +52,18 @@ object RealmService {
         n <- removeRealms(dtoIn.id :: Nil)
       } yield DropRealmDtoOut(dtoIn.id, n)
 
-    override def getRealm(dtoIn: GetRealmDtoIn): Flow[F, GetRealmDtoOut] =
-      realmRepo.getByName(dtoIn.realm).transact(xa).attemptSql.adaptError.flatMap {
-        case Some(r) => Flow.pure(GetRealmDtoOut(r.id, r.name, r.teamSize, r.selectedAlgorithm))
+    override def getRealm(dtoIn: GetRealmDtoIn): Flow[F, GetRealmDtoOut] = {
+      val result = realmRepo.getByName(dtoIn.realm).transact(xa).attemptSql.adaptError.flatMap {
+        case Some(r) => Flow.pure(r)
         case None    => Flow.error(RealmNotFoundRuntimeException(Map("name" -> s"${dtoIn.realm}")))
       }
+
+      for{
+       r <- result
+      a <- algorithmService.getAlgorithmByName()
+      }yield
+
+    }
 
     private def updateRealm(realm: Realm): Flow[F, Realm] =
       realmRepo.update(realm).transact(xa).attemptSql.adaptError
@@ -72,4 +80,7 @@ object RealmService {
     private def removeRealms(idList: List[Long]): Flow[F, Int] =
       realmRepo.removeN().transact(xa).attemptSql.adaptError
   }
+
+  private def realmToDto(realm: Realm, algorithm: String): RealmDto =
+    RealmDto(realm.id, realm.name, algorithm, realm.teamSize)
 }

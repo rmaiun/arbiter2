@@ -13,6 +13,12 @@ object RoleQueries {
          | from role where role.id = $id limit 1
     """.stripMargin.query[Role]
 
+  def getByValue(value: String): doobie.Query0[Role] =
+    sql"""
+         | select id, value, permission
+         | from role where role.value = $value limit 1
+    """.stripMargin.query[Role]
+
   def insert(role: Role): doobie.Update0 =
     sql"""
          | insert into role (id, value, permission)
@@ -26,6 +32,16 @@ object RoleQueries {
          |     permission=${role.permission}
          | where id = ${role.id}
     """.stripMargin.update
+
+  def findUserRoleByRealm(user: String, realm: String): doobie.Query0[Role] =
+    sql"""
+         | select role.id, role.value, role.permission 
+         | from user_realm_role
+         | inner join realm on user_realm_role.realm = realm.id
+         | inner join role on user_realm_role.role = role.id
+         | inner join user on user_realm_role.user = user.id
+         | where realm.name = $realm and user.surname = $user
+    """.stripMargin.query[Role]
 
   def listAll: doobie.Query0[Role] =
     sql"select id, value, permission from role"

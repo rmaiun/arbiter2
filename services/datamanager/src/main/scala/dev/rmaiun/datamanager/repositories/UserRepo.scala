@@ -17,6 +17,7 @@ trait UserRepo[F[_]] {
     nickname: String,
     active: Option[Boolean] = None
   ): ConnectionIO[Option[User]]
+  def findByTid(tid: Long): ConnectionIO[Option[User]]
   def findBySurnames(
     surnames: NonEmptyList[String],
     active: Option[Boolean] = None
@@ -66,6 +67,10 @@ object UserRepo {
       active: Option[Boolean]
     ): ConnectionIO[Option[User]] =
       UserQueries.getActiveByNickname(nickname, active).option
+
+
+    override def findByTid(tid: Long): ConnectionIO[Option[User]] =
+      UserQueries.getByTid(tid).option
 
     override def findBySurnames(
       surnames: NonEmptyList[String],
