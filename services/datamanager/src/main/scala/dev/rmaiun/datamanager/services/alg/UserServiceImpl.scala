@@ -2,13 +2,14 @@ package dev.rmaiun.datamanager.services.alg
 
 import cats.Monad
 import cats.effect.Sync
-import dev.rmaiun.datamanager.db.entities.{Role, User, UserRealmRole}
-import dev.rmaiun.datamanager.dtos.api.RealmDtos.{GetRealmDtoIn, RealmDto}
+import cats.implicits._
+import dev.rmaiun.datamanager.db.entities.{ Role, User, UserRealmRole }
+import dev.rmaiun.datamanager.dtos.api.RealmDtos.{ GetRealmDtoIn, RealmDto }
 import dev.rmaiun.datamanager.dtos.api.UserDtos._
 import dev.rmaiun.datamanager.errors.UserErrors.UserNotFoundException
-import dev.rmaiun.datamanager.helpers.ConfigProvider.AppConfig
+import dev.rmaiun.datamanager.helpers.DtoMapper.{ realmToDto, userToDto }
 import dev.rmaiun.datamanager.repositories.UserRepo
-import dev.rmaiun.datamanager.services.{RealmService, RoleService, UserRightsService, UserService}
+import dev.rmaiun.datamanager.services.{ RealmService, RoleService, UserRightsService, UserService }
 import dev.rmaiun.datamanager.validations.UserValidationSet._
 import dev.rmaiun.errorhandling.ThrowableOps._
 import dev.rmaiun.flowtypes.Flow
@@ -17,13 +18,15 @@ import dev.rmaiun.validation.Validator
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
 
-class UserServiceAlg[F[_]: Monad: Sync](
+import java.time.{ ZoneOffset, ZonedDateTime }
+
+class UserServiceImpl[F[_]: Monad: Sync](
   xa: HikariTransactor[F],
   userRepo: UserRepo[F],
   roleService: RoleService[F],
   realmService: RealmService[F],
   userRightsService: UserRightsService[F]
-)(cfg:AppConfig) extends UserService[F] {
+) extends UserService[F] {
   override def findUser(dtoIn: FindUserDtoIn): Flow[F, FindUserDtoOut] =
     for {
       _ <- Validator.validateDto[F, FindUserDtoIn](dtoIn)
@@ -70,21 +73,28 @@ class UserServiceAlg[F[_]: Monad: Sync](
       _        <- processAssignUserToRealm(userDto.user, role, realmDto.realm)
     } yield SwitchActiveRealmDtoOut(realmDto.realm.name)
 
-  override def processActivation(dtoIn: ProcessActivationDtoIn): Flow[F, ProcessActivationDtoOut] = {
-    for{
-      _        <- Validator.validateDto[F, ProcessActivationDtoIn](dtoIn)
-      user <- findUserByInputType(FindUserDtoIn(tid = Some(dtoIn.moderatorTid)))
-      _ <- userRightsService.checkUserWritePermissions(dtoIn.realm, user.surname)
+  override def processActivation(dtoIn: ProcessActivationDtoIn): Flow[F, ProcessActivationDtoOut] =
+    for {
+      _ <- Validator.validateDto[F, ProcessActivationDtoIn](dtoIn)
+      _ <- userRightsService.checkUserWritePermissions(dtoIn.realm, dtoIn.moderatorTid)
+      _ <- checkAllUsersPresent(dtoIn.realm, dtoIn.users)
+      _ <- processUsersActivations(dtoIn.users, dtoIn.activate)
 
-    }yield
-  }
+    } yield ProcessActivationDtoOut(dtoIn.users, dtoIn.activate)
 
-  override def linkTid(dtoIn: LinkTidDtoIn): Flow[F, LinkTidDtoOut] = ???
+  override def linkTid(dtoIn: LinkTidDtoIn): Flow[F, LinkTidDtoOut] =
+    for {
+      _    <- Validator.validateDto[F, LinkTidDtoIn](dtoIn)
+      _    <- userRightsService.checkUserWritePermissions(dtoIn.realm, dtoIn.moderatorTid)
+      user <- findUserByInputType(FindUserDtoIn(surname = Some(dtoIn.nameToLink)))
+      upd  <- processUserUpdate(user.copy(tid = Some(dtoIn.tid)))
+    } yield LinkTidDtoOut(upd.surname, dtoIn.tid, ZonedDateTime.now(ZoneOffset.UTC))
 
-  override def changeSubscriptionStatus(dtoIn: ChangeSubscriptionStatusDtoIn): Flow[F, ChangeSubscriptionStatusDtoOut] =
-    ???
-
-  override def findRelatedRealms(dtoIn: FindAvailableRealmsDtoIn): Flow[F, FindAvailableRealmsDtoOut] = ???
+  override def findRelatedRealms(dtoIn: FindAvailableRealmsDtoIn): Flow[F, FindAvailableRealmsDtoOut] =
+    for {
+      _      <- Validator.validateDto[F, FindAvailableRealmsDtoIn](dtoIn)
+      realms <- realmService.findRealmsByUser(dtoIn.surname)
+    } yield FindAvailableRealmsDtoOut(realms.map(realmToDto(_)))
 
   private def findUserByInputType(dtoIn: FindUserDtoIn): Flow[F, User] =
     (dtoIn.tid, dtoIn.surname) match {
@@ -108,16 +118,29 @@ class UserServiceAlg[F[_]: Monad: Sync](
           .flatMap(u => Flow.fromOpt(u, UserNotFoundException(Map("surname" -> s"$surnameV"))))
     }
 
-  private def userToDto(u: User): UserDto = UserDto(u.id, u.surname, u.nickname, u.tid, u.active, u.createdAt)
+  private def processUserUpdate(u: User): Flow[F, User] =
+    userRepo.update(u).transact(xa).attemptSql.adaptError
 
   private def processAssignUserToRealm(user: UserDto, role: Role, realmDto: RealmDto): Flow[F, Int] =
     userRepo.assignUserToRealm(UserRealmRole(realmDto.id, user.id, role.id)).transact(xa).attemptSql.adaptError
 
-  private def checkAllUsersPresent(users:List[String]) = {
-    users.map(u => findUser(FindUserDtoIn(surname = Some(u))))
-  }
+  private def checkAllUsersPresent(realm: String, users: List[String]): Flow[F, Unit] =
+    findAllUsers(FindAllUsersDtoIn(realm, None)).flatMap { dto =>
+      val found   = dto.items.map(_.surname)
+      val useless = users.filter(u => !found.contains(u))
+      if (useless.isEmpty) {
+        Flow.unit
+      } else {
+        Flow.error(UserNotFoundException(Map("wrongUsers" -> useless.mkString(","))))
+      }
+    }
 
-  private def processUsersActivations(users:List[String], activate:Boolean) = {
-    users.map(u => findUser(FindUserDtoIn(surname = Some(u))))
-  }
+  private def processUsersActivations(users: List[String], activate: Boolean): Flow[F, List[User]] =
+    users.map { u =>
+      for {
+        u <- findUser(FindUserDtoIn(surname = Some(u)))
+        upd <-
+          processUserUpdate(User(u.user.id, u.user.surname, u.user.nickname, u.user.tid, activate, u.user.createdAt))
+      } yield upd
+    }.sequence
 }

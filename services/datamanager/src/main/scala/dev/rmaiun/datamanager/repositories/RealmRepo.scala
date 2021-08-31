@@ -11,6 +11,7 @@ trait RealmRepo[F[_]] {
   def create(realm: Realm): ConnectionIO[Realm]
   def update(realm: Realm): ConnectionIO[Realm]
   def listAll: ConnectionIO[List[Realm]]
+  def listRealmsByUser(surname: String): ConnectionIO[List[Realm]]
   def removeN(idList: List[Long] = Nil): ConnectionIO[Int]
 }
 
@@ -35,5 +36,8 @@ object RealmRepo {
     override def removeN(idList: List[Long]): ConnectionIO[Int] = RealmQueries.deleteByIdList(idList).run
 
     override def getByName(name: String): ConnectionIO[Option[Realm]] = RealmQueries.getByName(name).option
+
+    override def listRealmsByUser(surname: String): ConnectionIO[List[Realm]] =
+      RealmQueries.listAllRealmsByUser(surname).to[List]
   }
 }

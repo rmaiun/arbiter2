@@ -1,10 +1,10 @@
 package dev.rmaiun.datamanager.dtos.api
 
 import dev.rmaiun.datamanager.dtos.api.RealmDtos.RealmDto
-import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
-import io.circe.{Decoder, Encoder}
+import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
+import io.circe.{ Decoder, Encoder }
 
-import java.time.{ZoneOffset, ZonedDateTime}
+import java.time.{ ZoneOffset, ZonedDateTime }
 
 object UserDtos {
   case class UserDto(
@@ -37,22 +37,14 @@ object UserDtos {
   case class SwitchActiveRealmDtoIn(user: String, realm: String)
   case class SwitchActiveRealmDtoOut(activeRealm: String)
 
-  case class ProcessActivationDtoIn(users: List[String], moderatorTid: Long, realm:String, activate: Boolean)
-  case class ProcessActivationDtoOut(users: List[UserDto])
+  case class ProcessActivationDtoIn(users: List[String], moderatorTid: Long, realm: String, activate: Boolean)
+  case class ProcessActivationDtoOut(users: List[String], activationStatus: Boolean)
 
-  case class LinkTidDtoIn(tid: Long, nameToLink: String, moderatorTid: Long)
+  case class LinkTidDtoIn(tid: Long, nameToLink: String, moderatorTid: Long, realm: String)
   case class LinkTidDtoOut(
     subscribedSurname: String,
     subscribedTid: Long,
-    createdDateTime: ZonedDateTime,
-    notificationsEnabled: Boolean
-  )
-
-  case class ChangeSubscriptionStatusDtoIn(enableSubscriptions: Boolean, tid: Long)
-  case class ChangeSubscriptionStatusDtoOut(
-    subscribedSurname: String,
-    createdDateTime: ZonedDateTime,
-    notificationsEnabled: Boolean
+    createdDateTime: ZonedDateTime
   )
 
   case class FindAvailableRealmsDtoIn(surname: String)
@@ -107,16 +99,6 @@ object UserDtos {
 
     implicit val LinkTidDtoOutEncoder: Encoder[LinkTidDtoOut] = deriveEncoder[LinkTidDtoOut]
     implicit val LinkTidDtoOutDecoder: Decoder[LinkTidDtoOut] = deriveDecoder[LinkTidDtoOut]
-
-    implicit val ChangeSubscriptionStatusDtoInEncoder: Encoder[ChangeSubscriptionStatusDtoIn] =
-      deriveEncoder[ChangeSubscriptionStatusDtoIn]
-    implicit val ChangeSubscriptionStatusDtoInDecoder: Decoder[ChangeSubscriptionStatusDtoIn] =
-      deriveDecoder[ChangeSubscriptionStatusDtoIn]
-
-    implicit val ChangeSubscriptionStatusDtoOutEncoder: Encoder[ChangeSubscriptionStatusDtoOut] =
-      deriveEncoder[ChangeSubscriptionStatusDtoOut]
-    implicit val ChangeSubscriptionStatusDtoOutDecoder: Decoder[ChangeSubscriptionStatusDtoOut] =
-      deriveDecoder[ChangeSubscriptionStatusDtoOut]
 
     implicit val FindAvailableRealmsDtoInEncoder: Encoder[FindAvailableRealmsDtoIn] =
       deriveEncoder[FindAvailableRealmsDtoIn]

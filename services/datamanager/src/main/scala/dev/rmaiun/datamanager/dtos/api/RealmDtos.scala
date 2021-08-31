@@ -4,7 +4,7 @@ import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
 import io.circe.{ Decoder, Encoder }
 
 object RealmDtos {
-  case class RealmDto(id: Long, name: String, selectedAlgorithm: String, teamSize: Int)
+  case class RealmDto(id: Long, name: String, selectedAlgorithm: Option[String], teamSize: Int)
 
   case class RegisterRealmDtoIn(realmName: String, algorithm: String, teamSize: Int)
   case class RegisterRealmDtoOut(realm: RealmDto)

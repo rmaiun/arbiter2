@@ -43,6 +43,16 @@ object RoleQueries {
          | where realm.name = $realm and user.surname = $user
     """.stripMargin.query[Role]
 
+  def findUserRoleByRealm(userTid: Long, realm: String): doobie.Query0[Role] =
+    sql"""
+         | select role.id, role.value, role.permission
+         | from user_realm_role
+         | inner join realm on user_realm_role.realm = realm.id
+         | inner join role on user_realm_role.role = role.id
+         | inner join user on user_realm_role.user = user.id
+         | where realm.name = $realm and user.tid = $userTid
+    """.stripMargin.query[Role]
+
   def listAll: doobie.Query0[Role] =
     sql"select id, value, permission from role"
       .query[Role]

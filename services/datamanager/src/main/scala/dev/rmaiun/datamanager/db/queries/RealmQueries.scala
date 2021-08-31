@@ -34,6 +34,14 @@ object RealmQueries {
     sql"select * from realm"
       .query[Realm]
 
+  def listAllRealmsByUser(surname: String): doobie.Query0[Realm] =
+    sql"""
+         | select realm.id, realm.name, realm.team_size, realm.selected_algorithm from user_realm_role
+         | inner join realm on user_realm_role.realm = realm.id
+         | inner join user on user_realm_role.user = user.id
+         | where user.surname = $surname
+    """.stripMargin.query[Realm]
+
   def deleteByIdList(idList: List[Long]): doobie.Update0 =
     NonEmptyList.fromList(idList) match {
       case Some(ids) =>

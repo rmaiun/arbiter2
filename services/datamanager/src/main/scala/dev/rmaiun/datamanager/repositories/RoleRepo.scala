@@ -13,6 +13,7 @@ trait RoleRepo[F[_]] {
   def listAll: ConnectionIO[List[Role]]
   def removeN(idList: List[Long] = Nil): ConnectionIO[Int]
   def findUserRoleInRealm(surname: String, realm: String): ConnectionIO[Option[Role]]
+  def findUserRoleInRealm(userTid: Long, realm: String): ConnectionIO[Option[Role]]
 }
 
 object RoleRepo {
@@ -40,5 +41,8 @@ object RoleRepo {
 
     override def findUserRoleInRealm(surname: String, realm: String): ConnectionIO[Option[Role]] =
       RoleQueries.findUserRoleByRealm(surname, realm).option
+
+    override def findUserRoleInRealm(userTid: Long, realm: String): ConnectionIO[Option[Role]] =
+      RoleQueries.findUserRoleByRealm(userTid, realm).option
   }
 }

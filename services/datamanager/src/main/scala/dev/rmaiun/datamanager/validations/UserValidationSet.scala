@@ -2,7 +2,7 @@ package dev.rmaiun.datamanager.validations
 
 import com.wix.accord.dsl._
 import com.wix.accord.transform.ValidationTransform.TransformedValidator
-import dev.rmaiun.datamanager.dtos.api.UserDtos.{AssignUserToRealmDtoIn, FindAllUsersDtoIn, FindUserDtoIn, ProcessActivationDtoIn, SwitchActiveRealmDtoIn}
+import dev.rmaiun.datamanager.dtos.api.UserDtos._
 import dev.rmaiun.validation.CustomValidationRules
 
 object UserValidationSet extends CustomValidationRules {
@@ -33,5 +33,18 @@ object UserValidationSet extends CustomValidationRules {
     validator[ProcessActivationDtoIn] { dto =>
       dto.users.each is notBlank and sizeBetween(2, 20)
       dto.moderatorTid should be > 0L
+    }
+
+  implicit val LinkTidDtoInValidator: TransformedValidator[LinkTidDtoIn] =
+    validator[LinkTidDtoIn] { dto =>
+      dto.tid should be > 0L
+      dto.moderatorTid should be > 0L
+      dto.nameToLink is notBlank and sizeBetween(2, 20)
+      dto.realm is notBlank and realm
+    }
+
+  implicit val FindAvailableRealmsDtoInValidator: TransformedValidator[FindAvailableRealmsDtoIn] =
+    validator[FindAvailableRealmsDtoIn] { dto =>
+      dto.surname is notBlank and sizeBetween(2, 20)
     }
 }
