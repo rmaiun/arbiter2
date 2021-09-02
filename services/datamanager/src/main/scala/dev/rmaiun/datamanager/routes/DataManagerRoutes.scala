@@ -3,14 +3,8 @@ package dev.rmaiun.datamanager.routes
 import cats.effect.Sync
 import cats.implicits._
 import cats.{ Applicative, Monad }
-import dev.rmaiun.datamanager.dtos.api.AlgorithmDtos.{ CreateAlgorithmDtoIn, DeleteAlgorithmDtoIn, GetAlgorithmDtoIn }
-import dev.rmaiun.datamanager.dtos.api.RealmDtos.{
-  DropRealmDtoIn,
-  GetRealmDtoIn,
-  RegisterRealmDtoIn,
-  UpdateRealmAlgorithmDtoIn
-}
-import dev.rmaiun.datamanager.services.{ AlgorithmService, RealmService }
+import dev.rmaiun.datamanager.dtos.api.RealmDtos.{ GetRealmDtoIn, RegisterRealmDtoIn, UpdateRealmAlgorithmDtoIn }
+import dev.rmaiun.datamanager.managers.RealmManager
 import dev.rmaiun.errorhandling.errors.AppRuntimeException
 import dev.rmaiun.errorhandling.errors.codec._
 import dev.rmaiun.flowtypes.Flow
@@ -41,7 +35,7 @@ object DataManagerRoutes {
           case e: Throwable =>
             for {
               _ <- Logger[F].error(err)("FLow ends with Throwable")
-              x <- Response[F](status = BadRequest)
+              x <- Response[F](status = ServiceUnavailable)
                      .withEntity(ErrorDtoOut("systemException", e.getMessage, Some("datamanager")))
                      .pure[F]
             } yield x
@@ -50,57 +44,26 @@ object DataManagerRoutes {
     }
   }
 
-  def algorithmRoutes[F[_]: Sync: Monad: Logger](algorithmService: AlgorithmService[F]): HttpRoutes[F] = {
-    val dsl = new Http4sDsl[F] {}
-    import dev.rmaiun.datamanager.dtos.api.AlgorithmDtos.codec._
-    import dsl._
-    HttpRoutes.of[F] {
-      case GET -> Root / "find" / name =>
-        flowToResponse(algorithmService.getAlgorithmByName(GetAlgorithmDtoIn(name)))
-
-      case req @ POST -> Root / "create" =>
-        val dtoOut = for {
-          dtoIn <- Flow.fromF(req.as[CreateAlgorithmDtoIn])
-          res   <- algorithmService.createAlgorithm(dtoIn)
-        } yield res
-        flowToResponse(dtoOut)
-
-      case req @ POST -> Root / "delete" =>
-        val dtoOut = for {
-          dtoIn <- Flow.fromF(req.as[DeleteAlgorithmDtoIn])
-          res   <- algorithmService.deleteAlgorithm(dtoIn)
-        } yield res
-        flowToResponse(dtoOut)
-    }
-  }
-
-  def realmRoutes[F[_]: Sync: Monad: Logger](realmService: RealmService[F]): HttpRoutes[F] = {
+  def realmRoutes[F[_]: Sync: Monad: Logger](realmManager: RealmManager[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
     import dev.rmaiun.datamanager.dtos.api.RealmDtos.codec._
     import dsl._
 
     HttpRoutes.of[F] {
       case GET -> Root / "find" / name =>
-        flowToResponse(realmService.getRealm(GetRealmDtoIn(name)))
+        flowToResponse(realmManager.findRealm(GetRealmDtoIn(name)))
 
       case req @ POST -> Root / "create" =>
         val dtoOut = for {
           dtoIn <- Flow.fromF(req.as[RegisterRealmDtoIn])
-          res   <- realmService.registerRealm(dtoIn)
+          res   <- realmManager.registerRealm(dtoIn)
         } yield res
         flowToResponse(dtoOut)
 
       case req @ POST -> Root / "updateAlgorithm" =>
         val dtoOut = for {
           dtoIn <- Flow.fromF(req.as[UpdateRealmAlgorithmDtoIn])
-          res   <- realmService.updateRealmAlgorithm(dtoIn)
-        } yield res
-        flowToResponse(dtoOut)
-
-      case req @ POST -> Root / "delete" =>
-        val dtoOut = for {
-          dtoIn <- Flow.fromF(req.as[DropRealmDtoIn])
-          res   <- realmService.dropRealm(dtoIn)
+          res   <- realmManager.updateRealmAlgorithm(dtoIn)
         } yield res
         flowToResponse(dtoOut)
     }

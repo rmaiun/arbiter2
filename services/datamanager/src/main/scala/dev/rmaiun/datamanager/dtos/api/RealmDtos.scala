@@ -12,9 +12,6 @@ object RealmDtos {
   case class UpdateRealmAlgorithmDtoIn(id: Long, algorithm: String)
   case class UpdateRealmAlgorithmDtoOut(realm: RealmDto)
 
-  case class DropRealmDtoIn(id: Long)
-  case class DropRealmDtoOut(id: Long, removedQty: Int)
-
   case class GetRealmDtoIn(realm: String)
   case class GetRealmDtoOut(realm: RealmDto)
 
@@ -37,12 +34,6 @@ object RealmDtos {
       deriveEncoder[UpdateRealmAlgorithmDtoOut]
     implicit val UpdateRealmAlgorithmDtoOutDecoder: Decoder[UpdateRealmAlgorithmDtoOut] =
       deriveDecoder[UpdateRealmAlgorithmDtoOut]
-
-    implicit val DropRealmDtoInEncoder: Encoder[DropRealmDtoIn] = deriveEncoder[DropRealmDtoIn]
-    implicit val DropRealmDtoInDecoder: Decoder[DropRealmDtoIn] = deriveDecoder[DropRealmDtoIn]
-
-    implicit val DropRealmDtoOutEncoder: Encoder[DropRealmDtoOut] = deriveEncoder[DropRealmDtoOut]
-    implicit val DropRealmDtoOutDecoder: Decoder[DropRealmDtoOut] = deriveDecoder[DropRealmDtoOut]
 
     implicit val GetRealmDtoInEncoder: Encoder[GetRealmDtoIn] = deriveEncoder[GetRealmDtoIn]
     implicit val GetRealmDtoInDecoder: Decoder[GetRealmDtoIn] = deriveDecoder[GetRealmDtoIn]

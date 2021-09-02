@@ -2,7 +2,6 @@ package dev.rmaiun.datamanager.services
 
 import cats.Monad
 import dev.rmaiun.datamanager.db.entities.Role
-import dev.rmaiun.datamanager.dtos.api.UserDtos.FindUserDtoIn
 import dev.rmaiun.datamanager.errors.UserErrors.{ NoWritePermissionForUserFoundException, UserNotAuthorizedException }
 import dev.rmaiun.datamanager.helpers.ConfigProvider.Config
 import dev.rmaiun.flowtypes.Flow
@@ -39,9 +38,9 @@ object UserRightsService {
 
     override def checkUserIsRegistered(tid: Long): Flow[F, Unit] =
       userService
-        .findUser(FindUserDtoIn(tid = Some(tid)))
+        .findByInputType(tid = Some(tid))
         .flatMap(u =>
-          if (u.user.active) {
+          if (u.active) {
             Flow.unit
           } else {
             Flow.error(UserNotAuthorizedException(Map("tid" -> s"$tid")))
