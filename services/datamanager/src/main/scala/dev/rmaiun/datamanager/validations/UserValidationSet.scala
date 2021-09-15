@@ -6,6 +6,14 @@ import dev.rmaiun.datamanager.dtos.api.UserDtos._
 import dev.rmaiun.validation.CustomValidationRules
 
 object UserValidationSet extends CustomValidationRules {
+
+  implicit val RegisterUserDtoInValidator: TransformedValidator[RegisterUserDtoIn] = validator[RegisterUserDtoIn] {
+    dto =>
+      dto.user.surname is sizeBetween(2, 20)
+      dto.user.tid.each should be > 0L
+      dto.moderatorTid should be > 0L
+  }
+
   implicit val FindUserDtoInValidator: TransformedValidator[FindUserDtoIn] = validator[FindUserDtoIn] { dto =>
     dto.surname.each is sizeBetween(2, 20)
     dto.tid.each should be > 0L
@@ -20,7 +28,7 @@ object UserValidationSet extends CustomValidationRules {
     validator[AssignUserToRealmDtoIn] { dto =>
       dto.realm is notBlank and realm
       dto.user is notBlank and sizeBetween(2, 20)
-      dto.role.each is notBlank and sizeBetween(4, 20)
+      dto.role.each should sizeBetween(4, 20)
     }
 
   implicit val SwitchActiveRealmDtoInValidator: TransformedValidator[SwitchActiveRealmDtoIn] =
@@ -31,7 +39,7 @@ object UserValidationSet extends CustomValidationRules {
 
   implicit val ProcessActivationDtoInValidator: TransformedValidator[ProcessActivationDtoIn] =
     validator[ProcessActivationDtoIn] { dto =>
-      dto.users.each is notBlank and sizeBetween(2, 20)
+      dto.users.each should sizeBetween(2, 20)
       dto.moderatorTid should be > 0L
     }
 

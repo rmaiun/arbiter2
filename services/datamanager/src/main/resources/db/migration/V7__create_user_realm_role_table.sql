@@ -9,7 +9,4 @@ create table if not exists user_realm_role
     PRIMARY KEY (user, realm, role)
 );
 
-ALTER TABLE user_realm_role
-    CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
 create index user_realm_role_id_idx on user_realm_role (realm, user, role);

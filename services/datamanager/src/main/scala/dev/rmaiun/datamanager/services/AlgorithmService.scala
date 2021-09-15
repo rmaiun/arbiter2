@@ -26,10 +26,10 @@ object AlgorithmService {
   def impl[F[_]: Monad: Logger: Sync](algorithmRepo: AlgorithmRepo[F], xa: HikariTransactor[F]): AlgorithmService[F] =
     new AlgorithmService[F] {
       override def getAlgorithmByName(algorithm: String): Flow[F, Algorithm] = {
-        val algorithm = for {
+        val algorithmResult = for {
           maybeAlg <- algorithmRepo.getByName(algorithm).transact(xa).attemptSql.adaptError
         } yield maybeAlg
-        algorithm.flatMap {
+        algorithmResult.flatMap {
           case Some(alg) => Flow.pure(alg)
           case None      => Flow.error(AlgorithmNotFoundException(Map("algorithm" -> s"$algorithm")))
         }

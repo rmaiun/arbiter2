@@ -20,9 +20,6 @@ create table if not exists game_history
     foreign key fk_l2 (l2) references user (id)
 );
 
-ALTER TABLE game_history
-    CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
 create index game_history_id_idx on game_history (id);
 create index game_history_realm_season_idx on game_history (realm, season);
 create index game_history_realm_created_idx on game_history (realm, created_at);

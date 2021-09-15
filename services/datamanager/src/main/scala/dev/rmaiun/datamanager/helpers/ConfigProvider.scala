@@ -16,7 +16,8 @@ object ConfigProvider {
     expectedGames: Int,
     reportTimezone: String,
     topPlayersLimit: Int,
-    minWritePermission: Int
+    minWritePermission: Int,
+    defaultRole: String
   )
 
   case class Config(db: DbConfig, server: ServerConfig, app: AppConfig)

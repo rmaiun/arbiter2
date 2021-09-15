@@ -17,7 +17,7 @@ object TransactorProvider {
     val bec = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(32))
     val sslParam = s"useSSL=$useSSL"
     val pcRetrievalParam = s"allowPublicKeyRetrieval=$allowPublicKeyRetrieval"
-    val url = s"jdbc:mysql://${c.db.host}:${c.db.port}/${c.db.database}?$sslParam&$pcRetrievalParam"
+    val url = s"jdbc:mysql://${c.db.host}:${c.db.port}/${c.db.database}?$sslParam&$pcRetrievalParam&useUnicode=true&characterEncoding=UTF-8"
     config.setJdbcUrl(url)
     config.setUsername(c.db.username)
     config.setPassword(c.db.password)

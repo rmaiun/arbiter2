@@ -12,6 +12,7 @@ trait UserRightsService[F[_]] {
   def checkUserWritePermissions(realm: String, userSurname: String): Flow[F, Unit]
   def checkUserWritePermissions(realm: String, userTid: Long): Flow[F, Unit]
   def checkUserIsRegistered(tid: Long): Flow[F, Unit]
+  def isUserPrivileged(tid: Long): Flow[F, Unit]
 }
 
 object UserRightsService {
@@ -20,6 +21,18 @@ object UserRightsService {
     userService: UserService[F],
     roleService: RoleService[F]
   )(implicit cfg: Config): UserRightsService[F] = new UserRightsService[F] {
+
+    override def isUserPrivileged(tid: Long): Flow[F, Unit] =
+      roleService
+        .findUserRoleByRealm(tid, "system")
+        .flatMap(r =>
+          if (r.permission >= cfg.app.minWritePermission) {
+            Flow.unit
+          } else {
+            Flow.error(NoWritePermissionForUserFoundException(Map("tid" -> s"$tid")))
+          }
+        )
+
     override def checkUserWritePermissions(realm: String, user: String): Flow[F, Unit] =
       roleService.findUserRoleByRealm(user, realm).flatMap { role =>
         processWritePermissions(role, Map("user" -> s"$user", "realm" -> s"$realm"))

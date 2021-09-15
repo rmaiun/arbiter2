@@ -9,9 +9,6 @@ create table if not exists game_points
     points int    not null
 );
 
-ALTER TABLE game_points
-    CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
 create index game_points_id_idx on game_points (id);
 create index game_points_realm_season_idx on game_points (realm, season);
 create index game_points_realm_season_user_idx on game_points (realm, season, user);

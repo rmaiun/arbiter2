@@ -18,6 +18,7 @@ trait UserService[F[_]] {
   def list(realm: String, activeStatus: Option[Boolean] = None): Flow[F, List[User]]
   def checkAllPresent(realm: String, users: List[String]): Flow[F, Unit]
   def update(u: User): Flow[F, User]
+  def create(u: User): Flow[F, User]
 }
 
 object UserService {
@@ -26,6 +27,10 @@ object UserService {
     xa: HikariTransactor[F],
     userRepo: UserRepo[F]
   ): UserService[F] = new UserService[F] {
+
+    override def create(u: User): Flow[F, User] =
+      userRepo.create(u).transact(xa).attemptSql.adaptError
+
     override def list(realm: String, activeStatus: Option[Boolean]): Flow[F, List[User]] =
       userRepo.listAll(realm, active = activeStatus).transact(xa).attemptSql.adaptError
 

@@ -34,8 +34,12 @@ object Module {
     lazy val realmMng = RealmManager.impl(realmService, algorithmService)
     lazy val userMng  = UserManager.impl(userService, userRightsService, realmService, roleService)
     // http
-    val httpApp = DataManagerRoutes.realmRoutes[F](realmMng)
+    val realmHttpApp = DataManagerRoutes.realmRoutes[F](realmMng)
+    val userHttpApp  = DataManagerRoutes.userRoutes[F](userMng)
 
-    Router[F]("/algorithm" -> httpApp).orNotFound
+    Router[F](
+      "/realms" -> realmHttpApp,
+      "/users"  -> userHttpApp
+    ).orNotFound
   }
 }
