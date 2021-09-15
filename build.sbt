@@ -2,7 +2,7 @@ name := "arbiter2"
 
 version := "0.1"
 
-scalaVersion := "2.13.2"
+scalaVersion := "2.13.6"
 
 lazy val tftypes = (project in file("libs/flowtypes"))
   .settings(
@@ -121,7 +121,7 @@ lazy val dataManagerDependencies = Seq(
 )
 
 lazy val settings = Seq(
-  scalaVersion := "2.13.2",
+  scalaVersion := "2.13.6",
   scalacOptions ++= Seq(
     "-deprecation",
     "-encoding",
