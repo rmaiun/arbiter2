@@ -1,10 +1,10 @@
 package dev.rmaiun.datamanager.dtos.api
 
-import dev.rmaiun.datamanager.dtos.api.RealmDtos.RealmDto
+import dev.rmaiun.datamanager.dtos.api.RealmDtoSet.RealmDto
 
 import java.time.{ ZoneOffset, ZonedDateTime }
 
-object UserDtos {
+object UserDtoSet {
   case class UserDto(
     id: Long,
     surname: String,

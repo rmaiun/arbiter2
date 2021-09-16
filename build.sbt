@@ -4,6 +4,14 @@ version := "0.1"
 
 scalaVersion := "2.13.6"
 
+lazy val common = (project in file("libs/common"))
+  .settings(
+    name := "common",
+    settings
+  )
+  .dependsOn(errorHandling)
+  .disablePlugins(AssemblyPlugin)
+
 lazy val tftypes = (project in file("libs/flowtypes"))
   .settings(
     name := "flowtypes",
@@ -42,7 +50,7 @@ lazy val datamanager = (project in file("services/datamanager"))
     flywayPassword := "rootpassword",
     flywayLocations += "db/migration"
   )
-  .dependsOn(tftypes, validation, errorHandling)
+  .dependsOn(common, tftypes, validation, errorHandling)
   .enablePlugins(FlywayPlugin)
   .disablePlugins(AssemblyPlugin)
 

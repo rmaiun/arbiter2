@@ -2,8 +2,8 @@ package dev.rmaiun.datamanager.routes
 
 import cats.effect.Sync
 import cats.{Applicative, Monad}
-import dev.rmaiun.datamanager.dtos.api.RealmDtos.{GetRealmDtoIn, RegisterRealmDtoIn, UpdateRealmAlgorithmDtoIn}
-import dev.rmaiun.datamanager.dtos.api.UserDtos._
+import dev.rmaiun.datamanager.dtos.api.RealmDtoSet.{GetRealmDtoIn, RegisterRealmDtoIn, UpdateRealmAlgorithmDtoIn}
+import dev.rmaiun.datamanager.dtos.api.UserDtoSet._
 import dev.rmaiun.datamanager.errors.RoutingErrors.RequiredParamsNotFound
 import dev.rmaiun.datamanager.managers.{RealmManager, UserManager}
 import dev.rmaiun.errorhandling.errors.AppRuntimeException

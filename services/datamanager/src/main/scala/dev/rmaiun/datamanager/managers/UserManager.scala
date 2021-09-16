@@ -3,7 +3,7 @@ package dev.rmaiun.datamanager.managers
 import cats.Monad
 import cats.implicits._
 import dev.rmaiun.datamanager.db.entities.User
-import dev.rmaiun.datamanager.dtos.api.UserDtos._
+import dev.rmaiun.datamanager.dtos.api.UserDtoSet._
 import dev.rmaiun.datamanager.helpers.ConfigProvider.Config
 import dev.rmaiun.datamanager.helpers.DtoMapper.{ realmToDto, userToDto }
 import dev.rmaiun.datamanager.services.{ RealmService, RoleService, UserRightsService, UserService }

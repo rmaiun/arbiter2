@@ -27,6 +27,11 @@ trait CustomValidationRules {
     failure = _ -> "must contain only letters"
   )
 
+  def onlyLettersAndNumbers: Validator[String] = new NullSafeValidator[String](
+    test = data => data.forall(c => Character.isLetter(c) || Character.isDigit(c)),
+    failure = _ -> "must contain only letters or numbers"
+  )
+
   def season: Validator[String] = new NullSafeValidator[String](
     test = data => data.length == 7 && data.matches("^[Ss][1-4]\\|\\d{4}$"),
     failure = _ -> "must match season pattern 'S{1-4}|yyyy'"

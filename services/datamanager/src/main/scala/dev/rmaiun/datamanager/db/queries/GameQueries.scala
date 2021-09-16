@@ -1,18 +1,18 @@
 package dev.rmaiun.datamanager.db.queries
 
 import cats.data.NonEmptyList
-import dev.rmaiun.datamanager.db.entities.{ GameHistory, GamePoints }
-import dev.rmaiun.datamanager.db.projections.{ GameHistoryData, GamePointsData }
-import dev.rmaiun.datamanager.dtos.internal.{ GameHistoryCriteria, GamePointsCriteria }
+import dev.rmaiun.datamanager.db.entities.{ EloPoints, GameHistory }
+import dev.rmaiun.datamanager.db.projections.{ EloPointsData, GameHistoryData }
+import dev.rmaiun.datamanager.dtos.internal.{ EloPointsCriteria, GameHistoryCriteria }
 import doobie.Fragments
 import doobie.implicits._
 
 object GameQueries extends CustomMeta {
 
-  def insertPoints(gp: GamePoints): doobie.Update0 =
+  def insertPoints(ep: EloPoints): doobie.Update0 =
     sql"""
-         | insert into game_points(id, realm, season, user, points)
-         | values (${gp.id}, ${gp.realm}, ${gp.season}, ${gp.user}, ${gp.points})
+         | insert into elo_points(id, user, points)
+         | values (${ep.id}, ${ep.user}, ${ep.points})
         """.stripMargin.update
 
   def insertHistory(gh: GameHistory): doobie.Update0 =
@@ -21,18 +21,28 @@ object GameQueries extends CustomMeta {
          | values (${gh.id}, ${gh.realm}, ${gh.season}, ${gh.w1}, ${gh.w2}, ${gh.l1}, ${gh.l2}, ${gh.shutout}, ${gh.createdAt})
         """.stripMargin.update
 
-  def listPointsByCriteria(c: GamePointsCriteria): doobie.Query0[GamePointsData] = {
+  def listPointsByCriteria(c: EloPointsCriteria): doobie.Query0[EloPointsData] = {
     val baseWithRealmFragment = fr"""
-                                    | select realm.name, season.name, user.surname, gp.points from game_points as gp
-                                    | inner join realm on gp.realm = realm.id
-                                    | inner join season on gp.season = season.id
-                                    | inner join user on gp.user = user.id
-                                    | where realm.name = ${c.realm}
+                                    | select ep.id, user.surname, ep.points from elo_points as ep
+                                    | inner join user on ep.user = user.id
                                   """.stripMargin
-    val withSeason =
-      c.season.fold(baseWithRealmFragment)(season => baseWithRealmFragment ++ fr" and season.name = $season")
-    val withUser = c.player.fold(withSeason)(player => withSeason ++ fr" and user.surname = $player")
-    withUser.query[GamePointsData]
+    val withUser =
+      c.player.fold(baseWithRealmFragment)(player => baseWithRealmFragment ++ fr" where user.surname = $player")
+    withUser.query[EloPointsData]
+  }
+
+  def listCalculatedPoints(players: Option[NonEmptyList[String]]): doobie.Query0[EloPointsData] = {
+    val baseWithRealmFragment = fr"""
+                                    | select ep.id, u.surname, sum(ep.points)
+                                    |from elo_points as ep
+                                    |         inner join user as u on ep.user = u.id
+                                    |group by u.surname
+                                  """.stripMargin
+    val withUser =
+      players.fold(baseWithRealmFragment)(players =>
+        baseWithRealmFragment ++ fr"having" ++ Fragments.in(fr"u.surname", players)
+      )
+    withUser.query[EloPointsData]
   }
 
   def listHistoryByCriteria(c: GameHistoryCriteria): doobie.Query0[GameHistoryData] = {
@@ -46,7 +56,8 @@ object GameQueries extends CustomMeta {
                                     | inner join user as u3 on gh.l1 = user.id
                                     | inner join user as u4 on gh.l2 = user.id
                                     | where realm.name = ${c.realm}""".stripMargin
-    val withSeason            = c.season.fold(baseWithRealmFragment)(season => baseWithRealmFragment ++ fr" and season.name = $season")
+    val withSeason =
+      c.season.fold(baseWithRealmFragment)(season => baseWithRealmFragment ++ fr" and season.name = $season")
     val withShutout = c.shutout
       .map(flag => s"$flag")
       .fold(withSeason)(shutout => withSeason ++ fr" and gh.shutout is $shutout")
@@ -56,10 +67,10 @@ object GameQueries extends CustomMeta {
   def deletePointsByIdList(idList: List[Long]): doobie.Update0 =
     NonEmptyList.fromList(idList) match {
       case Some(ids) =>
-        val query = fr"delete from game_points where " ++ Fragments.in(fr"game_points.id", ids)
+        val query = fr"delete from elo_points where " ++ Fragments.in(fr"elo_points.id", ids)
         query.update
       case None =>
-        sql"delete from game_points".update
+        sql"delete from elo_points".update
     }
 
   def deleteHistoryByIdList(idList: List[Long]): doobie.Update0 =

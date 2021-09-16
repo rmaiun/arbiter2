@@ -3,7 +3,7 @@ package dev.rmaiun.datamanager.managers
 import cats.Monad
 import cats.effect.Sync
 import dev.rmaiun.datamanager.db.entities.Realm
-import dev.rmaiun.datamanager.dtos.api.RealmDtos._
+import dev.rmaiun.datamanager.dtos.api.RealmDtoSet._
 import dev.rmaiun.datamanager.helpers.DtoMapper.realmToDto
 import dev.rmaiun.datamanager.services.{ AlgorithmService, RealmService }
 import dev.rmaiun.flowtypes.Flow.Flow

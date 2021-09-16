@@ -1,7 +1,7 @@
 package dev.rmaiun.datamanager.dtos.api
 
-import dev.rmaiun.datamanager.dtos.api.RealmDtos._
-import dev.rmaiun.datamanager.dtos.api.UserDtos._
+import dev.rmaiun.datamanager.dtos.api.RealmDtoSet._
+import dev.rmaiun.datamanager.dtos.api.UserDtoSet._
 import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
 import io.circe.{ Decoder, Encoder }
 

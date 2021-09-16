@@ -1,7 +1,7 @@
 package dev.rmaiun.datamanager.validations
 import com.wix.accord.dsl._
 import com.wix.accord.transform.ValidationTransform.TransformedValidator
-import dev.rmaiun.datamanager.dtos.api.RealmDtos.{ GetRealmDtoIn, RegisterRealmDtoIn, UpdateRealmAlgorithmDtoIn }
+import dev.rmaiun.datamanager.dtos.api.RealmDtoSet.{ GetRealmDtoIn, RegisterRealmDtoIn, UpdateRealmAlgorithmDtoIn }
 import dev.rmaiun.validation.CustomValidationRules
 
 object RealmValidationSet extends CustomValidationRules {

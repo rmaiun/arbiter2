@@ -1,6 +1,6 @@
 package dev.rmaiun.datamanager.dtos.api
 
-object RealmDtos {
+object RealmDtoSet {
   case class RealmDto(id: Long, name: String, selectedAlgorithm: Option[String], teamSize: Int)
 
   case class RegisterRealmDtoIn(realmName: String, algorithm: String, teamSize: Int)
