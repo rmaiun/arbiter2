@@ -42,8 +42,9 @@ lazy val datamanager = (project in file("services/datamanager"))
   .settings(
     name := "datamanager",
     settings,
-    libraryDependencies ++= dataManagerDependencies
-  )
+    libraryDependencies ++= dataManagerDependencies,
+    Test / parallelExecution := false
+)
   .settings(
     flywayUrl := "jdbc:mysql://127.0.0.1:3306/arbiter?useSSL=false&useUnicode=true&characterEncoding=UTF-8",
     flywayUser := "root",

@@ -25,7 +25,7 @@ class SeasonRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach w
   private val seasonRepo: SeasonRepo[IO] = SeasonRepo.impl[IO]
   private val realmRepo: RealmRepo[IO]   = RealmRepo.impl[IO]
   private val algRepo: AlgorithmRepo[IO] = AlgorithmRepo.impl[IO]
-  private val season                     = Season(0, "S1|2020", 1, 1)
+  private val season                     = Season(0, "S2|2020", 1, 1)
   private val defaultRealm               = Realm(1, "realm1", 1, 1)
 
   "SeasonRepo" should "insert new season into db and successfully get it" in {
@@ -75,20 +75,20 @@ class SeasonRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach w
       _  <- createTestAlgorithm
       _  <- createTestRealm
       r  <- seasonRepo.create(season)
-      r2 <- seasonRepo.create(season.copy(name = "S2|2020"))
-      r3 <- seasonRepo.create(season.copy(name = "S3|2020"))
+      r2 <- seasonRepo.create(season.copy(name = "S3|2020"))
+      r3 <- seasonRepo.create(season.copy(name = "S4|2020"))
     } yield (r, r2, r3)
     val realmsCreated = action.transact(transactor).unsafeRunSync()
 
     List(realmsCreated._1.id, realmsCreated._2.id, realmsCreated._3.id) should not contain 0
-    val listAll = seasonRepo.listAll.transact(transactor).unsafeRunSync()
+    val listAll = seasonRepo.listAll().transact(transactor).unsafeRunSync()
     listAll.size should be(3)
     val delete2Elems = seasonRepo
       .removeN(List(realmsCreated._2.id, realmsCreated._3.id))
       .transact(transactor)
       .unsafeRunSync()
     delete2Elems shouldEqual 2
-    val listAll2 = seasonRepo.listAll.transact(transactor).unsafeRunSync()
+    val listAll2 = seasonRepo.listAll().transact(transactor).unsafeRunSync()
     listAll2.size should be(1)
     listAll2.head.name shouldEqual season.name
   }

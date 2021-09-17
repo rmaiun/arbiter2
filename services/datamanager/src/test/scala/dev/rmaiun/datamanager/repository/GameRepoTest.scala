@@ -1,6 +1,8 @@
 package dev.rmaiun.datamanager.repository
 
+import cats.data.NonEmptyList
 import cats.effect.{ ContextShift, IO }
+import dev.rmaiun.common.DateFormatter
 import dev.rmaiun.datamanager.db.entities._
 import dev.rmaiun.datamanager.dtos.internal.{ EloPointsCriteria, GameHistoryCriteria }
 import dev.rmaiun.datamanager.helpers.ConfigProvider.Config
@@ -13,7 +15,6 @@ import doobie.util.ExecutionContexts
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{ BeforeAndAfterEach, OptionValues }
-
 
 class GameRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach with OptionValues {
   implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContexts.synchronous)
@@ -30,30 +31,30 @@ class GameRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
   "Game Points" should "create and list data successfully" in {
     val action = for {
       _ <- initTestDataSet()
-      _ <- gameRepo.createEloPoint(EloPoints(0, 1, 67))
-      _ <- gameRepo.createEloPoint(EloPoints(0, 2, 68))
-      _ <- gameRepo.createEloPoint(EloPoints(0, 3, 69))
-      _ <- gameRepo.createEloPoint(EloPoints(0, 4, 70))
-      _ <- gameRepo.createEloPoint(EloPoints(0, 1, 71))
-      _ <- gameRepo.createEloPoint(EloPoints(0, 2, 72))
-      _ <- gameRepo.createEloPoint(EloPoints(0, 5, 73))
-      _ <- gameRepo.createEloPoint(EloPoints(0, 6, 74))
+      _ <- gameRepo.createEloPoint(EloPoints(0, 1, 67, DateFormatter.now))
+      _ <- gameRepo.createEloPoint(EloPoints(0, 2, 68, DateFormatter.now))
+      _ <- gameRepo.createEloPoint(EloPoints(0, 3, 69, DateFormatter.now))
+      _ <- gameRepo.createEloPoint(EloPoints(0, 4, 70, DateFormatter.now))
+      _ <- gameRepo.createEloPoint(EloPoints(0, 1, 71, DateFormatter.now))
+      _ <- gameRepo.createEloPoint(EloPoints(0, 2, 72, DateFormatter.now))
+      _ <- gameRepo.createEloPoint(EloPoints(0, 5, 73, DateFormatter.now))
+      _ <- gameRepo.createEloPoint(EloPoints(0, 6, 74, DateFormatter.now))
     } yield ()
 
     val result = action.transact(transactor).attemptSql.unsafeRunSync()
     result.isRight should be(true)
-    val listAction = gameRepo.listEloPointsByCriteria(EloPointsCriteria(Some("u6")))
+    val listAction = gameRepo.listEloPointsByCriteria(EloPointsCriteria(NonEmptyList.fromList(List("u6"))))
     val listData   = listAction.transact(transactor).unsafeRunSync()
     listData.size should be(1)
 
-    val listAction2 = gameRepo.listEloPointsByCriteria(EloPointsCriteria(Some("u1")))
+    val listAction2 = gameRepo.listEloPointsByCriteria(EloPointsCriteria(NonEmptyList.fromList(List("u1"))))
     val listData2   = listAction2.transact(transactor).unsafeRunSync()
     listData2.size should be(2)
 
     val listAction3 = gameRepo.listCalculatedPoints()
     val listData3   = listAction3.transact(transactor).unsafeRunSync()
     listData3.size should be(6)
-    listData3.map(_.points) should contain allElementsOf  Seq(138, 140, 69, 70, 73, 74)
+    listData3.map(_.points) should contain allElementsOf Seq(138, 140, 69, 70, 73, 74)
   }
 
   "Game History" should "create and list data successfully" in {
@@ -73,7 +74,7 @@ class GameRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     val listAction2 =
       gameRepo.listHistoryByCriteria(GameHistoryCriteria("testRealm", Some("S1|2020")))
     val listData2 = listAction2.transact(transactor).unsafeRunSync()
-    listData2.size should be(1)
+    listData2.size should be(3)
 
     val listAction3 =
       gameRepo.listHistoryByCriteria(GameHistoryCriteria("testRealm", Some("S2|2020"), shutout = Some(true)))

@@ -31,6 +31,6 @@ object GameValidationSet extends CustomValidationRules {
     }
   implicit val ListEloPointsDtoInValidator: TransformedValidator[ListEloPointsDtoIn] =
     validator[ListEloPointsDtoIn] { dto =>
-      dto.users.each is onlyLettersAndNumbers
+      dto.users.each.each should onlyLettersAndNumbers
     }
 }

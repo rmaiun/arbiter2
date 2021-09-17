@@ -11,8 +11,8 @@ object GameQueries extends CustomMeta {
 
   def insertPoints(ep: EloPoints): doobie.Update0 =
     sql"""
-         | insert into elo_points(id, user, points, stored)
-         | values (${ep.id}, ${ep.user}, ${ep.points}, ${ep.stored})
+         | insert into elo_points(id, user, points, created)
+         | values (${ep.id}, ${ep.user}, ${ep.points}, ${ep.created})
         """.stripMargin.update
 
   def insertHistory(gh: GameHistory): doobie.Update0 =
@@ -23,7 +23,7 @@ object GameQueries extends CustomMeta {
 
   def listPointsByCriteria(c: EloPointsCriteria): doobie.Query0[EloPointsData] = {
     val baseWithRealmFragment = fr"""
-                                    | select ep.id, user.surname, ep.points, ep.stored
+                                    | select ep.id, user.surname, ep.points, ep.created
                                     |  from elo_points as ep
                                     | inner join user on ep.user = user.id
                                   """.stripMargin
@@ -36,7 +36,7 @@ object GameQueries extends CustomMeta {
 
   def listCalculatedPoints(players: Option[NonEmptyList[String]]): doobie.Query0[EloPointsData] = {
     val baseWithRealmFragment = fr"""
-                                    | select ep.id, u.surname, sum(ep.points), ep.stored
+                                    | select ep.id, u.surname, sum(ep.points), ep.created
                                     |from elo_points as ep
                                     |         inner join user as u on ep.user = u.id
                                     |group by u.surname
@@ -54,16 +54,19 @@ object GameQueries extends CustomMeta {
                                     | from game_history as gh
                                     | inner join realm on gh.realm = realm.id
                                     | inner join season on gh.season = season.id
-                                    | inner join user as u1 on gh.w1 = user.id
-                                    | inner join user as u2 on gh.w2 = user.id
-                                    | inner join user as u3 on gh.l1 = user.id
-                                    | inner join user as u4 on gh.l2 = user.id
+                                    | inner join user as u1 on gh.w1 = u1.id
+                                    | inner join user as u2 on gh.w2 = u2.id
+                                    | inner join user as u3 on gh.l1 = u3.id
+                                    | inner join user as u4 on gh.l2 = u4.id
                                     | where realm.name = ${c.realm}""".stripMargin
     val withSeason =
       c.season.fold(baseWithRealmFragment)(season => baseWithRealmFragment ++ fr" and season.name = $season")
     val withShutout = c.shutout
-      .map(flag => s"$flag")
-      .fold(withSeason)(shutout => withSeason ++ fr" and gh.shutout is $shutout")
+      .map(flag => if(flag) "true" else "false")
+      .fold(withSeason)(shutout => {
+        val shutoutStr = "and gh.shutout is "+shutout
+        withSeason ++ fr"$shutoutStr"
+      })
     withShutout.query[GameHistoryData]
   }
 

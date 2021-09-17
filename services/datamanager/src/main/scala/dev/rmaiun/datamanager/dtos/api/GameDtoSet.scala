@@ -23,7 +23,7 @@ object GameDtoSet {
     createdAt: ZonedDateTime
   )
 
-  case class EloPointsDto(user: String, value: Int, stored: ZonedDateTime)
+  case class EloPointsDto(user: String, value: Int, created: ZonedDateTime)
 
   case class AddGameHistoryDtoIn(historyElement: GameHistoryDto, moderatorTid: Long)
   case class AddGameHistoryDtoOut(storedRound: GameHistoryDto)

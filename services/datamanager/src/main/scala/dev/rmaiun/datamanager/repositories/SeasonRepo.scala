@@ -39,7 +39,7 @@ object SeasonRepo {
     override def listAll(
       seasons: Option[NonEmptyList[String]],
       realms: Option[NonEmptyList[String]]
-    ): ConnectionIO[List[Season]] = SeasonQueries.listAll.to[List]
+    ): ConnectionIO[List[Season]] = SeasonQueries.listAll(seasons, realms).to[List]
 
     override def removeN(idList: List[Long]): ConnectionIO[Int] = SeasonQueries.deleteByIdList(idList).run
   }
