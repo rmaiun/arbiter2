@@ -38,9 +38,23 @@ object SeasonQueries extends CustomMeta {
          | where id = ${season.id}
     """.stripMargin.update
 
-  def listAll: doobie.Query0[Season] =
-    sql"select id, name, algorithm, realm, end_notification as endNotification from season"
+  def listAll(seasons: Option[NonEmptyList[String]], realms: Option[NonEmptyList[String]]): doobie.Query0[Season] = {
+    val baseFr     = fr"select id, name, algorithm, realm, end_notification as endNotification from season"
+    val whereFr    = fr"where"
+    val withRealms = realms.fold(baseFr)(_ => fr"inner join realm on season.realm = realm.id")
+    val fullFr = if (seasons.isDefined && realms.isDefined) {
+      withRealms ++ whereFr ++ Fragments.in(fr"realm.name", realms.get) ++ fr"and" ++ Fragments.in(
+        fr"season.name",
+        seasons.get
+      )
+    } else if (seasons.isDefined) {
+      withRealms ++ whereFr ++ Fragments.in(fr"season.name", seasons.get)
+    } else {
+      withRealms
+    }
+    fullFr
       .query[Season]
+  }
 
   def deleteByIdList(idList: List[Long]): doobie.Update0 =
     NonEmptyList.fromList(idList) match {

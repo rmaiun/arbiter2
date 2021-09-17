@@ -23,4 +23,14 @@ object GameValidationSet extends CustomValidationRules {
       dto.points.value should be > 0
       dto.moderatorTid should be > 0L
     }
+
+  implicit val ListGameHistoryDtoInValidator: TransformedValidator[ListGameHistoryDtoIn] =
+    validator[ListGameHistoryDtoIn] { dto =>
+      dto.realm is realm
+      dto.season is season
+    }
+  implicit val ListEloPointsDtoInValidator: TransformedValidator[ListEloPointsDtoIn] =
+    validator[ListEloPointsDtoIn] { dto =>
+      dto.users.each is onlyLettersAndNumbers
+    }
 }

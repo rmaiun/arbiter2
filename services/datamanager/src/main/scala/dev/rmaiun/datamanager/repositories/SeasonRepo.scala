@@ -1,6 +1,7 @@
 package dev.rmaiun.datamanager.repositories
 
 import cats.Monad
+import cats.data.NonEmptyList
 import dev.rmaiun.datamanager.db.entities.Season
 import dev.rmaiun.datamanager.db.queries.SeasonQueries
 import doobie.ConnectionIO
@@ -10,7 +11,10 @@ trait SeasonRepo[F[_]] {
   def getBySeasonNameRealm(name: String, realm: String): ConnectionIO[Option[Season]]
   def create(season: Season): ConnectionIO[Season]
   def update(season: Season): ConnectionIO[Season]
-  def listAll: ConnectionIO[List[Season]]
+  def listAll(
+    seasons: Option[NonEmptyList[String]] = None,
+    realms: Option[NonEmptyList[String]] = None
+  ): ConnectionIO[List[Season]]
   def removeN(idList: List[Long] = Nil): ConnectionIO[Int]
 }
 object SeasonRepo {
@@ -32,7 +36,10 @@ object SeasonRepo {
       .run
       .map(_ => season)
 
-    override def listAll: ConnectionIO[List[Season]] = SeasonQueries.listAll.to[List]
+    override def listAll(
+      seasons: Option[NonEmptyList[String]],
+      realms: Option[NonEmptyList[String]]
+    ): ConnectionIO[List[Season]] = SeasonQueries.listAll.to[List]
 
     override def removeN(idList: List[Long]): ConnectionIO[Int] = SeasonQueries.deleteByIdList(idList).run
   }

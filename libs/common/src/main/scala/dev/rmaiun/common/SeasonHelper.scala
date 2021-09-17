@@ -5,7 +5,7 @@ import java.time.{ LocalDate, Month }
 object SeasonHelper {
 
   def currentSeason: String = {
-    val now   = DateFormatter.now()
+    val now   = DateFormatter.now
     val month = now.getMonth.getValue
     val year  = now.getYear
     val q     = quarterNum(month)

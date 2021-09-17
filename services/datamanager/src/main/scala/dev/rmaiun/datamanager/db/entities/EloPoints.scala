@@ -1,3 +1,5 @@
 package dev.rmaiun.datamanager.db.entities
 
-case class EloPoints(id: Long, user: Long, points: Int)
+import java.time.ZonedDateTime
+
+case class EloPoints(id: Long, user: Long, points: Int, stored: ZonedDateTime)

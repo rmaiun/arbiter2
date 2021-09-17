@@ -3,6 +3,7 @@ package dev.rmaiun.datamanager.db.projections
 import java.time.ZonedDateTime
 
 case class GameHistoryData(
+  id: Long,
   realm: String,
   season: String,
   winner1: String,

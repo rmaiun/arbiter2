@@ -23,7 +23,7 @@ object GameDtoSet {
     createdAt: ZonedDateTime
   )
 
-  case class EloPointsDto(user: String, value: Int)
+  case class EloPointsDto(user: String, value: Int, stored: ZonedDateTime)
 
   case class AddGameHistoryDtoIn(historyElement: GameHistoryDto, moderatorTid: Long)
   case class AddGameHistoryDtoOut(storedRound: GameHistoryDto)
@@ -31,9 +31,9 @@ object GameDtoSet {
   case class AddEloPointsDtoIn(points: EloPointsDto, moderatorTid: Long)
   case class AddEloPointsDtoOut(id: Long)
 
-  case class ListGameHistoryDtoIn(realm: String, season: Option[String])
+  case class ListGameHistoryDtoIn(realm: String, season: String)
   case class ListGameHistoryDtoOut(games: List[StoredGameHistoryDto])
 
   case class ListEloPointsDtoIn(users: Option[List[String]])
-  case class ListEloPointsDtoOut(games: List[StoredGameHistoryDto])
+  case class ListEloPointsDtoOut(calculatedEloPoints: List[EloPointsDto], unratedPlayers: List[String] = Nil)
 }

@@ -17,7 +17,7 @@ trait GameService[F[_]] {
   def createGameHistory(gh: GameHistory): Flow[F, GameHistory]
   def removeNEloPoints(idList: List[Long] = Nil): Flow[F, Int]
   def removeNGameHistory(idList: List[Long] = Nil): Flow[F, Int]
-  def listEloPointsByCriteria(criteria: EloPointsCriteria): Flow[F, List[EloPointsData]]
+  def listEloPointsByCriteria(surnames:List[String] = Nil): Flow[F, List[EloPointsData]]
   def listCalculatedPoints(surnames: Option[List[String]] = None): Flow[F, List[EloPointsData]]
   def listHistoryByCriteria(criteria: GameHistoryCriteria): Flow[F, List[GameHistoryData]]
 }
@@ -38,8 +38,10 @@ object GameService {
     override def removeNGameHistory(idList: List[Long]): Flow[F, Int] =
       gameRepo.removeNGameHistory(idList).transact(xa).attemptSql.adaptError
 
-    override def listEloPointsByCriteria(criteria: EloPointsCriteria): Flow[F, List[EloPointsData]] =
-      gameRepo.listEloPointsByCriteria(criteria).transact(xa).attemptSql.adaptError
+    override def listEloPointsByCriteria(surnames:List[String]): Flow[F, List[EloPointsData]] = {
+      val criteria = NonEmptyList.fromList(surnames)
+      gameRepo.listEloPointsByCriteria(EloPointsCriteria(criteria)).transact(xa).attemptSql.adaptError
+    }
 
     override def listCalculatedPoints(surnames: Option[List[String]]): Flow[F, List[EloPointsData]] = {
       val nonEmptySurnames = surnames.flatMap(NonEmptyList.fromList)

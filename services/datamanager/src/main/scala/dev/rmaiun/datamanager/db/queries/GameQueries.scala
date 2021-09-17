@@ -11,8 +11,8 @@ object GameQueries extends CustomMeta {
 
   def insertPoints(ep: EloPoints): doobie.Update0 =
     sql"""
-         | insert into elo_points(id, user, points)
-         | values (${ep.id}, ${ep.user}, ${ep.points})
+         | insert into elo_points(id, user, points, stored)
+         | values (${ep.id}, ${ep.user}, ${ep.points}, ${ep.stored})
         """.stripMargin.update
 
   def insertHistory(gh: GameHistory): doobie.Update0 =
@@ -23,17 +23,20 @@ object GameQueries extends CustomMeta {
 
   def listPointsByCriteria(c: EloPointsCriteria): doobie.Query0[EloPointsData] = {
     val baseWithRealmFragment = fr"""
-                                    | select ep.id, user.surname, ep.points from elo_points as ep
+                                    | select ep.id, user.surname, ep.points, ep.stored
+                                    |  from elo_points as ep
                                     | inner join user on ep.user = user.id
                                   """.stripMargin
     val withUser =
-      c.player.fold(baseWithRealmFragment)(player => baseWithRealmFragment ++ fr" where user.surname = $player")
+      c.players.fold(baseWithRealmFragment)(players =>
+        baseWithRealmFragment ++ fr"where" ++ Fragments.in(fr"user.surname", players)
+      )
     withUser.query[EloPointsData]
   }
 
   def listCalculatedPoints(players: Option[NonEmptyList[String]]): doobie.Query0[EloPointsData] = {
     val baseWithRealmFragment = fr"""
-                                    | select ep.id, u.surname, sum(ep.points)
+                                    | select ep.id, u.surname, sum(ep.points), ep.stored
                                     |from elo_points as ep
                                     |         inner join user as u on ep.user = u.id
                                     |group by u.surname
@@ -47,7 +50,7 @@ object GameQueries extends CustomMeta {
 
   def listHistoryByCriteria(c: GameHistoryCriteria): doobie.Query0[GameHistoryData] = {
     val baseWithRealmFragment = fr"""
-                                    | select realm.name, season.name, u1.surname as winner1, u2.surname as winner2, u3.surname as loser1, u4.surname as loser2, gh.shutout, gh.created_at as createdAt
+                                    | select gh.id, realm.name, season.name, u1.surname as winner1, u2.surname as winner2, u3.surname as loser1, u4.surname as loser2, gh.shutout, gh.created_at as createdAt
                                     | from game_history as gh
                                     | inner join realm on gh.realm = realm.id
                                     | inner join season on gh.season = season.id
