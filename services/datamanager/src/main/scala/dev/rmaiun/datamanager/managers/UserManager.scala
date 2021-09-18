@@ -4,14 +4,16 @@ import cats.Monad
 import cats.implicits._
 import dev.rmaiun.datamanager.db.entities.User
 import dev.rmaiun.datamanager.dtos.api.UserDtoSet._
+import dev.rmaiun.datamanager.errors.UserErrors.{UserAlreadyExistsException, UserNotFoundException}
 import dev.rmaiun.datamanager.helpers.ConfigProvider.Config
-import dev.rmaiun.datamanager.helpers.DtoMapper.{ realmToDto, userToDto }
-import dev.rmaiun.datamanager.services.{ RealmService, RoleService, UserRightsService, UserService }
+import dev.rmaiun.datamanager.helpers.DtoMapper.{realmToDto, userToDto}
+import dev.rmaiun.datamanager.services.{RealmService, RoleService, UserRightsService, UserService}
 import dev.rmaiun.datamanager.validations.UserValidationSet._
+import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.validation.Validator
 
-import java.time.{ ZoneOffset, ZonedDateTime }
+import java.time.{ZoneOffset, ZonedDateTime}
 
 trait UserManager[F[_]] {
   def registerUser(dtoIn: RegisterUserDtoIn): Flow[F, RegisterUserDtoOut]
@@ -37,6 +39,7 @@ object UserManager {
       for {
         _ <- Validator.validateDto[F, RegisterUserDtoIn](dtoIn)
         _ <- userRightsService.isUserPrivileged(dtoIn.moderatorTid)
+        _ <- checkUserIsAlreadyRegistered(dtoIn.user.surname)
         u <- userService.create(User(0, dtoIn.user.surname.toLowerCase, None, dtoIn.user.tid))
       } yield RegisterUserDtoOut(userToDto(u))
 
@@ -118,5 +121,17 @@ object UserManager {
           upd <- userService.update(u.copy(active = activationState))
         } yield upd
       }.sequence
+
+    private def checkUserIsAlreadyRegistered(surname: String): Flow[F, Unit] =
+      userService
+        .findByInputType(Some(surname))
+        .leftFlatMap(adaptNoUserError)
+        .flatMap(_ => Flow.error(UserAlreadyExistsException(Map("surname" -> surname))))
+
+    private def adaptNoUserError(ex: Throwable): Flow[F, Unit] =
+      ex match {
+        case _: UserNotFoundException => Flow.unit
+        case b: Throwable             => Flow.error(b)
+      }
   }
 }

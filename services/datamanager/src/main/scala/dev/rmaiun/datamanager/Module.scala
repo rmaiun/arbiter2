@@ -3,8 +3,8 @@ package dev.rmaiun.datamanager
 import cats.Monad
 import cats.effect.{ ConcurrentEffect, ContextShift, Timer }
 import dev.rmaiun.datamanager.helpers.{ ConfigProvider, TransactorProvider }
-import dev.rmaiun.datamanager.managers.{ RealmManager, UserManager }
-import dev.rmaiun.datamanager.repositories.{ AlgorithmRepo, RealmRepo, RoleRepo, UserRepo }
+import dev.rmaiun.datamanager.managers.{ GameManager, RealmManager, UserManager }
+import dev.rmaiun.datamanager.repositories._
 import dev.rmaiun.datamanager.routes.DataManagerRoutes
 import dev.rmaiun.datamanager.services._
 import io.chrisdavenport.log4cats.Logger
@@ -24,22 +24,31 @@ object Module {
     lazy val realmRepo                       = RealmRepo.impl
     lazy val roleRepo                        = RoleRepo.impl
     lazy val userRepo                        = UserRepo.impl
+    lazy val seasonRepo                      = SeasonRepo.impl
+    lazy val gameRepo                        = GameRepo.impl
 
     lazy val algorithmService  = AlgorithmService.impl(algorithmRepo, transactor)
     lazy val realmService      = RealmService.impl(realmRepo, transactor)
     lazy val roleService       = RoleService.impl(transactor, roleRepo)
+    lazy val seasonService     = SeasonService.impl(seasonRepo, realmService, algorithmService, transactor)
     lazy val userService       = UserService.impl(transactor, userRepo)
     lazy val userRightsService = UserRightsService.impl(userService, roleService)
+    lazy val gameService       = GameService.impl(gameRepo, transactor)
     //managers
     lazy val realmMng = RealmManager.impl(realmService, algorithmService)
     lazy val userMng  = UserManager.impl(userService, userRightsService, realmService, roleService)
+    lazy val gameMng  = GameManager.impl(gameService, userService, realmService, seasonService, userRightsService)
     // http
-    val realmHttpApp = DataManagerRoutes.realmRoutes[F](realmMng)
-    val userHttpApp  = DataManagerRoutes.userRoutes[F](userMng)
+    val realmHttpApp       = DataManagerRoutes.realmRoutes[F](realmMng)
+    val userHttpApp        = DataManagerRoutes.userRoutes[F](userMng)
+    val gameHistoryHttpApp = DataManagerRoutes.gameHistoryRoutes[F](gameMng)
+    val eloPointsHttpApp   = DataManagerRoutes.eloPointsRoutes[F](gameMng)
 
     Router[F](
-      "/realms" -> realmHttpApp,
-      "/users"  -> userHttpApp
+      "/realms"          -> realmHttpApp,
+      "/users"           -> userHttpApp,
+      "/games/history"   -> gameHistoryHttpApp,
+      "/games/eloPoints" -> eloPointsHttpApp
     ).orNotFound
   }
 }

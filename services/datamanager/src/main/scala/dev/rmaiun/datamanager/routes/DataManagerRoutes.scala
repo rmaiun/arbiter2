@@ -2,10 +2,11 @@ package dev.rmaiun.datamanager.routes
 
 import cats.effect.Sync
 import cats.{Applicative, Monad}
+import dev.rmaiun.datamanager.dtos.api.GameDtoSet.{AddEloPointsDtoIn, AddGameHistoryDtoIn, ListEloPointsDtoIn, ListGameHistoryDtoIn, StoredGameHistoryDto}
 import dev.rmaiun.datamanager.dtos.api.RealmDtoSet.{GetRealmDtoIn, RegisterRealmDtoIn, UpdateRealmAlgorithmDtoIn}
 import dev.rmaiun.datamanager.dtos.api.UserDtoSet._
 import dev.rmaiun.datamanager.errors.RoutingErrors.RequiredParamsNotFound
-import dev.rmaiun.datamanager.managers.{RealmManager, UserManager}
+import dev.rmaiun.datamanager.managers.{GameManager, RealmManager, UserManager}
 import dev.rmaiun.errorhandling.errors.AppRuntimeException
 import dev.rmaiun.errorhandling.errors.codec._
 import dev.rmaiun.flowtypes.Flow
@@ -135,4 +136,51 @@ object DataManagerRoutes {
         flowToResponse(dtoOut)
     }
   }
+
+  def gameHistoryRoutes[F[_]: Sync: Monad: Logger](gameManager: GameManager[F]): HttpRoutes[F] = {
+    val dsl = new Http4sDsl[F] {}
+    import dev.rmaiun.datamanager.dtos.api.codec._
+    import dsl._
+
+    HttpRoutes.of[F] {
+      case req@POST -> Root / "store" =>
+        val dtoOut = for {
+          dtoIn <- Flow.fromF(req.as[AddGameHistoryDtoIn])
+          res <- gameManager.storeGameHistory(dtoIn)
+        } yield res
+        flowToResponse(dtoOut)
+
+      case req@GET -> Root / "list" =>
+        val userAllFlow = for {
+          realm <- Flow.fromOpt(req.params.get("realm"), RequiredParamsNotFound(Map("requestParam" -> "realm")))
+          season <- Flow.fromOpt(req.params.get("season"), RequiredParamsNotFound(Map("requestParam" -> "season")))
+          result <- gameManager.listGameHistory(ListGameHistoryDtoIn(realm, season))
+        } yield result
+        flowToResponse(userAllFlow)
+    }
+  }
+
+  def eloPointsRoutes[F[_]: Sync: Monad: Logger](gameManager: GameManager[F]): HttpRoutes[F] = {
+    val dsl = new Http4sDsl[F] {}
+    import dev.rmaiun.datamanager.dtos.api.codec._
+    import dsl._
+
+    HttpRoutes.of[F] {
+
+      case req@POST -> Root / "add" =>
+        val dtoOut = for {
+          dtoIn <- Flow.fromF(req.as[AddEloPointsDtoIn])
+          res <- gameManager.addEloPoints(dtoIn)
+        } yield res
+        flowToResponse(dtoOut)
+
+      case req@GET -> Root / "listCalculated" =>
+        val userAllFlow = for {
+          users <- Flow.fromOpt(req.params.get("users"), RequiredParamsNotFound(Map("requestParam" -> "users")))
+          result <- gameManager.listCalculatedEloPoints(ListEloPointsDtoIn(None))
+        } yield result
+        flowToResponse(userAllFlow)
+    }
+  }
+
 }

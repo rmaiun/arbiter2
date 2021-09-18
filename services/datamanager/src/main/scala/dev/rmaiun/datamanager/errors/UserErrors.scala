@@ -15,4 +15,7 @@ object UserErrors extends ErrorInfo {
       )
   case class UserNotAuthorizedException(p: Map[String, String])
       extends AppRuntimeException("userNotAuthorized", "User is not authorized", app, Some(p))
+
+  case class UserAlreadyExistsException(p: Map[String, String])
+    extends AppRuntimeException("userNotFound", "User already exists", app, Some(p))
 }

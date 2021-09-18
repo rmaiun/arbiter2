@@ -49,7 +49,9 @@ object GameManager {
                DateFormatter.now
              )
         created <- gameService.createGameHistory(gh)
-      } yield AddGameHistoryDtoOut(GameHistoryDto(realm.name, season.name,w1.surname, w2.surname, l1.surname, l2.surname, created.shutout))
+      } yield AddGameHistoryDtoOut(
+        GameHistoryDto(realm.name, season.name, w1.surname, w2.surname, l1.surname, l2.surname, created.shutout)
+      )
 
     override def listGameHistory(dtoIn: ListGameHistoryDtoIn): Flow[F, ListGameHistoryDtoOut] =
       for {

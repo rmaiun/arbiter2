@@ -1,9 +1,10 @@
 package dev.rmaiun.datamanager.dtos.api
 
+import dev.rmaiun.datamanager.dtos.api.GameDtoSet.{AddEloPointsDtoIn, AddEloPointsDtoOut, AddGameHistoryDtoIn, AddGameHistoryDtoOut, EloPointsDto, GameHistoryDto, ListEloPointsDtoIn, ListEloPointsDtoOut, ListGameHistoryDtoIn, ListGameHistoryDtoOut, StoredGameHistoryDto}
 import dev.rmaiun.datamanager.dtos.api.RealmDtoSet._
 import dev.rmaiun.datamanager.dtos.api.UserDtoSet._
-import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
-import io.circe.{ Decoder, Encoder }
+import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import io.circe.{Decoder, Encoder}
 
 object codec {
   implicit val RealmDtoEncoder: Encoder[RealmDto] = deriveEncoder[RealmDto]
@@ -93,5 +94,37 @@ object codec {
     deriveEncoder[FindAvailableRealmsDtoOut]
   implicit val FindAvailableRealmsDtoOutDecoder: Decoder[FindAvailableRealmsDtoOut] =
     deriveDecoder[FindAvailableRealmsDtoOut]
+//    game codec
+  implicit val GameHistoryDtoEncoder: Encoder[GameHistoryDto] = deriveEncoder[GameHistoryDto]
+  implicit val GameHistoryDtoDecoder: Decoder[GameHistoryDto] = deriveDecoder[GameHistoryDto]
 
+  implicit val StoredGameHistoryDtoEncoder: Encoder[StoredGameHistoryDto] = deriveEncoder[StoredGameHistoryDto]
+  implicit val StoredGameHistoryDtoDecoder: Decoder[StoredGameHistoryDto] = deriveDecoder[StoredGameHistoryDto]
+
+  implicit val EloPointsDtoEncoder: Encoder[EloPointsDto] = deriveEncoder[EloPointsDto]
+  implicit val EloPointsDtoDecoder: Decoder[EloPointsDto] = deriveDecoder[EloPointsDto]
+
+  implicit val AddGameHistoryDtoInEncoder: Encoder[AddGameHistoryDtoIn] = deriveEncoder[AddGameHistoryDtoIn]
+  implicit val AddGameHistoryDtoInDecoder: Decoder[AddGameHistoryDtoIn] = deriveDecoder[AddGameHistoryDtoIn]
+
+  implicit val AddGameHistoryDtoOutEncoder: Encoder[AddGameHistoryDtoOut] = deriveEncoder[AddGameHistoryDtoOut]
+  implicit val AddGameHistoryDtoOutDecoder: Decoder[AddGameHistoryDtoOut] = deriveDecoder[AddGameHistoryDtoOut]
+
+  implicit val AddEloPointsDtoInEncoder: Encoder[AddEloPointsDtoIn] = deriveEncoder[AddEloPointsDtoIn]
+  implicit val AddEloPointsDtoInDecoder: Decoder[AddEloPointsDtoIn] = deriveDecoder[AddEloPointsDtoIn]
+
+  implicit val AddEloPointsDtoOutEncoder: Encoder[AddEloPointsDtoOut] = deriveEncoder[AddEloPointsDtoOut]
+  implicit val AddEloPointsDtoOutDecoder: Decoder[AddEloPointsDtoOut] = deriveDecoder[AddEloPointsDtoOut]
+
+  implicit val ListGameHistoryDtoInEncoder: Encoder[ListGameHistoryDtoIn] = deriveEncoder[ListGameHistoryDtoIn]
+  implicit val ListGameHistoryDtoInDecoder: Decoder[ListGameHistoryDtoIn] = deriveDecoder[ListGameHistoryDtoIn]
+
+  implicit val ListGameHistoryDtoOutEncoder: Encoder[ListGameHistoryDtoOut] = deriveEncoder[ListGameHistoryDtoOut]
+  implicit val ListGameHistoryDtoOutDecoder: Decoder[ListGameHistoryDtoOut] = deriveDecoder[ListGameHistoryDtoOut]
+
+  implicit val ListEloPointsDtoInEncoder: Encoder[ListEloPointsDtoIn] = deriveEncoder[ListEloPointsDtoIn]
+  implicit val ListEloPointsDtoInDecoder: Decoder[ListEloPointsDtoIn] = deriveDecoder[ListEloPointsDtoIn]
+
+  implicit val ListEloPointsDtoOutEncoder: Encoder[ListEloPointsDtoOut] = deriveEncoder[ListEloPointsDtoOut]
+  implicit val ListEloPointsDtoOutDecoder: Decoder[ListEloPointsDtoOut] = deriveDecoder[ListEloPointsDtoOut]
 }
