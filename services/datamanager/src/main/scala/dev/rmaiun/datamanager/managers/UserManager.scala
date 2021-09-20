@@ -1,6 +1,7 @@
 package dev.rmaiun.datamanager.managers
 
 import cats.Monad
+import cats.data.EitherT
 import cats.implicits._
 import dev.rmaiun.datamanager.db.entities.User
 import dev.rmaiun.datamanager.dtos.api.UserDtoSet._
@@ -125,13 +126,12 @@ object UserManager {
     private def checkUserIsAlreadyRegistered(surname: String): Flow[F, Unit] =
       userService
         .findByInputType(Some(surname))
-        .leftFlatMap(adaptNoUserError)
-        .flatMap(_ => Flow.error(UserAlreadyExistsException(Map("surname" -> surname))))
-
-    private def adaptNoUserError(ex: Throwable): Flow[F, Unit] =
-      ex match {
-        case _: UserNotFoundException => Flow.unit
-        case b: Throwable             => Flow.error(b)
-      }
+        .biflatMap(
+          {
+            case _: UserNotFoundException => Flow.unit
+            case err @ (_: Throwable)     => EitherT.fromEither[F](err.asLeft[Unit])
+          },
+          _ => Flow.error(UserAlreadyExistsException(Map("surname" -> surname)))
+        )
   }
 }
