@@ -13,6 +13,7 @@ object UserDtoSet {
     active: Boolean = true,
     createdAt: ZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC)
   )
+  case class RealmShortInfo(name: String, role: String, botUsage: Boolean)
   case class UserData(surname: String, tid: Option[Long] = None)
 
   case class RegisterUserDtoIn(user: UserData, moderatorTid: Long)
@@ -22,7 +23,7 @@ object UserDtoSet {
   case class FindAllUsersDtoOut(items: List[UserDto])
 
   case class FindUserDtoIn(surname: Option[String] = None, tid: Option[Long] = None)
-  case class FindUserDtoOut(user: UserDto)
+  case class FindUserDtoOut(user: UserDto, realms: List[RealmShortInfo])
 
   case class AssignUserToRealmDtoIn(
     user: String,
@@ -53,5 +54,5 @@ object UserDtoSet {
   )
 
   case class FindAvailableRealmsDtoIn(surname: String)
-  case class FindAvailableRealmsDtoOut(availableRealms: List[RealmDto])
+  case class FindAvailableRealmsDtoOut(availableRealms: List[RealmShortInfo])
 }

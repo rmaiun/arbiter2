@@ -3,6 +3,7 @@ package dev.rmaiun.datamanager.services
 import cats.Monad
 import cats.effect.Sync
 import dev.rmaiun.datamanager.db.entities.Realm
+import dev.rmaiun.datamanager.db.projections.RealmData
 import dev.rmaiun.datamanager.errors.RealmErrors.RealmNotFoundRuntimeException
 import dev.rmaiun.datamanager.repositories.RealmRepo
 import dev.rmaiun.errorhandling.ThrowableOps._
@@ -18,7 +19,7 @@ trait RealmService[F[_]] {
   def get(id: Long): Flow[F, Realm]
   def getByName(name: String): Flow[F, Realm]
   def remove(idList: List[Long]): Flow[F, Int]
-  def findByUser(surname: String): Flow[F, List[Realm]]
+  def findByUser(surname: String): Flow[F, List[RealmData]]
 }
 
 object RealmService {
@@ -50,7 +51,7 @@ object RealmService {
     override def remove(idList: List[Long]): Flow[F, Int] =
       realmRepo.removeN(idList).transact(xa).attemptSql.adaptError
 
-    override def findByUser(surname: String): Flow[F, List[Realm]] =
+    override def findByUser(surname: String): Flow[F, List[RealmData]] =
       realmRepo.listRealmsByUser(surname).transact(xa).attemptSql.adaptError
   }
 }

@@ -94,7 +94,7 @@ class SeasonRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach w
   }
 
   private def createTestAlgorithm: ConnectionIO[Algorithm] =
-    algRepo.create(Algorithm(1, "WinRate"))
+    algRepo.create(Algorithm(1, "WinLoss"))
 
   private def createTestRealm: ConnectionIO[Realm] =
     realmRepo.create(defaultRealm)

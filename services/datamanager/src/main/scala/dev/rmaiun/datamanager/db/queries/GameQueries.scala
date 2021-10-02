@@ -36,7 +36,7 @@ object GameQueries extends CustomMeta {
 
   def listCalculatedPoints(players: Option[NonEmptyList[String]]): doobie.Query0[EloPointsData] = {
     val baseWithRealmFragment = fr"""
-                                    | select ep.id, u.surname, sum(ep.points), ep.created
+                                    | select u.surname, sum(ep.points), count(u.surname)
                                     |from elo_points as ep
                                     |         inner join user as u on ep.user = u.id
                                     |group by u.surname
@@ -62,11 +62,11 @@ object GameQueries extends CustomMeta {
     val withSeason =
       c.season.fold(baseWithRealmFragment)(season => baseWithRealmFragment ++ fr" and season.name = $season")
     val withShutout = c.shutout
-      .map(flag => if(flag) "true" else "false")
-      .fold(withSeason)(shutout => {
-        val shutoutStr = "and gh.shutout is "+shutout
+      .map(flag => if (flag) "true" else "false")
+      .fold(withSeason) { shutout =>
+        val shutoutStr = "and gh.shutout is " + shutout
         withSeason ++ fr"$shutoutStr"
-      })
+      }
     withShutout.query[GameHistoryData]
   }
 

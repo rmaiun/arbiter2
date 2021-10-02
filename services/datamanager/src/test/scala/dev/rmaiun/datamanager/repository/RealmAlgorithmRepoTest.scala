@@ -39,7 +39,7 @@ class RealmAlgorithmRepoTest extends AnyFlatSpec with Matchers with BeforeAndAft
     data._1 should not be 0
     data._2 should be(realm.name)
     data._3.id should not be 0
-    data._3.value should be("WinRate")
+    data._3.value should be("WinLoss")
   }
 
   it should "should successfully update Algorithm" in {
@@ -99,7 +99,7 @@ class RealmAlgorithmRepoTest extends AnyFlatSpec with Matchers with BeforeAndAft
   }
 
   private def createTestAlgorithm: ConnectionIO[Algorithm] =
-    algRepo.create(Algorithm(1, "WinRate"))
+    algRepo.create(Algorithm(1, "WinLoss"))
   private def createRealm(realm: Realm): ConnectionIO[Realm] =
     realmRepo.create(realm)
   private def findRealm(id: Long): ConnectionIO[Option[Realm]] =

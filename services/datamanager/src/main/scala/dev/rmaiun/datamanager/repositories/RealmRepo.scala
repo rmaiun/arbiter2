@@ -2,6 +2,7 @@ package dev.rmaiun.datamanager.repositories
 
 import cats.Monad
 import dev.rmaiun.datamanager.db.entities.Realm
+import dev.rmaiun.datamanager.db.projections.RealmData
 import dev.rmaiun.datamanager.db.queries.RealmQueries
 import doobie.ConnectionIO
 
@@ -11,7 +12,7 @@ trait RealmRepo[F[_]] {
   def create(realm: Realm): ConnectionIO[Realm]
   def update(realm: Realm): ConnectionIO[Realm]
   def listAll: ConnectionIO[List[Realm]]
-  def listRealmsByUser(surname: String): ConnectionIO[List[Realm]]
+  def listRealmsByUser(surname: String): ConnectionIO[List[RealmData]]
   def removeN(idList: List[Long] = Nil): ConnectionIO[Int]
 }
 
@@ -37,7 +38,7 @@ object RealmRepo {
 
     override def getByName(name: String): ConnectionIO[Option[Realm]] = RealmQueries.getByName(name).option
 
-    override def listRealmsByUser(surname: String): ConnectionIO[List[Realm]] =
+    override def listRealmsByUser(surname: String): ConnectionIO[List[RealmData]] =
       RealmQueries.listAllRealmsByUser(surname).to[List]
   }
 }

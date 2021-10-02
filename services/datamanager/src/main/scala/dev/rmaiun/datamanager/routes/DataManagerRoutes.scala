@@ -167,7 +167,7 @@ object DataManagerRoutes {
 
     HttpRoutes.of[F] {
 
-      case req@POST -> Root / "add" =>
+      case req@POST -> Root / "store" =>
         val dtoOut = for {
           dtoIn <- Flow.fromF(req.as[AddEloPointsDtoIn])
           res <- gameManager.addEloPoints(dtoIn)
@@ -177,7 +177,8 @@ object DataManagerRoutes {
       case req@GET -> Root / "listCalculated" =>
         val userAllFlow = for {
           users <- Flow.fromOpt(req.params.get("users"), RequiredParamsNotFound(Map("requestParam" -> "users")))
-          result <- gameManager.listCalculatedEloPoints(ListEloPointsDtoIn(None))
+          listUsers = users.split(",").toList
+          result <- gameManager.listCalculatedEloPoints(ListEloPointsDtoIn(Some(listUsers)))
         } yield result
         flowToResponse(userAllFlow)
     }

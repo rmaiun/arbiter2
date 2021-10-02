@@ -5,6 +5,7 @@ import cats.effect.Sync
 import dev.rmaiun.common.SeasonHelper
 import dev.rmaiun.datamanager.db.entities.{ Algorithm, Realm, Season }
 import dev.rmaiun.datamanager.errors.SeasonErrors.SeasonNotFoundRuntimeException
+import dev.rmaiun.datamanager.errors.UserErrors.SameUsersInRoundException
 import dev.rmaiun.datamanager.helpers.ConfigProvider.Config
 import dev.rmaiun.datamanager.repositories.SeasonRepo
 import dev.rmaiun.errorhandling.ThrowableOps._
@@ -18,6 +19,7 @@ trait SeasonService[F[_]] {
   def storeSeason(s: Season): Flow[F, Season]
   def updateSeason(s: Season): Flow[F, Season]
   def listSeasons(realms: Option[List[String]] = None, seasons: Option[List[String]] = None): Flow[F, List[Season]]
+  def checkAllUsersAreDifferent(players: List[String]): Flow[F, Unit]
 }
 
 object SeasonService {
@@ -43,6 +45,13 @@ object SeasonService {
 
       override def listSeasons(realm: Option[List[String]], seasons: Option[List[String]]): Flow[F, List[Season]] =
         seasonRepo.listAll().transact(xa).attemptSql.adaptError
+
+      override def checkAllUsersAreDifferent(players: List[String]): Flow[F, Unit] =
+        if (players.distinct.size != players.size) {
+          Flow.error(SameUsersInRoundException(players))
+        } else {
+          Flow.unit
+        }
 
       private def findInternally(name: String, realm: String): Flow[F, Option[Season]] =
         seasonRepo.getBySeasonNameRealm(name, realm).transact(xa).attemptSql.adaptError

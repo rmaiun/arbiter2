@@ -8,12 +8,12 @@ object RealmValidationSet extends CustomValidationRules {
   implicit val RegisterRealmDtoInValidator: TransformedValidator[RegisterRealmDtoIn] = validator[RegisterRealmDtoIn] {
     dto =>
       dto.realmName is notEmpty and realm
-      dto.algorithm is oneOf("WinRate", "OldPoints")
+      dto.algorithm is oneOf("WinLoss", "OldPoints")
   }
 
   implicit val UpdateRealmAlgorithmDtoInValidator: TransformedValidator[UpdateRealmAlgorithmDtoIn] =
     validator[UpdateRealmAlgorithmDtoIn] { dto =>
-      dto.algorithm is oneOf("WinRate", "OldPoints")
+      dto.algorithm is oneOf("WinLoss", "OldPoints")
     }
 
   implicit val GetRealmDtoInValidator: TransformedValidator[GetRealmDtoIn] = validator[GetRealmDtoIn] { dto =>

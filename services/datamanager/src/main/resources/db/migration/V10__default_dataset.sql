@@ -1,5 +1,5 @@
 use arbiter;
-insert into algorithm (id, value) value (1, 'WinRate');
+insert into algorithm (id, value) value (1, 'WinLoss');
 
 insert into role (id, value, permission)
 values (1, 'Owner', 100),
@@ -15,4 +15,7 @@ insert into user(id, surname, nickname, tid, active, created_at)
 VALUES (1, 'маюн', null, '530809403', 1, CURRENT_TIMESTAMP());
 
 insert into user_realm_role(role, user, realm)
-VALUES (1,1,1);
+VALUES (1, 1, 1);
+
+insert into elo_points (user, points, created)
+VALUES (1, 1500, CURRENT_TIMESTAMP)

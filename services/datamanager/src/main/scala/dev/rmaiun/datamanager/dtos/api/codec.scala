@@ -1,6 +1,6 @@
 package dev.rmaiun.datamanager.dtos.api
 
-import dev.rmaiun.datamanager.dtos.api.GameDtoSet.{AddEloPointsDtoIn, AddEloPointsDtoOut, AddGameHistoryDtoIn, AddGameHistoryDtoOut, EloPointsDto, GameHistoryDto, ListEloPointsDtoIn, ListEloPointsDtoOut, ListGameHistoryDtoIn, ListGameHistoryDtoOut, StoredGameHistoryDto}
+import dev.rmaiun.datamanager.dtos.api.GameDtoSet.{AddEloPointsDtoIn, AddEloPointsDtoOut, AddGameHistoryDtoIn, AddGameHistoryDtoOut, CalculatedEloPointsDto, EloPointsDto, GameHistoryDto, ListEloPointsDtoIn, ListEloPointsDtoOut, ListGameHistoryDtoIn, ListGameHistoryDtoOut, StoredGameHistoryDto}
 import dev.rmaiun.datamanager.dtos.api.RealmDtoSet._
 import dev.rmaiun.datamanager.dtos.api.UserDtoSet._
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
@@ -38,6 +38,9 @@ object codec {
 //  user codec
   implicit val UserDtoEncoder: Encoder[UserDto] = deriveEncoder[UserDto]
   implicit val UserDtoDecoder: Decoder[UserDto] = deriveDecoder[UserDto]
+
+  implicit val RealmShortInfoEncoder: Encoder[RealmShortInfo] = deriveEncoder[RealmShortInfo]
+  implicit val RealmShortInfoDecoder: Decoder[RealmShortInfo] = deriveDecoder[RealmShortInfo]
 
   implicit val RegisterUserDtoInEncoder: Encoder[RegisterUserDtoIn] = deriveEncoder[RegisterUserDtoIn]
   implicit val RegisterUserDtoInDecoder: Decoder[RegisterUserDtoIn] = deriveDecoder[RegisterUserDtoIn]
@@ -103,6 +106,9 @@ object codec {
 
   implicit val EloPointsDtoEncoder: Encoder[EloPointsDto] = deriveEncoder[EloPointsDto]
   implicit val EloPointsDtoDecoder: Decoder[EloPointsDto] = deriveDecoder[EloPointsDto]
+
+  implicit val CalculatedEloPointsDtoEncoder: Encoder[CalculatedEloPointsDto] = deriveEncoder[CalculatedEloPointsDto]
+  implicit val CalculatedEloPointsDtoDecoder: Decoder[CalculatedEloPointsDto] = deriveDecoder[CalculatedEloPointsDto]
 
   implicit val AddGameHistoryDtoInEncoder: Encoder[AddGameHistoryDtoIn] = deriveEncoder[AddGameHistoryDtoIn]
   implicit val AddGameHistoryDtoInDecoder: Decoder[AddGameHistoryDtoIn] = deriveDecoder[AddGameHistoryDtoIn]

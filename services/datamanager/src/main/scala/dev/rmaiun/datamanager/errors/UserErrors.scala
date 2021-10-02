@@ -17,5 +17,13 @@ object UserErrors extends ErrorInfo {
       extends AppRuntimeException("userNotAuthorized", "User is not authorized", app, Some(p))
 
   case class UserAlreadyExistsException(p: Map[String, String])
-    extends AppRuntimeException("userNotFound", "User already exists", app, Some(p))
+      extends AppRuntimeException("userNotFound", "User already exists", app, Some(p))
+
+  case class SameUsersInRoundException(users: List[String])
+      extends AppRuntimeException(
+        "usersShouldBeDifferent",
+        "All players in round must be different",
+        app,
+        Some(Map("users" -> users.mkString(",")))
+      )
 }

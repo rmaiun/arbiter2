@@ -57,7 +57,7 @@ lazy val datamanager = (project in file("services/datamanager"))
 
 lazy val dependencies =
   new {
-    val Http4sVersion          = "0.21.5"
+    val Http4sVersion          = "0.22.5"
     val CirceVersion           = "0.13.0"
     val LogbackVersion         = "1.2.3"
     val MunitVersion           = "0.7.20"

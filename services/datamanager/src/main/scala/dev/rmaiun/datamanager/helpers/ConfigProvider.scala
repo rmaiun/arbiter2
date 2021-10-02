@@ -18,7 +18,8 @@ object ConfigProvider {
     topPlayersLimit: Int,
     minWritePermission: Int,
     defaultRole: String,
-    defaultAlgorithm:String
+    defaultAlgorithm:String,
+    startPoints:Int
   )
 
   case class Config(db: DbConfig, server: ServerConfig, app: AppConfig)

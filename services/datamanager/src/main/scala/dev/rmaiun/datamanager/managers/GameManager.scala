@@ -30,6 +30,8 @@ object GameManager {
     override def storeGameHistory(dtoIn: AddGameHistoryDtoIn): Flow[F, AddGameHistoryDtoOut] =
       for {
         _      <- Validator.validateDto[F, AddGameHistoryDtoIn](dtoIn)
+        users   = List(dtoIn.historyElement.w1, dtoIn.historyElement.w2, dtoIn.historyElement.l1, dtoIn.historyElement.l2)
+        _      <- seasonService.checkAllUsersAreDifferent(users)
         _      <- userRightsService.isUserPrivileged(dtoIn.moderatorTid)
         realm  <- realmService.getByName(dtoIn.historyElement.realm)
         season <- seasonService.findSeason(dtoIn.historyElement.season, realm)
@@ -87,11 +89,11 @@ object GameManager {
         users          = dtoIn.users.map(list => list.map(_.toLowerCase))
         eloPointsList <- gameService.listCalculatedPoints(users)
       } yield {
-        val dtoList    = eloPointsList.map(ep => EloPointsDto(ep.user, ep.points, ep.created))
+        val dtoList    = eloPointsList.map(ep => CalculatedEloPointsDto(ep.user, ep.points,ep.gamesPlayed))
         val foundUsers = dtoList.map(_.user)
         val missedData = dtoIn.users
-          .filter(u => foundUsers.contains(u))
-          .fold(List.empty[String])(x => x)
+          .fold(List.empty[String])(x => x.map(_.toLowerCase()))
+          .filter(u => !foundUsers.contains(u))
         ListEloPointsDtoOut(dtoList, missedData)
       }
   }

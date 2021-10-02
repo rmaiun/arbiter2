@@ -2,6 +2,7 @@ package dev.rmaiun.datamanager.db.queries
 
 import cats.data.NonEmptyList
 import dev.rmaiun.datamanager.db.entities.Realm
+import dev.rmaiun.datamanager.db.projections.RealmData
 import doobie.Fragments
 import doobie.implicits._
 
@@ -34,13 +35,15 @@ object RealmQueries {
     sql"select * from realm"
       .query[Realm]
 
-  def listAllRealmsByUser(surname: String): doobie.Query0[Realm] =
+  def listAllRealmsByUser(surname: String): doobie.Query0[RealmData] =
     sql"""
-         | select realm.id, realm.name, realm.team_size, realm.selected_algorithm from user_realm_role
-         | inner join realm on user_realm_role.realm = realm.id
-         | inner join user on user_realm_role.user = user.id
+         | select realm.id, realm.name, realm.team_size, realm.selected_algorithm as selectedAlgorithm, role.value as role, urr.bot_usage as botUsage
+         | from user_realm_role as urr
+         | inner join realm on urr.realm = realm.id
+         | inner join user on urr.user = user.id
+         | inner join role on urr.role = role.id
          | where user.surname = $surname
-    """.stripMargin.query[Realm]
+    """.stripMargin.query[RealmData]
 
   def deleteByIdList(idList: List[Long]): doobie.Update0 =
     NonEmptyList.fromList(idList) match {

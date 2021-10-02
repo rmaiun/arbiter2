@@ -1,17 +1,17 @@
 package dev.rmaiun.datamanager
 
 import cats.Monad
-import cats.effect.{ ConcurrentEffect, ContextShift, Sync, Timer }
+import cats.effect.{ConcurrentEffect, ContextShift, Sync, Timer}
 import fs2.Stream
 import io.chrisdavenport.log4cats.SelfAwareStructuredLogger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
-import org.http4s.client.blaze.BlazeClientBuilder
-import org.http4s.server.blaze.BlazeServerBuilder
+import org.http4s.blaze.client.BlazeClientBuilder
+import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.server.middleware.Logger
 
 import java.util.concurrent.Executors
 import scala.concurrent.ExecutionContext.global
-import scala.concurrent.{ ExecutionContext, ExecutionContextExecutorService }
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutorService}
 
 object Server {
   implicit def unsafeLogger[F[_]: Sync]: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]

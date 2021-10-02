@@ -26,7 +26,7 @@ class UserRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
   private val userRepo: UserRepo[IO]     = UserRepo.impl[IO]
   private val roleRepo                   = RoleRepo.impl[IO]
   private val role                       = Role(1, "admin", 50)
-  private val alg                        = Algorithm(1, "WinRate")
+  private val alg                        = Algorithm(1, "WinLoss")
   private val realm1                     = Realm(1, "ua_ky", 4, 1)
   private val realm2                     = Realm(2, "ua_te", 4, 1)
 

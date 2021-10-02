@@ -3,18 +3,19 @@ package dev.rmaiun.datamanager.managers
 import cats.Monad
 import cats.data.EitherT
 import cats.implicits._
-import dev.rmaiun.datamanager.db.entities.User
+import dev.rmaiun.common.DateFormatter
+import dev.rmaiun.datamanager.db.entities.{ EloPoints, User }
 import dev.rmaiun.datamanager.dtos.api.UserDtoSet._
-import dev.rmaiun.datamanager.errors.UserErrors.{UserAlreadyExistsException, UserNotFoundException}
+import dev.rmaiun.datamanager.errors.UserErrors.{ UserAlreadyExistsException, UserNotFoundException }
 import dev.rmaiun.datamanager.helpers.ConfigProvider.Config
-import dev.rmaiun.datamanager.helpers.DtoMapper.{realmToDto, userToDto}
-import dev.rmaiun.datamanager.services.{RealmService, RoleService, UserRightsService, UserService}
+import dev.rmaiun.datamanager.helpers.DtoMapper.userToDto
+import dev.rmaiun.datamanager.services._
 import dev.rmaiun.datamanager.validations.UserValidationSet._
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.validation.Validator
 
-import java.time.{ZoneOffset, ZonedDateTime}
+import java.time.{ ZoneOffset, ZonedDateTime }
 
 trait UserManager[F[_]] {
   def registerUser(dtoIn: RegisterUserDtoIn): Flow[F, RegisterUserDtoOut]
@@ -33,22 +34,29 @@ object UserManager {
     userService: UserService[F],
     userRightsService: UserRightsService[F],
     realmService: RealmService[F],
-    roleService: RoleService[F]
+    roleService: RoleService[F],
+    gameService: GameService[F]
   )(implicit cfg: Config): UserManager[F] = new UserManager[F] {
 
     override def registerUser(dtoIn: RegisterUserDtoIn): Flow[F, RegisterUserDtoOut] =
       for {
         _ <- Validator.validateDto[F, RegisterUserDtoIn](dtoIn)
         _ <- userRightsService.isUserPrivileged(dtoIn.moderatorTid)
-        _ <- checkUserIsAlreadyRegistered(dtoIn.user.surname)
+        _ <- checkUserIsAlreadyRegistered(dtoIn.user.surname.toLowerCase)
         u <- userService.create(User(0, dtoIn.user.surname.toLowerCase, None, dtoIn.user.tid))
+        _ <- gameService.createEloPoint(EloPoints(0, u.id, cfg.app.startPoints, DateFormatter.now))
       } yield RegisterUserDtoOut(userToDto(u))
 
     override def findUser(dtoIn: FindUserDtoIn): Flow[F, FindUserDtoOut] =
       for {
-        _ <- Validator.validateDto[F, FindUserDtoIn](dtoIn)
-        u <- userService.findByInputType(dtoIn.surname.map(_.toLowerCase), dtoIn.tid)
-      } yield FindUserDtoOut(userToDto(u))
+        _      <- Validator.validateDto[F, FindUserDtoIn](dtoIn)
+        u      <- userService.findByInputType(dtoIn.surname.map(_.toLowerCase), dtoIn.tid)
+        realms <- realmService.findByUser(u.surname)
+      } yield {
+        val userDto    = userToDto(u)
+        val userRealms = realms.map(r => RealmShortInfo(r.name, r.role, r.botUsage))
+        FindUserDtoOut(userDto, userRealms)
+      }
 
     override def findAllUsers(dtoIn: FindAllUsersDtoIn): Flow[F, FindAllUsersDtoOut] =
       for {
@@ -113,7 +121,10 @@ object UserManager {
       for {
         _      <- Validator.validateDto[F, FindAvailableRealmsDtoIn](dtoIn)
         realms <- realmService.findByUser(dtoIn.surname.toLowerCase)
-      } yield FindAvailableRealmsDtoOut(realms.map(realmToDto(_)))
+      } yield {
+        val realmsData = realms.map(r => RealmShortInfo(r.name, r.role, r.botUsage))
+        FindAvailableRealmsDtoOut(realmsData)
+      }
 
     private def processUsersActivations(users: List[String], activationState: Boolean): Flow[F, List[User]] =
       users.map { u =>
