@@ -5,7 +5,7 @@ import cats.effect.Sync
 import dev.rmaiun.datamanager.db.entities.Realm
 import dev.rmaiun.datamanager.dtos.api.RealmDtoSet._
 import dev.rmaiun.datamanager.helpers.DtoMapper.realmToDto
-import dev.rmaiun.datamanager.services.{ AlgorithmService, RealmService }
+import dev.rmaiun.datamanager.services.{AlgorithmService, RealmService, UserService}
 import dev.rmaiun.flowtypes.Flow.Flow
 import io.chrisdavenport.log4cats.Logger
 
@@ -19,12 +19,13 @@ object RealmManager {
   def apply[F[_]](implicit ev: RealmManager[F]): RealmManager[F] = ev
   def impl[F[_]: Monad: Logger: Sync](
     realmService: RealmService[F],
-    algorithmService: AlgorithmService[F]
+    algorithmService: AlgorithmService[F], userService: UserService[F]
   ): RealmManager[F] = new RealmManager[F] {
     override def registerRealm(dtoIn: RegisterRealmDtoIn): Flow[F, RegisterRealmDtoOut] =
       for {
         algorithm <- algorithmService.getAlgorithmByName(dtoIn.algorithm)
         stored    <- realmService.create(Realm(0, dtoIn.realmName, dtoIn.teamSize, algorithm.id))
+        _ <- userService.assignToRealm(stored.id, 1, 1)
       } yield RegisterRealmDtoOut(realmToDto(stored, Some(algorithm.value)))
 
     override def updateRealmAlgorithm(dtoIn: UpdateRealmAlgorithmDtoIn): Flow[F, UpdateRealmAlgorithmDtoOut] =

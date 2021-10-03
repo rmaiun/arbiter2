@@ -9,13 +9,15 @@ values (1, 'Owner', 100),
        (5, 'RegisteredUser', 10);
 
 insert into realm(id, name, team_size, selected_algorithm)
-VALUES (1, 'system', 2, 1);
+VALUES (1, 'system', 4, 1),
+       (2, 'ua_foosball', 4, 1);
 
 insert into user(id, surname, nickname, tid, active, created_at)
 VALUES (1, 'маюн', null, '530809403', 1, CURRENT_TIMESTAMP());
 
 insert into user_realm_role(role, user, realm)
-VALUES (1, 1, 1);
+VALUES (1, 1, 1),
+       (1, 1, 2);
 
 insert into elo_points (user, points, created)
 VALUES (1, 1500, CURRENT_TIMESTAMP)
