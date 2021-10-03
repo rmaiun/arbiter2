@@ -35,8 +35,8 @@ object Module {
     lazy val userRightsService = UserRightsService.impl(userService, roleService)
     lazy val gameService       = GameService.impl(gameRepo, transactor)
     //managers
-    lazy val realmMng = RealmManager.impl(realmService, algorithmService)
-    lazy val userMng  = UserManager.impl(userService, userRightsService, realmService, roleService,gameService)
+    lazy val realmMng = RealmManager.impl(realmService, algorithmService, userService)
+    lazy val userMng  = UserManager.impl(userService, userRightsService, realmService, roleService, gameService)
     lazy val gameMng  = GameManager.impl(gameService, userService, realmService, seasonService, userRightsService)
     // http
     val realmHttpApp       = DataManagerRoutes.realmRoutes[F](realmMng)

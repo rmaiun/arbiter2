@@ -52,7 +52,16 @@ object GameManager {
              )
         created <- gameService.createGameHistory(gh)
       } yield AddGameHistoryDtoOut(
-        GameHistoryDto(realm.name, season.name, w1.surname, w2.surname, l1.surname, l2.surname, created.shutout)
+        GameHistoryDto(
+          created.id,
+          realm.name,
+          season.name,
+          w1.surname,
+          w2.surname,
+          l1.surname,
+          l2.surname,
+          created.shutout
+        )
       )
 
     override def listGameHistory(dtoIn: ListGameHistoryDtoIn): Flow[F, ListGameHistoryDtoOut] =
@@ -89,7 +98,7 @@ object GameManager {
         users          = dtoIn.users.map(list => list.map(_.toLowerCase))
         eloPointsList <- gameService.listCalculatedPoints(users)
       } yield {
-        val dtoList    = eloPointsList.map(ep => CalculatedEloPointsDto(ep.user, ep.points,ep.gamesPlayed))
+        val dtoList    = eloPointsList.map(ep => CalculatedEloPointsDto(ep.user, ep.points, ep.gamesPlayed))
         val foundUsers = dtoList.map(_.user)
         val missedData = dtoIn.users
           .fold(List.empty[String])(x => x.map(_.toLowerCase()))

@@ -1,10 +1,10 @@
-package dev.rmaiun.datamanager.dtos.api
+package dev.rmaiun.datamanager.dtos.api.codec
 
-import dev.rmaiun.datamanager.dtos.api.GameDtoSet.{AddEloPointsDtoIn, AddEloPointsDtoOut, AddGameHistoryDtoIn, AddGameHistoryDtoOut, CalculatedEloPointsDto, EloPointsDto, GameHistoryDto, ListEloPointsDtoIn, ListEloPointsDtoOut, ListGameHistoryDtoIn, ListGameHistoryDtoOut, StoredGameHistoryDto}
+import dev.rmaiun.datamanager.dtos.api.GameDtoSet._
 import dev.rmaiun.datamanager.dtos.api.RealmDtoSet._
 import dev.rmaiun.datamanager.dtos.api.UserDtoSet._
-import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
-import io.circe.{Decoder, Encoder}
+import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
+import io.circe.{ Decoder, Encoder }
 
 object codec {
   implicit val RealmDtoEncoder: Encoder[RealmDto] = deriveEncoder[RealmDto]
@@ -100,6 +100,9 @@ object codec {
 //    game codec
   implicit val GameHistoryDtoEncoder: Encoder[GameHistoryDto] = deriveEncoder[GameHistoryDto]
   implicit val GameHistoryDtoDecoder: Decoder[GameHistoryDto] = deriveDecoder[GameHistoryDto]
+
+  implicit val GameHistoryDtoInEncoder: Encoder[GameHistoryDtoIn] = deriveEncoder[GameHistoryDtoIn]
+  implicit val GameHistoryDtoInDecoder: Decoder[GameHistoryDtoIn] = deriveDecoder[GameHistoryDtoIn]
 
   implicit val StoredGameHistoryDtoEncoder: Encoder[StoredGameHistoryDto] = deriveEncoder[StoredGameHistoryDto]
   implicit val StoredGameHistoryDtoDecoder: Decoder[StoredGameHistoryDto] = deriveDecoder[StoredGameHistoryDto]

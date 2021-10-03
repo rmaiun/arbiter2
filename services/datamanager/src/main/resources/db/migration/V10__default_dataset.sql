@@ -15,9 +15,9 @@ VALUES (1, 'system', 4, 1),
 insert into user(id, surname, nickname, tid, active, created_at)
 VALUES (1, 'маюн', null, '530809403', 1, CURRENT_TIMESTAMP());
 
-insert into user_realm_role(role, user, realm)
-VALUES (1, 1, 1),
-       (1, 1, 2);
+insert into user_realm_role(role, user, realm, bot_usage)
+VALUES (1, 1, 1, 0),
+       (1, 1, 2, 1);
 
 insert into elo_points (user, points, created)
 VALUES (1, 1500, CURRENT_TIMESTAMP)

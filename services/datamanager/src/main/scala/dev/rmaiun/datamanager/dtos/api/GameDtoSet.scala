@@ -3,7 +3,18 @@ package dev.rmaiun.datamanager.dtos.api
 import java.time.ZonedDateTime
 
 object GameDtoSet {
+  case class GameHistoryDtoIn(
+    realm: String,
+    season: String,
+    w1: String,
+    w2: String,
+    l1: String,
+    l2: String,
+    shutout: Boolean = false
+  )
+
   case class GameHistoryDto(
+    id: Long,
     realm: String,
     season: String,
     w1: String,
@@ -24,9 +35,9 @@ object GameDtoSet {
   )
 
   case class EloPointsDto(user: String, value: Int, created: ZonedDateTime)
-  case class CalculatedEloPointsDto(user: String, value: Int, gamesPlayed:Int)
+  case class CalculatedEloPointsDto(user: String, value: Int, gamesPlayed: Int)
 
-  case class AddGameHistoryDtoIn(historyElement: GameHistoryDto, moderatorTid: Long)
+  case class AddGameHistoryDtoIn(historyElement: GameHistoryDtoIn, moderatorTid: Long)
   case class AddGameHistoryDtoOut(storedRound: GameHistoryDto)
 
   case class AddEloPointsDtoIn(points: EloPointsDto, moderatorTid: Long)
