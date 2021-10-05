@@ -4,9 +4,9 @@ import cats.Monad
 import cats.data.EitherT
 import cats.implicits._
 import dev.rmaiun.common.DateFormatter
-import dev.rmaiun.datamanager.db.entities.{ EloPoints, User }
+import dev.rmaiun.datamanager.db.entities.{EloPoints, User}
 import dev.rmaiun.datamanager.dtos.api.UserDtoSet._
-import dev.rmaiun.datamanager.errors.UserErrors.{ UserAlreadyExistsException, UserNotFoundException }
+import dev.rmaiun.datamanager.errors.UserErrors.{UserAlreadyExistsException, UserNotFoundException}
 import dev.rmaiun.datamanager.helpers.ConfigProvider.Config
 import dev.rmaiun.datamanager.helpers.DtoMapper.userToDto
 import dev.rmaiun.datamanager.services._
@@ -15,7 +15,7 @@ import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.validation.Validator
 
-import java.time.{ ZoneOffset, ZonedDateTime }
+import java.time.{ZoneOffset, ZonedDateTime}
 
 trait UserManager[F[_]] {
   def registerUser(dtoIn: RegisterUserDtoIn): Flow[F, RegisterUserDtoOut]
@@ -64,31 +64,21 @@ object UserManager {
         users <- userService.list(dtoIn.realm, dtoIn.activeStatus)
       } yield FindAllUsersDtoOut(users.map(userToDto))
 
-    override def assignUserToRealm(dtoIn: AssignUserToRealmDtoIn): Flow[F, AssignUserToRealmDtoOut] = {
-      val result = for {
+    override def assignUserToRealm(dtoIn: AssignUserToRealmDtoIn): Flow[F, AssignUserToRealmDtoOut] =
+      for {
         _        <- Validator.validateDto[F, AssignUserToRealmDtoIn](dtoIn)
         _        <- userRightsService.checkUserWritePermissions(dtoIn.realm, dtoIn.moderatorTid)
         user     <- userService.findByInputType(Some(dtoIn.user.toLowerCase))
         realm    <- realmService.getByName(dtoIn.realm)
         roleValue = dtoIn.role.getOrElse(cfg.app.defaultRole)
         role     <- roleService.findRoleByName(roleValue)
-        _        <- userService.assignToRealm(realm.id, user.id, role.id)
+        _        <- userService.assignToRealm(realm.id, user.id, role.id, botUsage = dtoIn.switchAsActive.getOrElse(false))
       } yield AssignUserToRealmDtoOut(
         user.surname,
         realm.name,
         role.value,
         switchedAsActive = dtoIn.switchAsActive
       )
-      val activationFlag = dtoIn.switchAsActive.getOrElse(false)
-      if (activationFlag) {
-        for {
-          r <- result
-          _ <- switchActiveRealm(SwitchActiveRealmDtoIn(r.user, r.realm, dtoIn.moderatorTid))
-        } yield r
-      } else {
-        result
-      }
-    }
 
     override def switchActiveRealm(dtoIn: SwitchActiveRealmDtoIn): Flow[F, SwitchActiveRealmDtoOut] =
       for {
