@@ -17,10 +17,9 @@ object GameValidationSet extends CustomValidationRules {
       dto.moderatorTid should be > 0L
     }
 
-  implicit val UpdateRealmAlgorithmDtoInValidator: TransformedValidator[AddEloPointsDtoIn] =
+  implicit val AddEloPointsDtoInValidator: TransformedValidator[AddEloPointsDtoIn] =
     validator[AddEloPointsDtoIn] { dto =>
       dto.points.user is sizeBetween(2, 20) and onlyLettersAndNumbers
-      dto.points.value should be > 0
       dto.moderatorTid should be > 0L
     }
 
