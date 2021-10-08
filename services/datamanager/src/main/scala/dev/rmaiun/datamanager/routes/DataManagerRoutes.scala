@@ -51,7 +51,7 @@ object DataManagerRoutes {
 
   def realmRoutes[F[_]: Sync: Monad: Logger](realmManager: RealmManager[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
-    import dev.rmaiun.datamanager.dtos.api.codec.codec._
+    import dev.rmaiun.datamanager.dtos.api.codec.FullCodec._
     import dsl._
 
     HttpRoutes.of[F] {
@@ -76,7 +76,7 @@ object DataManagerRoutes {
 
   def userRoutes[F[_]: Sync: Monad: Logger](userManager: UserManager[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
-    import dev.rmaiun.datamanager.dtos.api.codec.codec._
+    import dev.rmaiun.datamanager.dtos.api.codec.FullCodec._
     import dsl._
 
     HttpRoutes.of[F] {
@@ -139,7 +139,7 @@ object DataManagerRoutes {
 
   def gameHistoryRoutes[F[_]: Sync: Monad: Logger](gameManager: GameManager[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
-    import dev.rmaiun.datamanager.dtos.api.codec.codec._
+    import dev.rmaiun.datamanager.dtos.api.codec.FullCodec._
     import dsl._
 
     HttpRoutes.of[F] {
@@ -162,7 +162,7 @@ object DataManagerRoutes {
 
   def eloPointsRoutes[F[_]: Sync: Monad: Logger](gameManager: GameManager[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
-    import dev.rmaiun.datamanager.dtos.api.codec.codec._
+    import dev.rmaiun.datamanager.dtos.api.codec.FullCodec._
     import dsl._
 
     HttpRoutes.of[F] {
