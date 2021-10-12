@@ -1,8 +1,8 @@
-version: '3'
+version: '3.3'
 services:
-  arbmysql:
+  mysql_arbiter:
     image: mysql:5.7
-    container_name: arbmysql
+    container_name: mysql_arbiter
     restart: always
     environment:
       MYSQL_DATABASE: 'arbiter'
@@ -13,3 +13,14 @@ services:
       - '3306:3306'
     expose:
       - '3306'
+  rabbit_arbiter:
+    container_name: rabbit_arbiter
+    image: "rabbitmq:3.8-management"
+    environment:
+      RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
+      RABBITMQ_DEFAULT_USER: "rabbitmq"
+      RABBITMQ_DEFAULT_PASS: "rabbitmq"
+      RABBITMQ_DEFAULT_VHOST: "arbiter"
+    ports:
+      - "15672:15672"
+      - "5672:5672"

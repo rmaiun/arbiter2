@@ -44,12 +44,23 @@ lazy val datamanager = (project in file("services/datamanager"))
     settings,
     libraryDependencies ++= dataManagerDependencies,
     Test / parallelExecution := false
-)
+  )
   .settings(
     flywayUrl := "jdbc:mysql://127.0.0.1:3306/arbiter?useSSL=false&useUnicode=true&characterEncoding=UTF-8",
     flywayUser := "root",
     flywayPassword := "rootpassword",
     flywayLocations += "db/migration"
+  )
+  .dependsOn(common, tftypes, validation, errorHandling)
+  .enablePlugins(FlywayPlugin)
+  .disablePlugins(AssemblyPlugin)
+
+lazy val mabel = (project in file("services/mabel"))
+  .settings(
+    name := "mabel",
+    settings,
+    libraryDependencies ++= mabelDependencies,
+    Test / parallelExecution := false
   )
   .dependsOn(common, tftypes, validation, errorHandling)
   .enablePlugins(FlywayPlugin)
@@ -88,6 +99,7 @@ lazy val dependencies =
     val fs2Core        = "co.fs2"                %% "fs2-core"             % "2.4.4"
     val fs2IO          = "co.fs2"                %% "fs2-io"               % "2.4.2"
     val accordCore     = "com.wix"               %% "accord-core"          % "0.7.6"
+    val fs2rabbit      = "dev.profunktor"        %% "fs2-rabbit"           % "3.0.1"
     val scalatest      = "org.scalatest"         %% "scalatest"            % ScalaTestVersion       % Test
     val spec2Core      = "org.specs2"            %% "specs2-core"          % Specs2Version          % Test
   }
@@ -125,6 +137,25 @@ lazy val dataManagerDependencies = Seq(
   dependencies.mysql,
   dependencies.doobieCore,
   dependencies.doobieHikari,
+  dependencies.scalatest,
+  dependencies.spec2Core
+)
+
+lazy val mabelDependencies = Seq(
+  dependencies.blazeServer,
+  dependencies.blazeClient,
+  dependencies.http4sCirce,
+  dependencies.httpDsl,
+  dependencies.circeGeneric,
+  dependencies.circeParser,
+  dependencies.circeOptics,
+  dependencies.logbackClassic,
+  dependencies.log4cats,
+  dependencies.pureConfig,
+  dependencies.mysql,
+  dependencies.doobieCore,
+  dependencies.doobieHikari,
+  dependencies.fs2rabbit,
   dependencies.scalatest,
   dependencies.spec2Core
 )
