@@ -1,4 +1,4 @@
-package dev.rmaiun.datamanager.dtos.api
+package dev.rmaiun.protocol.http
 
 object RealmDtoSet {
   case class RealmDto(id: Long, name: String, selectedAlgorithm: Option[String], teamSize: Int)

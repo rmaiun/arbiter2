@@ -1,7 +1,8 @@
-package dev.rmaiun.datamanager.dtos.api.codec
-import dev.rmaiun.datamanager.dtos.api.GameDtoSet.{CalculatedEloPointsDto, EloPointsDto, GameHistoryDto}
-import dev.rmaiun.datamanager.dtos.api.RealmDtoSet.RealmDto
-import dev.rmaiun.datamanager.dtos.api.UserDtoSet.{RealmShortInfo, UserData, UserDto}
+package dev.rmaiun.protocol.http.codec
+
+import dev.rmaiun.protocol.http.GameDtoSet.{CalculatedEloPointsDto, EloPointsDto, GameHistoryDto}
+import dev.rmaiun.protocol.http.RealmDtoSet.RealmDto
+import dev.rmaiun.protocol.http.UserDtoSet.{RealmShortInfo, UserData, UserDto}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder}
 trait SubDtoCodec {

@@ -1,3 +1,3 @@
-package dev.rmaiun.datamanager.dtos.api.codec
+package dev.rmaiun.protocol.http.codec
 
 object FullCodec extends RealmDtoCodec with UserDtoCodec with GameHistoryDtoCodec with EloPointsDtoCodec

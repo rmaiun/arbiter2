@@ -1,6 +1,6 @@
-package dev.rmaiun.datamanager.dtos.api.codec
+package dev.rmaiun.protocol.http.codec
 
-import dev.rmaiun.datamanager.dtos.api.GameDtoSet.{AddEloPointsDtoIn, AddEloPointsDtoOut, ListEloPointsDtoIn, ListEloPointsDtoOut}
+import dev.rmaiun.protocol.http.GameDtoSet.{AddEloPointsDtoIn, AddEloPointsDtoOut, ListEloPointsDtoIn, ListEloPointsDtoOut}
 import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 

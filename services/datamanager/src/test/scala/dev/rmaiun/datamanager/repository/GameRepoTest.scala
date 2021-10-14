@@ -1,12 +1,12 @@
 package dev.rmaiun.datamanager.repository
 
 import cats.data.NonEmptyList
-import cats.effect.{ ContextShift, IO }
+import cats.effect.{ContextShift, IO}
 import dev.rmaiun.common.DateFormatter
 import dev.rmaiun.datamanager.db.entities._
-import dev.rmaiun.datamanager.dtos.internal.{ EloPointsCriteria, GameHistoryCriteria }
+import dev.rmaiun.datamanager.dtos.{EloPointsCriteria, GameHistoryCriteria}
 import dev.rmaiun.datamanager.helpers.ConfigProvider.Config
-import dev.rmaiun.datamanager.helpers.{ ConfigProvider, TransactorProvider }
+import dev.rmaiun.datamanager.helpers.{ConfigProvider, TransactorProvider}
 import dev.rmaiun.datamanager.repositories._
 import doobie.ConnectionIO
 import doobie.hikari.HikariTransactor
@@ -14,7 +14,7 @@ import doobie.implicits._
 import doobie.util.ExecutionContexts
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.{ BeforeAndAfterEach, OptionValues }
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
 
 class GameRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach with OptionValues {
   implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContexts.synchronous)

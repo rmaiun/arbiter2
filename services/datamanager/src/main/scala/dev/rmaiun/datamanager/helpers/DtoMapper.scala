@@ -1,8 +1,8 @@
 package dev.rmaiun.datamanager.helpers
 
 import dev.rmaiun.datamanager.db.entities.{ Realm, User }
-import dev.rmaiun.datamanager.dtos.api.RealmDtoSet.RealmDto
-import dev.rmaiun.datamanager.dtos.api.UserDtoSet.UserDto
+import dev.rmaiun.protocol.http.RealmDtoSet.RealmDto
+import dev.rmaiun.protocol.http.UserDtoSet.UserDto
 
 object DtoMapper {
   def userToDto(u: User): UserDto = UserDto(u.id, u.surname, u.nickname, u.tid, u.active, u.createdAt)

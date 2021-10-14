@@ -1,4 +1,4 @@
-package dev.rmaiun.datamanager.dtos.internal
+package dev.rmaiun.datamanager.dtos
 
 import cats.data.NonEmptyList
 

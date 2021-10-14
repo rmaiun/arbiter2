@@ -2,15 +2,15 @@ package dev.rmaiun.datamanager.routes
 
 import cats.effect.Sync
 import cats.{Applicative, Monad}
-import dev.rmaiun.datamanager.dtos.api.GameDtoSet.{AddEloPointsDtoIn, AddGameHistoryDtoIn, ListEloPointsDtoIn, ListGameHistoryDtoIn, StoredGameHistoryDto}
-import dev.rmaiun.datamanager.dtos.api.RealmDtoSet.{GetRealmDtoIn, RegisterRealmDtoIn, UpdateRealmAlgorithmDtoIn}
-import dev.rmaiun.datamanager.dtos.api.UserDtoSet._
 import dev.rmaiun.datamanager.errors.RoutingErrors.RequiredParamsNotFound
 import dev.rmaiun.datamanager.managers.{GameManager, RealmManager, UserManager}
 import dev.rmaiun.errorhandling.errors.AppRuntimeException
 import dev.rmaiun.errorhandling.errors.codec._
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
+import dev.rmaiun.protocol.http.GameDtoSet.{AddEloPointsDtoIn, AddGameHistoryDtoIn, ListEloPointsDtoIn, ListGameHistoryDtoIn}
+import dev.rmaiun.protocol.http.RealmDtoSet.{GetRealmDtoIn, RegisterRealmDtoIn, UpdateRealmAlgorithmDtoIn}
+import dev.rmaiun.protocol.http.UserDtoSet._
 import io.chrisdavenport.log4cats.Logger
 import io.circe.{Decoder, Encoder}
 import org.http4s.circe.{jsonEncoderOf, jsonOf}
@@ -51,7 +51,7 @@ object DataManagerRoutes {
 
   def realmRoutes[F[_]: Sync: Monad: Logger](realmManager: RealmManager[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
-    import dev.rmaiun.datamanager.dtos.api.codec.FullCodec._
+    import dev.rmaiun.protocol.http.codec.FullCodec._
     import dsl._
 
     HttpRoutes.of[F] {
@@ -76,7 +76,7 @@ object DataManagerRoutes {
 
   def userRoutes[F[_]: Sync: Monad: Logger](userManager: UserManager[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
-    import dev.rmaiun.datamanager.dtos.api.codec.FullCodec._
+    import dev.rmaiun.protocol.http.codec.FullCodec._
     import dsl._
 
     HttpRoutes.of[F] {
@@ -139,20 +139,20 @@ object DataManagerRoutes {
 
   def gameHistoryRoutes[F[_]: Sync: Monad: Logger](gameManager: GameManager[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
-    import dev.rmaiun.datamanager.dtos.api.codec.FullCodec._
+    import dev.rmaiun.protocol.http.codec.FullCodec._
     import dsl._
 
     HttpRoutes.of[F] {
-      case req@POST -> Root / "store" =>
+      case req @ POST -> Root / "store" =>
         val dtoOut = for {
           dtoIn <- Flow.fromF(req.as[AddGameHistoryDtoIn])
-          res <- gameManager.storeGameHistory(dtoIn)
+          res   <- gameManager.storeGameHistory(dtoIn)
         } yield res
         flowToResponse(dtoOut)
 
-      case req@GET -> Root / "list" =>
+      case req @ GET -> Root / "list" =>
         val userAllFlow = for {
-          realm <- Flow.fromOpt(req.params.get("realm"), RequiredParamsNotFound(Map("requestParam" -> "realm")))
+          realm  <- Flow.fromOpt(req.params.get("realm"), RequiredParamsNotFound(Map("requestParam" -> "realm")))
           season <- Flow.fromOpt(req.params.get("season"), RequiredParamsNotFound(Map("requestParam" -> "season")))
           result <- gameManager.listGameHistory(ListGameHistoryDtoIn(realm, season))
         } yield result
@@ -162,23 +162,23 @@ object DataManagerRoutes {
 
   def eloPointsRoutes[F[_]: Sync: Monad: Logger](gameManager: GameManager[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
-    import dev.rmaiun.datamanager.dtos.api.codec.FullCodec._
+    import dev.rmaiun.protocol.http.codec.FullCodec._
     import dsl._
 
     HttpRoutes.of[F] {
 
-      case req@POST -> Root / "store" =>
+      case req @ POST -> Root / "store" =>
         val dtoOut = for {
           dtoIn <- Flow.fromF(req.as[AddEloPointsDtoIn])
-          res <- gameManager.addEloPoints(dtoIn)
+          res   <- gameManager.addEloPoints(dtoIn)
         } yield res
         flowToResponse(dtoOut)
 
-      case req@GET -> Root / "listCalculated" =>
+      case req @ GET -> Root / "listCalculated" =>
         val userAllFlow = for {
-          users <- Flow.fromOpt(req.params.get("users"), RequiredParamsNotFound(Map("requestParam" -> "users")))
+          users    <- Flow.fromOpt(req.params.get("users"), RequiredParamsNotFound(Map("requestParam" -> "users")))
           listUsers = users.split(",").toList
-          result <- gameManager.listCalculatedEloPoints(ListEloPointsDtoIn(Some(listUsers)))
+          result   <- gameManager.listCalculatedEloPoints(ListEloPointsDtoIn(Some(listUsers)))
         } yield result
         flowToResponse(userAllFlow)
     }

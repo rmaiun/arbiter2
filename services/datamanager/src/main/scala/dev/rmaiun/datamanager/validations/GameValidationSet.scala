@@ -2,7 +2,7 @@ package dev.rmaiun.datamanager.validations
 
 import com.wix.accord.dsl._
 import com.wix.accord.transform.ValidationTransform.TransformedValidator
-import dev.rmaiun.datamanager.dtos.api.GameDtoSet._
+import dev.rmaiun.protocol.http.GameDtoSet._
 import dev.rmaiun.validation.CustomValidationRules
 
 object GameValidationSet extends CustomValidationRules {

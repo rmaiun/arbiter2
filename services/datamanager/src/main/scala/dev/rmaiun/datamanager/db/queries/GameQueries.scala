@@ -1,9 +1,9 @@
 package dev.rmaiun.datamanager.db.queries
 
 import cats.data.NonEmptyList
-import dev.rmaiun.datamanager.db.entities.{ EloPoints, GameHistory }
-import dev.rmaiun.datamanager.db.projections.{ EloPointsData, GameHistoryData }
-import dev.rmaiun.datamanager.dtos.internal.{ EloPointsCriteria, GameHistoryCriteria }
+import dev.rmaiun.datamanager.db.entities.{EloPoints, GameHistory}
+import dev.rmaiun.datamanager.db.projections.{EloPointsData, GameHistoryData}
+import dev.rmaiun.datamanager.dtos.{EloPointsCriteria, GameHistoryCriteria}
 import doobie.Fragments
 import doobie.implicits._
 

@@ -1,5 +1,5 @@
-package dev.rmaiun.datamanager.dtos.api.codec
-import dev.rmaiun.datamanager.dtos.api.UserDtoSet.{AssignUserToRealmDtoIn, AssignUserToRealmDtoOut, FindAllUsersDtoIn, FindAllUsersDtoOut, FindAvailableRealmsDtoIn, FindAvailableRealmsDtoOut, FindUserDtoIn, FindUserDtoOut, LinkTidDtoIn, LinkTidDtoOut, ProcessActivationDtoIn, ProcessActivationDtoOut, RegisterUserDtoIn, RegisterUserDtoOut, SwitchActiveRealmDtoIn, SwitchActiveRealmDtoOut}
+package dev.rmaiun.protocol.http.codec
+import dev.rmaiun.protocol.http.UserDtoSet.{AssignUserToRealmDtoIn, AssignUserToRealmDtoOut, FindAllUsersDtoIn, FindAllUsersDtoOut, FindAvailableRealmsDtoIn, FindAvailableRealmsDtoOut, FindUserDtoIn, FindUserDtoOut, LinkTidDtoIn, LinkTidDtoOut, ProcessActivationDtoIn, ProcessActivationDtoOut, RegisterUserDtoIn, RegisterUserDtoOut, SwitchActiveRealmDtoIn, SwitchActiveRealmDtoOut}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder}
 

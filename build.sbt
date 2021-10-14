@@ -38,6 +38,14 @@ lazy val errorHandling = (project in file("libs/errorhandling"))
   )
   .disablePlugins(AssemblyPlugin)
 
+lazy val protocol = (project in file("libs/protocol"))
+  .settings(
+    name := "protocol",
+    settings,
+    libraryDependencies ++= protocolDependencies
+  )
+  .disablePlugins(AssemblyPlugin)
+
 lazy val datamanager = (project in file("services/datamanager"))
   .settings(
     name := "datamanager",
@@ -51,7 +59,7 @@ lazy val datamanager = (project in file("services/datamanager"))
     flywayPassword := "rootpassword",
     flywayLocations += "db/migration"
   )
-  .dependsOn(common, tftypes, validation, errorHandling)
+  .dependsOn(common, tftypes, validation, errorHandling, protocol)
   .enablePlugins(FlywayPlugin)
   .disablePlugins(AssemblyPlugin)
 
@@ -62,7 +70,7 @@ lazy val mabel = (project in file("services/mabel"))
     libraryDependencies ++= mabelDependencies,
     Test / parallelExecution := false
   )
-  .dependsOn(common, tftypes, validation, errorHandling)
+  .dependsOn(common, tftypes, validation, errorHandling, protocol)
   .enablePlugins(FlywayPlugin)
   .disablePlugins(AssemblyPlugin)
 
@@ -118,6 +126,12 @@ lazy val validationDependencies = Seq(
 lazy val errorHandlingDependencies = Seq(
   dependencies.catsCore,
   dependencies.catsEffect,
+  dependencies.circeGeneric,
+  dependencies.circeParser,
+  dependencies.circeOptics
+)
+
+lazy val protocolDependencies = Seq(
   dependencies.circeGeneric,
   dependencies.circeParser,
   dependencies.circeOptics

@@ -1,6 +1,4 @@
-package dev.rmaiun.datamanager.dtos.api
-
-import dev.rmaiun.datamanager.dtos.api.RealmDtoSet.RealmDto
+package dev.rmaiun.protocol.http
 
 import java.time.{ ZoneOffset, ZonedDateTime }
 

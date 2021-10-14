@@ -1,4 +1,4 @@
-package dev.rmaiun.datamanager.dtos.api
+package dev.rmaiun.protocol.http
 
 import java.time.ZonedDateTime
 

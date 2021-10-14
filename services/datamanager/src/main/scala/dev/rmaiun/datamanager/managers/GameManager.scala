@@ -4,11 +4,11 @@ import cats.Monad
 import cats.effect.Sync
 import dev.rmaiun.common.DateFormatter
 import dev.rmaiun.datamanager.db.entities.{ EloPoints, GameHistory }
-import dev.rmaiun.datamanager.dtos.api.GameDtoSet._
-import dev.rmaiun.datamanager.dtos.internal.GameHistoryCriteria
+import dev.rmaiun.datamanager.dtos.GameHistoryCriteria
 import dev.rmaiun.datamanager.services._
 import dev.rmaiun.datamanager.validations.GameValidationSet._
 import dev.rmaiun.flowtypes.Flow.Flow
+import dev.rmaiun.protocol.http.GameDtoSet._
 import dev.rmaiun.validation.Validator
 
 trait GameManager[F[_]] {

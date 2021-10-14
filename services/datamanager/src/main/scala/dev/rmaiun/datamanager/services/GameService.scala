@@ -3,9 +3,9 @@ package dev.rmaiun.datamanager.services
 import cats.Monad
 import cats.data.NonEmptyList
 import cats.effect.Sync
-import dev.rmaiun.datamanager.db.entities.{ EloPoints, GameHistory }
-import dev.rmaiun.datamanager.db.projections.{ EloPointsData, GameHistoryData }
-import dev.rmaiun.datamanager.dtos.internal.{ EloPointsCriteria, GameHistoryCriteria }
+import dev.rmaiun.datamanager.db.entities.{EloPoints, GameHistory}
+import dev.rmaiun.datamanager.db.projections.{EloPointsData, GameHistoryData}
+import dev.rmaiun.datamanager.dtos.{EloPointsCriteria, GameHistoryCriteria}
 import dev.rmaiun.datamanager.repositories.GameRepo
 import dev.rmaiun.errorhandling.ThrowableOps._
 import dev.rmaiun.flowtypes.Flow.Flow

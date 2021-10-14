@@ -5,7 +5,6 @@ import cats.data.EitherT
 import cats.implicits._
 import dev.rmaiun.common.DateFormatter
 import dev.rmaiun.datamanager.db.entities.{EloPoints, User}
-import dev.rmaiun.datamanager.dtos.api.UserDtoSet._
 import dev.rmaiun.datamanager.errors.UserErrors.{UserAlreadyExistsException, UserNotFoundException}
 import dev.rmaiun.datamanager.helpers.ConfigProvider.Config
 import dev.rmaiun.datamanager.helpers.DtoMapper.userToDto
@@ -13,6 +12,7 @@ import dev.rmaiun.datamanager.services._
 import dev.rmaiun.datamanager.validations.UserValidationSet._
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
+import dev.rmaiun.protocol.http.UserDtoSet._
 import dev.rmaiun.validation.Validator
 
 import java.time.{ZoneOffset, ZonedDateTime}

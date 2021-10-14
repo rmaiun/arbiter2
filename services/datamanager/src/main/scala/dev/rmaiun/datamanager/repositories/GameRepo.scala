@@ -2,10 +2,10 @@ package dev.rmaiun.datamanager.repositories
 
 import cats.Monad
 import cats.data.NonEmptyList
-import dev.rmaiun.datamanager.db.entities.{ EloPoints, GameHistory }
-import dev.rmaiun.datamanager.db.projections.{ EloPointsData, GameHistoryData }
+import dev.rmaiun.datamanager.db.entities.{EloPoints, GameHistory}
+import dev.rmaiun.datamanager.db.projections.{EloPointsData, GameHistoryData}
 import dev.rmaiun.datamanager.db.queries.GameQueries
-import dev.rmaiun.datamanager.dtos.internal.{ EloPointsCriteria, GameHistoryCriteria }
+import dev.rmaiun.datamanager.dtos.{EloPointsCriteria, GameHistoryCriteria}
 import doobie.ConnectionIO
 
 trait GameRepo[F[_]] {
