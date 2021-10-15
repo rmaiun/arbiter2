@@ -1,27 +1,27 @@
 package dev.rmaiun.mabel.services
 
-
 import cats.Monad
 import cats.effect.Sync
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
+import dev.rmaiun.protocol.http.GameDtoSet._
 import dev.rmaiun.protocol.http.RealmDtoSet._
 import dev.rmaiun.protocol.http.UserDtoSet._
-import dev.rmaiun.protocol.http.GameDtoSet._
-import io.circe.{Decoder, Encoder}
+import dev.rmaiun.protocol.http.codec.FullCodec._
+import io.chrisdavenport.log4cats.Logger
+import io.circe.{ Decoder, Encoder }
 import org.http4s.Method.POST
 import org.http4s.circe._
 import org.http4s.client.Client
 import org.http4s.implicits._
-import org.http4s.{EntityDecoder, EntityEncoder, Request}
-import dev.rmaiun.protocol.http.codec.FullCodec._
+import org.http4s.{ EntityDecoder, EntityEncoder, Request }
 
-case class ArbiterClient[F[_]:Sync:Monad](client: Client[F]){
+case class ArbiterClient[F[_]: Sync: Monad](client: Client[F]) {
   implicit def circeJsonDecoder[A: Decoder]: EntityDecoder[F, A] = jsonOf[F, A]
   implicit def circeJsonEncoder[A: Encoder]: EntityEncoder[F, A] = jsonEncoderOf[F, A]
-  val baseUri = uri"http://localhost:9091"
+  val baseUri                                                    = uri"http://localhost:9091"
 
-  def findRealm(realm: String): Flow[F,GetRealmDtoOut] = {
+  def findRealm(realm: String): Flow[F, GetRealmDtoOut] = {
     val uri = baseUri / "realms" / "find" / s"$realm"
     Flow.fromF(client.expect[GetRealmDtoOut](uri))
   }
@@ -32,7 +32,7 @@ case class ArbiterClient[F[_]:Sync:Monad](client: Client[F]){
     Flow.fromF(client.expect[RegisterUserDtoOut](request))
   }
 
-  def assignUserToRealm(dtoIn: AssignUserToRealmDtoIn): Flow[F,AssignUserToRealmDtoOut] = {
+  def assignUserToRealm(dtoIn: AssignUserToRealmDtoIn): Flow[F, AssignUserToRealmDtoOut] = {
     val uri     = baseUri / "users" / "assignToRealm"
     val request = Request[F](POST, uri).withEntity(dtoIn)
     Flow.fromF(client.expect[AssignUserToRealmDtoOut](request))
@@ -65,9 +65,15 @@ case class ArbiterClient[F[_]:Sync:Monad](client: Client[F]){
     Flow.fromF(client.expect[ListEloPointsDtoOut](uriWithParams))
   }
 
-  def findPlayer(surname: String):Flow[F, FindUserDtoOut] = {
+  def findPlayer(surname: String): Flow[F, FindUserDtoOut] = {
     val uri           = baseUri / "users" / "find"
     val uriWithParams = uri.withQueryParam("surname", s"$surname")
     Flow.fromF(client.expect[FindUserDtoOut](uriWithParams))
   }
+}
+
+object ArbiterClient {
+  def apply[F[_]](implicit ev: ArbiterClient[F]): ArbiterClient[F] = ev
+  def impl[F[_]: Monad: Logger: Sync](c: Client[F]): ArbiterClient[F] =
+    new ArbiterClient[F](c)
 }

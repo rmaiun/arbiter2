@@ -6,9 +6,9 @@ import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.commands.AddPlayerCmd
 import dev.rmaiun.mabel.commands.AddPlayerCmd._
 import dev.rmaiun.mabel.dtos.{ BotRequest, BotResponse, ProcessorResponse }
-import dev.rmaiun.mabel.services.{ ArbiterClient, IdGenerator }
-import dev.rmaiun.mabel.utils.Constants
+import dev.rmaiun.mabel.services.ArbiterClient
 import dev.rmaiun.mabel.utils.Constants.{ PREFIX, SUFFIX }
+import dev.rmaiun.mabel.utils.{ Constants, IdGenerator }
 import dev.rmaiun.protocol.http.UserDtoSet._
 import io.chrisdavenport.log4cats.Logger
 
@@ -37,4 +37,10 @@ case class AddPlayerProcessor[F[_]: Monad: Logger](arbiterClient: ArbiterClient[
       AssignUserToRealmDtoIn(dto.surname.toLowerCase, Constants.defaultRealm, role, Some(true), dto.moderator)
     arbiterClient.assignUserToRealm(requestDto)
   }
+}
+
+object AddPlayerProcessor {
+  def apply[F[_]](implicit ev: AddPlayerProcessor[F]): AddPlayerProcessor[F] = ev
+  def impl[F[_]: Monad: Logger](ac: ArbiterClient[F]): AddPlayerProcessor[F] =
+    new AddPlayerProcessor[F](ac)
 }

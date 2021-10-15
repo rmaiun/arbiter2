@@ -16,3 +16,12 @@ case class ProcessorStrategy[F[_]: Applicative](
       case _           => Flow.error(new RuntimeException("Unable to process given request"))
     }
 }
+
+object ProcessorStrategy {
+  def apply[F[_]](implicit ev: ProcessorStrategy[F]): ProcessorStrategy[F] = ev
+  def impl[F[_]: Applicative](
+    addPlayerProcessor: AddPlayerProcessor[F],
+    addRoundProcessor: AddRoundProcessor[F]
+  ): ProcessorStrategy[F] =
+    new ProcessorStrategy[F](addPlayerProcessor, addRoundProcessor)
+}

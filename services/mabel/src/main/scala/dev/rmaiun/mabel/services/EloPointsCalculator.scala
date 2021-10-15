@@ -82,3 +82,9 @@ case class EloPointsCalculator[F[_]: Monad](
       20
     }
 }
+
+object EloPointsCalculator {
+  def apply[F[_]](implicit ev: EloPointsCalculator[F]): EloPointsCalculator[F] = ev
+  def impl[F[_]: Monad](ac: ArbiterClient[F]): EloPointsCalculator[F] =
+    new EloPointsCalculator[F](ac)
+}
