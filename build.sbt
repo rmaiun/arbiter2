@@ -46,11 +46,11 @@ lazy val protocol = (project in file("libs/protocol"))
   )
   .disablePlugins(AssemblyPlugin)
 
-lazy val datamanager = (project in file("services/datamanager"))
+lazy val soos = (project in file("services/soos"))
   .settings(
-    name := "datamanager",
+    name := "soos",
     settings,
-    libraryDependencies ++= dataManagerDependencies,
+    libraryDependencies ++= soosDependencies,
     Test / parallelExecution := false
   )
   .settings(
@@ -137,7 +137,7 @@ lazy val protocolDependencies = Seq(
   dependencies.circeOptics
 )
 
-lazy val dataManagerDependencies = Seq(
+lazy val soosDependencies = Seq(
   dependencies.blazeServer,
   dependencies.blazeClient,
   dependencies.http4sCirce,
