@@ -60,14 +60,14 @@ object DataManagerRoutes {
 
       case req @ POST -> Root / "create" =>
         val dtoOut = for {
-          dtoIn <- Flow.fromF(req.as[RegisterRealmDtoIn])
+          dtoIn <- Flow.effect(req.as[RegisterRealmDtoIn])
           res   <- realmManager.registerRealm(dtoIn)
         } yield res
         flowToResponse(dtoOut)
 
       case req @ POST -> Root / "updateAlgorithm" =>
         val dtoOut = for {
-          dtoIn <- Flow.fromF(req.as[UpdateRealmAlgorithmDtoIn])
+          dtoIn <- Flow.effect(req.as[UpdateRealmAlgorithmDtoIn])
           res   <- realmManager.updateRealmAlgorithm(dtoIn)
         } yield res
         flowToResponse(dtoOut)
@@ -82,7 +82,7 @@ object DataManagerRoutes {
     HttpRoutes.of[F] {
       case req @ POST -> Root / "register" =>
         val dtoOut = for {
-          dtoIn <- Flow.fromF(req.as[RegisterUserDtoIn])
+          dtoIn <- Flow.effect(req.as[RegisterUserDtoIn])
           res   <- userManager.registerUser(dtoIn)
         } yield res
         flowToResponse(dtoOut)
@@ -102,35 +102,35 @@ object DataManagerRoutes {
 
       case req @ POST -> Root / "assignToRealm" =>
         val dtoOut = for {
-          dtoIn <- Flow.fromF(req.as[AssignUserToRealmDtoIn])
+          dtoIn <- Flow.effect(req.as[AssignUserToRealmDtoIn])
           res   <- userManager.assignUserToRealm(dtoIn)
         } yield res
         flowToResponse(dtoOut)
 
       case req @ POST -> Root / "switchActiveRealm" =>
         val dtoOut = for {
-          dtoIn <- Flow.fromF(req.as[SwitchActiveRealmDtoIn])
+          dtoIn <- Flow.effect(req.as[SwitchActiveRealmDtoIn])
           res   <- userManager.switchActiveRealm(dtoIn)
         } yield res
         flowToResponse(dtoOut)
 
       case req @ POST -> Root / "processActivation" =>
         val dtoOut = for {
-          dtoIn <- Flow.fromF(req.as[ProcessActivationDtoIn])
+          dtoIn <- Flow.effect(req.as[ProcessActivationDtoIn])
           res   <- userManager.processActivation(dtoIn)
         } yield res
         flowToResponse(dtoOut)
 
       case req @ POST -> Root / "linkTid" =>
         val dtoOut = for {
-          dtoIn <- Flow.fromF(req.as[LinkTidDtoIn])
+          dtoIn <- Flow.effect(req.as[LinkTidDtoIn])
           res   <- userManager.linkTid(dtoIn)
         } yield res
         flowToResponse(dtoOut)
 
       case req @ GET -> Root / "availableRealms" =>
         val dtoOut = for {
-          dtoIn <- Flow.fromF(req.as[FindAvailableRealmsDtoIn])
+          dtoIn <- Flow.effect(req.as[FindAvailableRealmsDtoIn])
           res   <- userManager.findAvailableRealms(dtoIn)
         } yield res
         flowToResponse(dtoOut)
@@ -145,7 +145,7 @@ object DataManagerRoutes {
     HttpRoutes.of[F] {
       case req @ POST -> Root / "store" =>
         val dtoOut = for {
-          dtoIn <- Flow.fromF(req.as[AddGameHistoryDtoIn])
+          dtoIn <- Flow.effect(req.as[AddGameHistoryDtoIn])
           res   <- gameManager.storeGameHistory(dtoIn)
         } yield res
         flowToResponse(dtoOut)
@@ -169,7 +169,7 @@ object DataManagerRoutes {
 
       case req @ POST -> Root / "store" =>
         val dtoOut = for {
-          dtoIn <- Flow.fromF(req.as[AddEloPointsDtoIn])
+          dtoIn <- Flow.effect(req.as[AddEloPointsDtoIn])
           res   <- gameManager.addEloPoints(dtoIn)
         } yield res
         flowToResponse(dtoOut)

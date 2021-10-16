@@ -1,15 +1,17 @@
 package dev.rmaiun.mabel.services
 
-import dev.profunktor.fs2rabbit.model.{ AmqpEnvelope, AmqpMessage, AmqpProperties }
-import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
-import dev.rmaiun.flowtypes.{ FLog, Flow }
+import cats.Monad
+import dev.profunktor.fs2rabbit.model.{AmqpEnvelope, AmqpMessage, AmqpProperties}
+import dev.rmaiun.flowtypes.Flow.{Flow, MonadThrowable, error}
+import dev.rmaiun.flowtypes.{FLog, Flow}
 import dev.rmaiun.mabel.dtos.AmqpStructures.AmqpPublisher
 import dev.rmaiun.mabel.dtos.BotResponse._
-import dev.rmaiun.mabel.dtos.{ BotRequest, ProcessorResponse }
-import dev.rmaiun.mabel.utils.Constants.{ PREFIX, SUFFIX }
+import dev.rmaiun.mabel.dtos.{BotRequest, ProcessorResponse}
+import dev.rmaiun.mabel.utils.Constants.{PREFIX, SUFFIX}
 import dev.rmaiun.mabel.utils.IdGenerator
 import io.chrisdavenport.log4cats.Logger
 import io.circe.parser._
+import cats.syntax.apply._
 
 case class CommandHandler[F[_]: MonadThrowable: Logger](
   strategy: ProcessorStrategy[F],
@@ -34,6 +36,8 @@ case class CommandHandler[F[_]: MonadThrowable: Logger](
       result    <- processor.process(input)
     } yield result
     flow.leftFlatMap(err =>
+      FLog.error(err.getMessage) *>
+      Flow.effect(Monad[F].pure(err.printStackTrace())) *>
       Flow.pure(ProcessorResponse.error(input.chatId, IdGenerator.msgId, s"$PREFIX ERROR: ${err.getMessage} $SUFFIX"))
     )
   }
@@ -41,7 +45,7 @@ case class CommandHandler[F[_]: MonadThrowable: Logger](
   private def sendResponse(pr: ProcessorResponse): Flow[F, Unit] = {
     val payload = BotResponseEncoder(pr.botResponse).toString()
     val msg     = AmqpMessage[String](payload, AmqpProperties())
-    Flow.fromF(publisher(msg))
+    Flow.effect(publisher(msg))
   }
 }
 

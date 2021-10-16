@@ -23,31 +23,31 @@ case class ArbiterClient[F[_]: Sync: Monad](client: Client[F]) {
 
   def findRealm(realm: String): Flow[F, GetRealmDtoOut] = {
     val uri = baseUri / "realms" / "find" / s"$realm"
-    Flow.fromF(client.expect[GetRealmDtoOut](uri))
+    Flow.effect(client.expect[GetRealmDtoOut](uri))
   }
 
   def addPlayer(dtoIn: RegisterUserDtoIn): Flow[F, RegisterUserDtoOut] = {
     val uri     = baseUri / "users" / "register"
     val request = Request[F](POST, uri).withEntity(dtoIn)
-    Flow.fromF(client.expect[RegisterUserDtoOut](request))
+    Flow.effect(client.expect[RegisterUserDtoOut](request))
   }
 
   def assignUserToRealm(dtoIn: AssignUserToRealmDtoIn): Flow[F, AssignUserToRealmDtoOut] = {
     val uri     = baseUri / "users" / "assignToRealm"
     val request = Request[F](POST, uri).withEntity(dtoIn)
-    Flow.fromF(client.expect[AssignUserToRealmDtoOut](request))
+    Flow.effect(client.expect[AssignUserToRealmDtoOut](request))
   }
 
   def storeGameHistory(dtoIn: AddGameHistoryDtoIn): Flow[F, AddGameHistoryDtoOut] = {
     val uri     = baseUri / "games" / "history" / "store"
     val request = Request[F](POST, uri).withEntity(dtoIn)
-    Flow.fromF(client.expect[AddGameHistoryDtoOut](request))
+    Flow.effect(client.expect[AddGameHistoryDtoOut](request))
   }
 
   def storeEloPoints(dtoIn: AddEloPointsDtoIn): Flow[F, AddEloPointsDtoOut] = {
     val uri     = baseUri / "games" / "eloPoints" / "store"
     val request = Request[F](POST, uri).withEntity(dtoIn)
-    Flow.fromF(client.expect[AddEloPointsDtoOut](request))
+    Flow.effect(client.expect[AddEloPointsDtoOut](request))
   }
 
   def listGameHistory(realm: String, season: String): Flow[F, ListGameHistoryDtoOut] = {
@@ -55,20 +55,20 @@ case class ArbiterClient[F[_]: Sync: Monad](client: Client[F]) {
     val uriWithParams = uri
       .withQueryParam(realm, s"$realm")
       .withQueryParam("season", s"$season")
-    Flow.fromF(client.expect[ListGameHistoryDtoOut](uriWithParams))
+    Flow.effect(client.expect[ListGameHistoryDtoOut](uriWithParams))
   }
 
   def listCalculatedEloPoints(users: List[String]): Flow[F, ListEloPointsDtoOut] = {
     val uri = baseUri / "games" / "eloPoints" / "listCalculated"
     val uriWithParams = uri
       .withQueryParam("users", users.mkString(","))
-    Flow.fromF(client.expect[ListEloPointsDtoOut](uriWithParams))
+    Flow.effect(client.expect[ListEloPointsDtoOut](uriWithParams))
   }
 
   def findPlayer(surname: String): Flow[F, FindUserDtoOut] = {
     val uri           = baseUri / "users" / "find"
     val uriWithParams = uri.withQueryParam("surname", s"$surname")
-    Flow.fromF(client.expect[FindUserDtoOut](uriWithParams))
+    Flow.effect(client.expect[FindUserDtoOut](uriWithParams))
   }
 }
 
