@@ -8,7 +8,7 @@ import dev.rmaiun.mabel.commands.AddPlayerCmd._
 import dev.rmaiun.mabel.dtos.{ BotRequest, BotResponse, ProcessorResponse }
 import dev.rmaiun.mabel.services.ArbiterClient
 import dev.rmaiun.mabel.utils.Constants.{ PREFIX, SUFFIX }
-import dev.rmaiun.mabel.utils.{ Constants, IdGenerator }
+import dev.rmaiun.mabel.utils.{ Constants, IdGen }
 import dev.rmaiun.protocol.http.UserDtoSet._
 import io.chrisdavenport.log4cats.Logger
 
@@ -22,7 +22,7 @@ case class AddPlayerProcessor[F[_]: Monad: Logger](arbiterClient: ArbiterClient[
       _               <- FLog.info(s"Registered new player ${addPlayerResult.user.surname} with id ${addPlayerResult.user.id}")
     } yield {
       val result      = s"$PREFIX New player was registered with id ${addPlayerResult.user.id} $SUFFIX"
-      val botResponse = BotResponse(input.chatId, IdGenerator.msgId, result)
+      val botResponse = BotResponse(input.chatId, IdGen.msgId, result)
       ProcessorResponse.ok(botResponse)
     }
 

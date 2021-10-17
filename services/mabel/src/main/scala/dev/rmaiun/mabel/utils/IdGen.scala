@@ -1,5 +1,5 @@
 package dev.rmaiun.mabel.utils
 
-object IdGenerator {
+object IdGen {
   def msgId: Int = (System.currentTimeMillis % Int.MaxValue).toInt
 }

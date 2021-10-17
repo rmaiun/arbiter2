@@ -8,4 +8,6 @@ object Constants {
   val DEFAULT_RESULT: String = ""
 
   val defaultRealm: String = "ua_foosball"
+  val expectedGames        = 20
+
 }

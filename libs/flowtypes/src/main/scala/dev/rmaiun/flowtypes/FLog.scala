@@ -15,4 +15,7 @@ object FLog {
 
   def error[F[_]: Logger: Functor](msg: String): Flow[F, Unit] =
     EitherT(Functor[F].map(Logger[F].error(msg))(_.asRight[Throwable]))
+
+  def error[F[_]: Logger: Functor](cause: Throwable): Flow[F, Unit] =
+    EitherT(Functor[F].map(Logger[F].error(cause)("Error was triggered"))(_.asRight[Throwable]))
 }

@@ -1,17 +1,18 @@
 package dev.rmaiun.mabel.services
 
 import cats.Monad
-import dev.profunktor.fs2rabbit.model.{AmqpEnvelope, AmqpMessage, AmqpProperties}
-import dev.rmaiun.flowtypes.Flow.{Flow, MonadThrowable, error}
-import dev.rmaiun.flowtypes.{FLog, Flow}
+import cats.syntax.apply._
+import dev.profunktor.fs2rabbit.model.{ AmqpEnvelope, AmqpMessage, AmqpProperties }
+import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
+import dev.rmaiun.flowtypes.{ FLog, Flow }
 import dev.rmaiun.mabel.dtos.AmqpStructures.AmqpPublisher
 import dev.rmaiun.mabel.dtos.BotResponse._
-import dev.rmaiun.mabel.dtos.{BotRequest, ProcessorResponse}
-import dev.rmaiun.mabel.utils.Constants.{PREFIX, SUFFIX}
-import dev.rmaiun.mabel.utils.IdGenerator
+import dev.rmaiun.mabel.dtos.{ BotRequest, ProcessorResponse }
+import dev.rmaiun.mabel.utils.Constants.{ PREFIX, SUFFIX }
+import dev.rmaiun.mabel.utils.IdGen
 import io.chrisdavenport.log4cats.Logger
 import io.circe.parser._
-import cats.syntax.apply._
+import org.http4s.client.ConnectionFailure
 
 case class CommandHandler[F[_]: MonadThrowable: Logger](
   strategy: ProcessorStrategy[F],
@@ -35,11 +36,16 @@ case class CommandHandler[F[_]: MonadThrowable: Logger](
       processor <- strategy.selectProcessor(input.cmd)
       result    <- processor.process(input)
     } yield result
-    flow.leftFlatMap(err =>
+    flow.leftFlatMap { err =>
+      val msg = err match {
+        case _: ConnectionFailure => s"$PREFIX ERROR: Connection issue $SUFFIX"
+        case _                    => s"$PREFIX ERROR: ${err.getMessage} $SUFFIX"
+      }
       FLog.error(err.getMessage) *>
-      Flow.effect(Monad[F].pure(err.printStackTrace())) *>
-      Flow.pure(ProcessorResponse.error(input.chatId, IdGenerator.msgId, s"$PREFIX ERROR: ${err.getMessage} $SUFFIX"))
-    )
+        Flow.effect(Monad[F].pure(err.printStackTrace())) *>
+        Flow.pure(ProcessorResponse.error(input.chatId, IdGen.msgId, msg))
+    }
+
   }
 
   private def sendResponse(pr: ProcessorResponse): Flow[F, Unit] = {

@@ -9,7 +9,7 @@ import dev.rmaiun.mabel.commands.AddRoundCmd._
 import dev.rmaiun.mabel.dtos.EloRatingDto.{CalculatedPoints, EloPlayers, UserCalculatedPoints}
 import dev.rmaiun.mabel.dtos.{BotRequest, ProcessorResponse}
 import dev.rmaiun.mabel.services.{ArbiterClient, EloPointsCalculator}
-import dev.rmaiun.mabel.utils.{Constants, IdGenerator}
+import dev.rmaiun.mabel.utils.{Constants, IdGen}
 import dev.rmaiun.mabel.utils.Constants.{PREFIX, SUFFIX}
 import dev.rmaiun.protocol.http.GameDtoSet._
 import dev.rmaiun.protocol.http.UserDtoSet.FindUserDtoOut
@@ -32,7 +32,7 @@ case class AddRoundProcessor[F[_]: Monad: Logger](
       storedHistory <- storeHistory(dto)
     } yield {
       val msg = formatMessage(storedHistory.storedRound.id, storedHistory.storedRound.realm)
-      ProcessorResponse.ok(input.chatId, IdGenerator.msgId, msg)
+      ProcessorResponse.ok(input.chatId, IdGen.msgId, msg)
     }
 
   private def formatMessage(id: Long, realm: String): String =
