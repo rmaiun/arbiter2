@@ -3,12 +3,12 @@ package dev.rmaiun.soos.services
 import cats.Monad
 import cats.data.NonEmptyList
 import cats.effect.Sync
-import dev.rmaiun.soos.db.entities.{EloPoints, GameHistory}
-import dev.rmaiun.soos.db.projections.{EloPointsData, GameHistoryData}
-import dev.rmaiun.soos.dtos.{EloPointsCriteria, GameHistoryCriteria}
-import dev.rmaiun.soos.repositories.GameRepo
 import dev.rmaiun.errorhandling.ThrowableOps._
 import dev.rmaiun.flowtypes.Flow.Flow
+import dev.rmaiun.soos.db.entities.{ EloPoints, GameHistory }
+import dev.rmaiun.soos.db.projections.{ EloPointExtended, EloPointsData, GameHistoryData }
+import dev.rmaiun.soos.dtos.{ EloPointsCriteria, GameHistoryCriteria }
+import dev.rmaiun.soos.repositories.GameRepo
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
 
@@ -17,7 +17,7 @@ trait GameService[F[_]] {
   def createGameHistory(gh: GameHistory): Flow[F, GameHistory]
   def removeNEloPoints(idList: List[Long] = Nil): Flow[F, Int]
   def removeNGameHistory(idList: List[Long] = Nil): Flow[F, Int]
-  def listEloPointsByCriteria(surnames:List[String] = Nil): Flow[F, List[EloPointsData]]
+  def listEloPointsByCriteria(surnames: List[String] = Nil): Flow[F, List[EloPointExtended]]
   def listCalculatedPoints(surnames: Option[List[String]] = None): Flow[F, List[EloPointsData]]
   def listHistoryByCriteria(criteria: GameHistoryCriteria): Flow[F, List[GameHistoryData]]
 }
@@ -38,7 +38,7 @@ object GameService {
     override def removeNGameHistory(idList: List[Long]): Flow[F, Int] =
       gameRepo.removeNGameHistory(idList).transact(xa).attemptSql.adaptError
 
-    override def listEloPointsByCriteria(surnames:List[String]): Flow[F, List[EloPointsData]] = {
+    override def listEloPointsByCriteria(surnames: List[String]): Flow[F, List[EloPointExtended]] = {
       val criteria = NonEmptyList.fromList(surnames)
       gameRepo.listEloPointsByCriteria(EloPointsCriteria(criteria)).transact(xa).attemptSql.adaptError
     }

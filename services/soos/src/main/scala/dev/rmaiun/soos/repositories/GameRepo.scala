@@ -2,10 +2,10 @@ package dev.rmaiun.soos.repositories
 
 import cats.Monad
 import cats.data.NonEmptyList
-import dev.rmaiun.soos.db.entities.{EloPoints, GameHistory}
-import dev.rmaiun.soos.db.projections.{EloPointsData, GameHistoryData}
+import dev.rmaiun.soos.db.entities.{ EloPoints, GameHistory }
+import dev.rmaiun.soos.db.projections.{ EloPointExtended, EloPointsData, GameHistoryData }
 import dev.rmaiun.soos.db.queries.GameQueries
-import dev.rmaiun.soos.dtos.{EloPointsCriteria, GameHistoryCriteria}
+import dev.rmaiun.soos.dtos.{ EloPointsCriteria, GameHistoryCriteria }
 import doobie.ConnectionIO
 
 trait GameRepo[F[_]] {
@@ -13,7 +13,7 @@ trait GameRepo[F[_]] {
   def createGameHistory(gh: GameHistory): ConnectionIO[GameHistory]
   def removeNEloPoints(idList: List[Long] = Nil): ConnectionIO[Int]
   def removeNGameHistory(idList: List[Long] = Nil): ConnectionIO[Int]
-  def listEloPointsByCriteria(criteria: EloPointsCriteria): ConnectionIO[List[EloPointsData]]
+  def listEloPointsByCriteria(criteria: EloPointsCriteria): ConnectionIO[List[EloPointExtended]]
   def listCalculatedPoints(surnames: Option[NonEmptyList[String]] = None): ConnectionIO[List[EloPointsData]]
   def listHistoryByCriteria(criteria: GameHistoryCriteria): ConnectionIO[List[GameHistoryData]]
 }
@@ -40,7 +40,7 @@ object GameRepo {
     override def removeNGameHistory(idList: List[Long]): ConnectionIO[Int] =
       GameQueries.deleteHistoryByIdList(idList).run
 
-    override def listEloPointsByCriteria(criteria: EloPointsCriteria): ConnectionIO[List[EloPointsData]] =
+    override def listEloPointsByCriteria(criteria: EloPointsCriteria): ConnectionIO[List[EloPointExtended]] =
       GameQueries.listPointsByCriteria(criteria).to[List]
 
     override def listCalculatedPoints(surnames: Option[NonEmptyList[String]]): ConnectionIO[List[EloPointsData]] =

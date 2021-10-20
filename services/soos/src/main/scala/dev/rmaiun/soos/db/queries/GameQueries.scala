@@ -2,7 +2,7 @@ package dev.rmaiun.soos.db.queries
 
 import cats.data.NonEmptyList
 import dev.rmaiun.soos.db.entities.{EloPoints, GameHistory}
-import dev.rmaiun.soos.db.projections.{EloPointsData, GameHistoryData}
+import dev.rmaiun.soos.db.projections.{EloPointExtended, EloPointsData, GameHistoryData}
 import dev.rmaiun.soos.dtos.{EloPointsCriteria, GameHistoryCriteria}
 import doobie.Fragments
 import doobie.implicits._
@@ -21,9 +21,9 @@ object GameQueries extends CustomMeta {
          | values (${gh.id}, ${gh.realm}, ${gh.season}, ${gh.w1}, ${gh.w2}, ${gh.l1}, ${gh.l2}, ${gh.shutout}, ${gh.createdAt})
         """.stripMargin.update
 
-  def listPointsByCriteria(c: EloPointsCriteria): doobie.Query0[EloPointsData] = {
+  def listPointsByCriteria(c: EloPointsCriteria): doobie.Query0[EloPointExtended] = {
     val baseWithRealmFragment = fr"""
-                                    | select ep.id, user.surname, ep.points, ep.created
+                                    | select ep.id, user.surname as player, ep.points, ep.created
                                     |  from elo_points as ep
                                     | inner join user on ep.user = user.id
                                   """.stripMargin
@@ -31,7 +31,7 @@ object GameQueries extends CustomMeta {
       c.players.fold(baseWithRealmFragment)(players =>
         baseWithRealmFragment ++ fr"where" ++ Fragments.in(fr"user.surname", players)
       )
-    withUser.query[EloPointsData]
+    withUser.query[EloPointExtended]
   }
 
   def listCalculatedPoints(players: Option[NonEmptyList[String]]): doobie.Query0[EloPointsData] = {
