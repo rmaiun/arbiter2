@@ -39,8 +39,7 @@ class SeasonStatsProcessor[F[_]: Monad](ac: ArbiterClient[F]) extends Processor[
         .map(s => s"${s.player.capitalize}: ${s.games} in row")
         .getOrElse(DEFAULT_RESULT)
       val separator = "-" * 30
-      s"""$PREFIX
-         |Season: ${data.season}
+      s"""$PREFIX Season: ${data.season}
          |Games played: ${data.gamesPlayed}
          |Season ends in: ${data.daysToSeasonEnd} days
          |$separator

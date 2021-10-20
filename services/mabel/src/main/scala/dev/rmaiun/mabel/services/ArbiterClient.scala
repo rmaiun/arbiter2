@@ -6,18 +6,19 @@ import dev.rmaiun.errorhandling.errors.codec.ErrorDtoOut
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.errors.Errors.ArbiterClientError
+import dev.rmaiun.mabel.utils.Constants
 import dev.rmaiun.protocol.http.GameDtoSet._
 import dev.rmaiun.protocol.http.RealmDtoSet._
 import dev.rmaiun.protocol.http.UserDtoSet._
 import dev.rmaiun.protocol.http.codec.FullCodec._
 import io.chrisdavenport.log4cats.Logger
-import io.circe.{Decoder, Encoder}
+import io.circe.{ Decoder, Encoder }
 import org.http4s.Method.POST
 import org.http4s.Status.BadRequest
 import org.http4s.circe._
 import org.http4s.client.Client
 import org.http4s.implicits._
-import org.http4s.{EntityDecoder, EntityEncoder, Request, Response}
+import org.http4s.{ EntityDecoder, EntityEncoder, Request, Response }
 
 case class ArbiterClient[F[_]: Sync: Monad: Logger](client: Client[F]) {
   implicit def circeJsonDecoder[A: Decoder]: EntityDecoder[F, A] = jsonOf[F, A]
@@ -87,6 +88,12 @@ case class ArbiterClient[F[_]: Sync: Monad: Logger](client: Client[F]) {
     val uri           = baseUri / "users" / "find"
     val uriWithParams = uri.withQueryParam("surname", s"$surname")
     Flow.effect(client.expectOr[FindUserDtoOut](uriWithParams)(onError))
+  }
+
+  def findAllPlayers: Flow[F, FindAllUsersDtoOut] = {
+    val uri           = baseUri / "users" / "list"
+    val uriWithParams = uri.withQueryParam("realm", s"${Constants.defaultRealm}").withQueryParam("activeStatus", true)
+    Flow.effect(client.expectOr[FindAllUsersDtoOut](uriWithParams)(onError))
   }
 }
 

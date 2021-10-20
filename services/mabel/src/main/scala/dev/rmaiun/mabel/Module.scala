@@ -3,7 +3,7 @@ package dev.rmaiun.mabel
 import cats.Monad
 import cats.effect.{ ConcurrentEffect, ContextShift, Timer }
 import dev.rmaiun.mabel.dtos.AmqpStructures
-import dev.rmaiun.mabel.processors.{ AddPlayerProcessor, AddRoundProcessor, SeasonStatsProcessor }
+import dev.rmaiun.mabel.processors.{ AddPlayerProcessor, AddRoundProcessor, EloRatingProcessor, SeasonStatsProcessor }
 import dev.rmaiun.mabel.routes.SysRoutes
 import dev.rmaiun.mabel.services._
 import io.chrisdavenport.log4cats.Logger
@@ -21,9 +21,11 @@ object Module {
     lazy val addPlayerProcessor   = AddPlayerProcessor.impl(arbiterClient)
     lazy val addRoundProcessor    = AddRoundProcessor.impl(arbiterClient, eloPointsCalculator)
     lazy val seasonStatsProcessor = SeasonStatsProcessor.impl(arbiterClient)
-    lazy val strategy             = ProcessorStrategy.impl(addPlayerProcessor, addRoundProcessor, seasonStatsProcessor)
-    lazy val cmdHandler           = CommandHandler.impl(strategy, amqpStructures.botOutputPublisher)
-    lazy val pingManager          = PingManager.impl
+    lazy val eloRatingProcessor   = EloRatingProcessor.impl(arbiterClient)
+    lazy val strategy =
+      ProcessorStrategy.impl(addPlayerProcessor, addRoundProcessor, seasonStatsProcessor, eloRatingProcessor)
+    lazy val cmdHandler  = CommandHandler.impl(strategy, amqpStructures.botOutputPublisher)
+    lazy val pingManager = PingManager.impl
 
     (
       Router[F](
