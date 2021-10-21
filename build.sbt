@@ -95,8 +95,6 @@ lazy val dependencies =
     val circeGeneric   = "io.circe"              %% "circe-generic"        % CirceVersion
     val circeParser    = "io.circe"              %% "circe-parser"         % CirceVersion
     val circeOptics    = "io.circe"              %% "circe-optics"         % CirceVersion
-    val munit          = "org.scalameta"         %% "munit"                % MunitVersion           % Test
-    val munitCE2       = "org.typelevel"         %% "munit-cats-effect-2"  % MunitCatsEffectVersion % Test
     val logbackClassic = "ch.qos.logback"         % "logback-classic"      % LogbackVersion
     val log4cats       = "io.chrisdavenport"     %% "log4cats-slf4j"       % "1.1.1"
     val svmSubs        = "org.scalameta"         %% "svm-subs"             % "20.2.0"
@@ -110,6 +108,11 @@ lazy val dependencies =
     val fs2rabbit      = "dev.profunktor"        %% "fs2-rabbit"           % "3.0.1"
     val scalatest      = "org.scalatest"         %% "scalatest"            % ScalaTestVersion       % Test
     val spec2Core      = "org.specs2"            %% "specs2-core"          % Specs2Version          % Test
+    val munit          = "org.scalameta"         %% "munit"                % MunitVersion           % Test
+    val munitCE2       = "org.typelevel"         %% "munit-cats-effect-2"  % MunitCatsEffectVersion % Test
+    val scalaMock      = "org.scalamock"         %% "scalamock"            % "5.1.0"                % Test
+    val mockito        = "org.scalatestplus"     %% "mockito-3-4"          % "3.2.10.0"             % Test
+
   }
 
 lazy val tfTypesDependencies = Seq(
@@ -171,7 +174,11 @@ lazy val mabelDependencies = Seq(
   dependencies.doobieHikari,
   dependencies.fs2rabbit,
   dependencies.scalatest,
-  dependencies.spec2Core
+  dependencies.spec2Core,
+  dependencies.munit,
+  dependencies.munitCE2,
+  dependencies.scalaMock,
+  dependencies.mockito
 )
 
 lazy val settings = Seq(

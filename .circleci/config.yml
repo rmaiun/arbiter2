@@ -1,0 +1,36 @@
+  version: 2
+  jobs:
+    build:
+      docker:
+        # specify the version you desire here
+        - image: circleci/openjdk:8-jdk
+        - image: circleci/buildpack-deps:stretch
+
+      working_directory: ~/repo
+
+      environment:
+        # Customize the JVM maximum heap limit
+        SBT_VERSION: 1.3.10
+        IMAGE_NAME: mairo/tfbot
+        JVM_OPTS: -Xmx3200m
+        TERM: dumb
+
+      steps:
+        - checkout
+        - run: cat /dev/null | sbt soos/clean
+        - run: cat /dev/null | sbt soos/compile
+#        - run: cat /dev/null | sbt soos/test
+        - run: cat /dev/null | sbt mabel/clean
+        - run: cat /dev/null | sbt mabel/compile
+        - run: cat /dev/null | sbt mabel/test
+
+  workflows:
+    version: 2
+    build-master:
+      jobs:
+        - build:
+            filters:
+              branches:
+                only:
+                  - master
+                  - dev

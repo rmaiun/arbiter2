@@ -1,6 +1,7 @@
 package dev.rmaiun.mabel.services
 
 import pureconfig.ConfigSource
+import pureconfig.generic.auto._
 
 object ConfigProvider {
 
