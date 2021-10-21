@@ -9,6 +9,8 @@ import dev.profunktor.fs2rabbit.interpreter.RabbitClient
 import dev.profunktor.fs2rabbit.model.ExchangeType.Direct
 import dev.profunktor.fs2rabbit.model._
 import dev.rmaiun.mabel.dtos.AmqpStructures
+import dev.rmaiun.mabel.services.ConfigProvider
+import dev.rmaiun.mabel.services.ConfigProvider.ServerConfig
 import fs2.Stream
 import io.chrisdavenport.log4cats.SelfAwareStructuredLogger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
@@ -28,13 +30,13 @@ object Server {
   val blocker: Blocker =
     Blocker.liftExecutionContext(ExecutionContext.fromExecutorService(Executors.newCachedThreadPool()))
 
-  val config: Fs2RabbitConfig = Fs2RabbitConfig(
-    virtualHost = "arbiter",
-    host = "127.0.0.1",
-    port = 5672,
+  def config(cfg: ServerConfig): Fs2RabbitConfig = Fs2RabbitConfig(
+    virtualHost = cfg.broker.virtualHost,
+    host = cfg.broker.host,
+    port = cfg.broker.port,
     connectionTimeout = 3,
-    username = Some("rabbitmq"),
-    password = Some("rabbitmq"),
+    username = Some(cfg.broker.username),
+    password = Some(cfg.broker.password),
     ssl = false,
     requeueOnNack = false,
     requeueOnReject = false,
@@ -88,10 +90,10 @@ object Server {
   }
 
   def stream[F[_]: ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F], M: Monad[F]): Stream[F, Nothing] = {
+    val serverCfg = ConfigProvider.provideConfig
     for {
-      //general
       client     <- BlazeClientBuilder[F](global).withMaxWaitQueueLimit(1000).stream
-      rc         <- Stream.eval(RabbitClient[F](config, blocker))
+      rc         <- Stream.eval(RabbitClient[F](config(serverCfg), blocker))
       _          <- Stream.eval(initRabbitRoutes(rc))
       structures <- createRabbitConnection(rc)
       httpApp     = Module.initHttpApp(client, structures)
@@ -99,7 +101,7 @@ object Server {
       // With Middlewares in place
       finalHttpApp = Logger.httpApp(logHeaders = true, logBody = true)(httpApp._1)
       exitCode <- BlazeServerBuilder[F](clientEC)
-                    .bindHttp(9092, "0.0.0.0")
+                    .bindHttp(serverCfg.port, serverCfg.host)
                     .withHttpApp(finalHttpApp)
                     .serve
                     .concurrently(structures.botInputConsumer.flatMap(x => Stream.eval(httpApp._2.process(x).value)))
