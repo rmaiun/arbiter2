@@ -19,12 +19,13 @@ import org.http4s.Status.BadRequest
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.client.Client
-import org.http4s.implicits._
 
 case class ArbiterClient[F[_]: Sync: Monad: Logger](client: Client[F], cfg: ServerConfig) {
   implicit def circeJsonDecoder[A: Decoder]: EntityDecoder[F, A] = jsonOf[F, A]
   implicit def circeJsonEncoder[A: Encoder]: EntityEncoder[F, A] = jsonEncoderOf[F, A]
-  private val baseUri                                            = Uri.fromString(cfg.mabelPath).getOrElse(uri"${cfg.mabelPathMock}")
+  private val baseUri = Uri
+    .fromString(cfg.mabelPath)
+    .getOrElse(Uri.unsafeFromString(cfg.mabelPathMock))
   val onError: Response[F] => F[Throwable] = resp => {
     import cats.syntax.functor._
     import io.circe.parser._

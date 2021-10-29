@@ -96,7 +96,7 @@ object Server {
       rc         <- Stream.eval(RabbitClient[F](config(serverCfg), blocker))
       _          <- Stream.eval(initRabbitRoutes(rc))
       structures <- createRabbitConnection(rc)
-      httpApp     = Module.initHttpApp(client, structures)
+      httpApp     = Module.initHttpApp(client, structures,serverCfg)
 
       // With Middlewares in place
       finalHttpApp = Logger.httpApp(logHeaders = true, logBody = true)(httpApp._1)

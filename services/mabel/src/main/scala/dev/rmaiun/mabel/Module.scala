@@ -5,6 +5,7 @@ import cats.effect.{ ConcurrentEffect, ContextShift, Timer }
 import dev.rmaiun.mabel.dtos.AmqpStructures
 import dev.rmaiun.mabel.processors.{ AddPlayerProcessor, AddRoundProcessor, EloRatingProcessor, SeasonStatsProcessor }
 import dev.rmaiun.mabel.routes.SysRoutes
+import dev.rmaiun.mabel.services.ConfigProvider.ServerConfig
 import dev.rmaiun.mabel.services._
 import io.chrisdavenport.log4cats.Logger
 import org.http4s.HttpApp
@@ -14,9 +15,10 @@ import org.http4s.server.Router
 object Module {
   def initHttpApp[F[_]: ConcurrentEffect: Monad: Logger](
     client: Client[F],
-    amqpStructures: AmqpStructures[F]
+    amqpStructures: AmqpStructures[F],
+    cfg: ServerConfig
   )(implicit T: Timer[F], C: ContextShift[F]): (HttpApp[F], CommandHandler[F]) = {
-    lazy val arbiterClient        = ArbiterClient.impl(client)
+    lazy val arbiterClient        = ArbiterClient.impl(client, cfg)
     lazy val eloPointsCalculator  = EloPointsCalculator.impl(arbiterClient)
     lazy val addPlayerProcessor   = AddPlayerProcessor.impl(arbiterClient)
     lazy val addRoundProcessor    = AddRoundProcessor.impl(arbiterClient, eloPointsCalculator)
