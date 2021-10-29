@@ -56,13 +56,13 @@ case class EloPointsCalculator[F[_]: Monad](
   }
 
   private def eloAlgorithmRunWin(rA: Int, rB: Int, k: Int): Int = {
-    val eA           = expectedRating(rB - rA)
+    val eA           = expectedRating(rB.toFloat - rA.toFloat)
     val winnerPoints = rA + k * (1 - eA)
     Math.round(winnerPoints)
   }
 
   private def eloAlgorithmRunLose(rA: Int, rB: Int, k: Int): Int = {
-    val eB          = expectedRating(rA - rB)
+    val eB          = expectedRating(rA.toFloat - rB.toFloat)
     val loserPoints = rB + k * (0 - eB)
     Math.round(loserPoints)
   }
