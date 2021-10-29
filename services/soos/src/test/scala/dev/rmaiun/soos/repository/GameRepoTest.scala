@@ -28,17 +28,17 @@ class GameRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
   private val userRepo   = UserRepo.impl[IO]
   private val gameRepo   = GameRepo.impl[IO]
 
-  "Game Points" should "create and list data successfully" in {
+  "GameRepo" should "create and list Game Points successfully" in {
     val action = for {
       _ <- initTestDataSet()
-      _ <- gameRepo.createEloPoint(EloPoints(0, 1, 67, DateFormatter.now))
-      _ <- gameRepo.createEloPoint(EloPoints(0, 2, 68, DateFormatter.now))
-      _ <- gameRepo.createEloPoint(EloPoints(0, 3, 69, DateFormatter.now))
-      _ <- gameRepo.createEloPoint(EloPoints(0, 4, 70, DateFormatter.now))
-      _ <- gameRepo.createEloPoint(EloPoints(0, 1, 71, DateFormatter.now))
-      _ <- gameRepo.createEloPoint(EloPoints(0, 2, 72, DateFormatter.now))
-      _ <- gameRepo.createEloPoint(EloPoints(0, 5, 73, DateFormatter.now))
-      _ <- gameRepo.createEloPoint(EloPoints(0, 6, 74, DateFormatter.now))
+      _ <- gameRepo.createEloPoint(EloPoints(0, 101, 67, DateFormatter.now))
+      _ <- gameRepo.createEloPoint(EloPoints(0, 102, 68, DateFormatter.now))
+      _ <- gameRepo.createEloPoint(EloPoints(0, 103, 69, DateFormatter.now))
+      _ <- gameRepo.createEloPoint(EloPoints(0, 104, 70, DateFormatter.now))
+      _ <- gameRepo.createEloPoint(EloPoints(0, 101, 71, DateFormatter.now))
+      _ <- gameRepo.createEloPoint(EloPoints(0, 102, 72, DateFormatter.now))
+      _ <- gameRepo.createEloPoint(EloPoints(0, 105, 73, DateFormatter.now))
+      _ <- gameRepo.createEloPoint(EloPoints(0, 106, 74, DateFormatter.now))
     } yield ()
 
     val result = action.transact(transactor).attemptSql.unsafeRunSync()
@@ -57,22 +57,22 @@ class GameRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     listData3.map(_.points) should contain allElementsOf Seq(138, 140, 69, 70, 73, 74)
   }
 
-  "Game History" should "create and list data successfully" in {
+  it should "create and list Game History successfully" in {
     val action = for {
       _ <- initTestDataSet()
-      _ <- gameRepo.createGameHistory(GameHistory(0, 1, 1, 1, 2, 3, 4))
-      _ <- gameRepo.createGameHistory(GameHistory(0, 1, 1, 1, 4, 5, 6, shutout = true))
-      _ <- gameRepo.createGameHistory(GameHistory(0, 1, 1, 1, 6, 3, 5))
+      _ <- gameRepo.createGameHistory(GameHistory(0, 100, 100, 101, 102, 103, 104))
+      _ <- gameRepo.createGameHistory(GameHistory(0, 100, 100, 101, 104, 105, 106, shutout = true))
+      _ <- gameRepo.createGameHistory(GameHistory(0, 100, 100, 101, 106, 103, 105))
     } yield ()
 
     val result = action.transact(transactor).attemptSql.unsafeRunSync()
     result.isRight should be(true)
-    val listAction = gameRepo.listHistoryByCriteria(GameHistoryCriteria("testRealm", Some("S1|2020")))
+    val listAction = gameRepo.listHistoryByCriteria(GameHistoryCriteria("testRealm", Some("S1|2015")))
     val listData   = listAction.transact(transactor).unsafeRunSync()
     listData.size should be(3)
 
     val listAction2 =
-      gameRepo.listHistoryByCriteria(GameHistoryCriteria("testRealm", Some("S1|2020")))
+      gameRepo.listHistoryByCriteria(GameHistoryCriteria("testRealm", Some("S1|2015")))
     val listData2 = listAction2.transact(transactor).unsafeRunSync()
     listData2.size should be(3)
 
@@ -91,29 +91,29 @@ class GameRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     } yield ()
 
   private def createTestAlgorithm: ConnectionIO[Algorithm] =
-    algRepo.create(Algorithm(1, "WinLoss"))
+    algRepo.create(Algorithm(100, "TestAlgo"))
   private def createTestRealm: ConnectionIO[Realm] =
-    realmRepo.create(Realm(1, "testRealm", 4, 1))
+    realmRepo.create(Realm(100, "testRealm", 4, 100))
   private def createTestSeason: ConnectionIO[Season] =
-    seasonRepo.create(Season(1, "S1|2020", 1, 1))
+    seasonRepo.create(Season(100, "S1|2015", 1, 100))
   private def createTestUsers: ConnectionIO[Unit] =
     for {
-      _ <- userRepo.create(User(1, "u1"))
-      _ <- userRepo.create(User(2, "u2"))
-      _ <- userRepo.create(User(3, "u3"))
-      _ <- userRepo.create(User(4, "u4"))
-      _ <- userRepo.create(User(5, "u5"))
-      _ <- userRepo.create(User(6, "u6"))
+      _ <- userRepo.create(User(101, "u1"))
+      _ <- userRepo.create(User(102, "u2"))
+      _ <- userRepo.create(User(103, "u3"))
+      _ <- userRepo.create(User(104, "u4"))
+      _ <- userRepo.create(User(105, "u5"))
+      _ <- userRepo.create(User(106, "u6"))
     } yield ()
 
   private def clearRealAlgorithmDBs(): Unit = {
     val action = for {
       _ <- gameRepo.removeNEloPoints()
       _ <- gameRepo.removeNGameHistory()
-      _ <- userRepo.removeN()
-      _ <- seasonRepo.removeN()
-      _ <- realmRepo.removeN()
-      _ <- algRepo.removeN()
+      _ <- userRepo.removeN(List(101, 102, 103, 104, 105, 106))
+      _ <- seasonRepo.removeN(List(100))
+      _ <- realmRepo.removeN(List(100))
+      _ <- algRepo.removeN(List(100))
     } yield ()
     action.transact(transactor).unsafeRunSync()
   }

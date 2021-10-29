@@ -1,18 +1,18 @@
 package dev.rmaiun.soos.repository
 
 import cats.data.NonEmptyList
-import cats.effect.{ ContextShift, IO }
+import cats.effect.{ContextShift, IO}
 import dev.rmaiun.soos.db.entities._
 import dev.rmaiun.soos.helpers.ConfigProvider.Config
-import dev.rmaiun.soos.helpers.{ ConfigProvider, TransactorProvider }
-import dev.rmaiun.soos.repositories.{ AlgorithmRepo, RealmRepo, RoleRepo, UserRepo }
+import dev.rmaiun.soos.helpers.{ConfigProvider, TransactorProvider}
+import dev.rmaiun.soos.repositories.{RealmRepo, RoleRepo, UserRepo}
 import doobie.ConnectionIO
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
 import doobie.util.ExecutionContexts
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.{ BeforeAndAfterEach, OptionValues }
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
 
 class UserRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach with OptionValues {
 
@@ -21,18 +21,16 @@ class UserRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
   private val config: Config = ConfigProvider.provideConfig
   private val transactor: HikariTransactor[IO] =
     TransactorProvider.hikariTransactor[IO](config, allowPublicKeyRetrieval = true)
-  private val algRepo: AlgorithmRepo[IO] = AlgorithmRepo.impl[IO]
-  private val realmRepo: RealmRepo[IO]   = RealmRepo.impl[IO]
-  private val userRepo: UserRepo[IO]     = UserRepo.impl[IO]
-  private val roleRepo                   = RoleRepo.impl[IO]
-  private val role                       = Role(1, "admin", 50)
-  private val alg                        = Algorithm(1, "WinLoss")
-  private val realm1                     = Realm(1, "ua_ky", 4, 1)
-  private val realm2                     = Realm(2, "ua_te", 4, 1)
+  private val realmRepo: RealmRepo[IO] = RealmRepo.impl[IO]
+  private val userRepo: UserRepo[IO]   = UserRepo.impl[IO]
+  private val roleRepo                 = RoleRepo.impl[IO]
+  private val role                     = Role(105, "admin2", 50)
+  private val realm1                   = Realm(101, "ua_ky", 4, 1)
+  private val realm2                   = Realm(102, "ua_te", 4, 1)
 
-  private val user1 = User(1, "user1", Some("x1"))
-  private val user2 = User(0, "user2", Some("x2"), Some(12345))
-  private val user3 = User(0, "user3", Some("x3"), Some(23456), active = false)
+  private val user1 = User(103, "user1", Some("x1"))
+  private val user2 = User(104, "user2", Some("x2"), Some(12345))
+  private val user3 = User(105, "user3", Some("x3"), Some(23456), active = false)
 
   "UserRepo" should "find active/nonactive users by nickname" in {
     val action = for {
@@ -68,7 +66,7 @@ class UserRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
     val action = for {
       _      <- initTestDataSet
       _      <- roleRepo.create(role)
-      _      <- userRepo.assignUserToRealm(UserRealmRole(1, 1, 1))
+      _      <- userRepo.assignUserToRealm(UserRealmRole(realm1.id, user1.id, role.id))
       first  <- userRepo.listAll(realm1.name, List("user1"))
       second <- userRepo.listAll(realm1.name, List("user1"), Some(false))
       third  <- userRepo.listAll(realm1.name, List("user2"))
@@ -76,15 +74,15 @@ class UserRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
     val (first, second, third) = action.transact(transactor).unsafeRunSync()
     first.size should be(1)
-    first.head.id should be(1)
+    first.head.id should be(user1.id)
     second.size should be(0)
     third.size should be(0)
   }
 
   it should "correctly find available Id" in {
     val action = for {
-      _      <- initTestDataSet
-      id     <- userRepo.findAvailableId
+      _  <- initTestDataSet
+      id <- userRepo.findAvailableId
     } yield id
     val id = action.transact(transactor).unsafeRunSync()
     id should be(4)
@@ -92,7 +90,6 @@ class UserRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
   private def initTestDataSet: ConnectionIO[(User, User, User)] =
     for {
-      _  <- createTestAlgorithm
       _  <- createTestRealm(realm1)
       _  <- createTestRealm(realm2)
       u1 <- createTestUser(user1)
@@ -103,9 +100,6 @@ class UserRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
   private def createTestUser(u: User): ConnectionIO[User] =
     userRepo.create(u)
 
-  private def createTestAlgorithm: ConnectionIO[Algorithm] =
-    algRepo.create(alg)
-
   private def createTestRealm(realm: Realm): ConnectionIO[Realm] =
     realmRepo.create(realm)
 
@@ -114,8 +108,7 @@ class UserRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
       _ <- userRepo.clearUserRealmRoles
       _ <- userRepo.removeN()
       _ <- realmRepo.removeN()
-      _ <- algRepo.removeN()
-      _ <- roleRepo.removeN()
+      _ <- roleRepo.removeN(List(105))
     } yield ()
     action.transact(transactor).attemptSql.unsafeRunSync()
   }

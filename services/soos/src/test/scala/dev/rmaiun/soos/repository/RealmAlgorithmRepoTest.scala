@@ -1,17 +1,17 @@
 package dev.rmaiun.soos.repository
 
-import cats.effect.{ ContextShift, IO }
-import dev.rmaiun.soos.db.entities.{ Algorithm, Realm }
+import cats.effect.{ContextShift, IO}
+import dev.rmaiun.soos.db.entities.{Algorithm, Realm}
 import dev.rmaiun.soos.helpers.ConfigProvider.Config
-import dev.rmaiun.soos.helpers.{ ConfigProvider, TransactorProvider }
-import dev.rmaiun.soos.repositories.{ AlgorithmRepo, RealmRepo }
+import dev.rmaiun.soos.helpers.{ConfigProvider, TransactorProvider}
+import dev.rmaiun.soos.repositories.{AlgorithmRepo, RealmRepo}
 import doobie.ConnectionIO
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
 import doobie.util.ExecutionContexts
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.{ BeforeAndAfterEach, Inside }
+import org.scalatest.{BeforeAndAfterEach, Inside}
 
 class RealmAlgorithmRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach with Inside {
 
@@ -22,7 +22,7 @@ class RealmAlgorithmRepoTest extends AnyFlatSpec with Matchers with BeforeAndAft
     TransactorProvider.hikariTransactor[IO](config, allowPublicKeyRetrieval = true)
   private val realmRepo: RealmRepo[IO]   = RealmRepo.impl[IO]
   private val algRepo: AlgorithmRepo[IO] = AlgorithmRepo.impl[IO]
-  private val realm                      = Realm(0, "test_ua", 4, 1)
+  private val realm                      = Realm(100, "test_ua", 4, 100)
 
   "Realm and Algorithm Repos" should "insert new algorithm and realm into db and successfully get it" in {
     val action = for {
@@ -39,7 +39,7 @@ class RealmAlgorithmRepoTest extends AnyFlatSpec with Matchers with BeforeAndAft
     data._1 should not be 0
     data._2 should be(realm.name)
     data._3.id should not be 0
-    data._3.value should be("WinLoss")
+    data._3.value should be("TestAlgo")
   }
 
   it should "should successfully update Algorithm" in {
@@ -74,8 +74,8 @@ class RealmAlgorithmRepoTest extends AnyFlatSpec with Matchers with BeforeAndAft
     val action = for {
       _  <- createTestAlgorithm
       r  <- realmRepo.create(realm)
-      r2 <- realmRepo.create(realm.copy(name = "realm2"))
-      r3 <- realmRepo.create(realm.copy(name = "realm3"))
+      r2 <- realmRepo.create(realm.copy(name = "realm2", id = 101))
+      r3 <- realmRepo.create(realm.copy(name = "realm3", id = 102))
     } yield (r, r2, r3)
     val realmsCreated = action.transact(transactor).attemptSql.unsafeRunSync()
     realmsCreated.isRight should be(true)
@@ -99,7 +99,7 @@ class RealmAlgorithmRepoTest extends AnyFlatSpec with Matchers with BeforeAndAft
   }
 
   private def createTestAlgorithm: ConnectionIO[Algorithm] =
-    algRepo.create(Algorithm(1, "WinLoss"))
+    algRepo.create(Algorithm(100, "TestAlgo"))
   private def createRealm(realm: Realm): ConnectionIO[Realm] =
     realmRepo.create(realm)
   private def findRealm(id: Long): ConnectionIO[Option[Realm]] =
