@@ -12,12 +12,12 @@ create table if not exists game_history
     shutout    boolean default null,
     created_at timestamp not null,
 
-    foreign key fk_realm (realm) references realm (id),
-    foreign key fk_season (season) references season (id),
-    foreign key fk_w1 (w1) references user (id),
-    foreign key fk_w2 (w2) references user (id),
-    foreign key fk_l1 (l1) references user (id),
-    foreign key fk_l2 (l2) references user (id)
+    foreign key gh_fk_realm (realm) references realm (id),
+    foreign key gh_fk_season (season) references season (id),
+    foreign key gh_fk_w1 (w1) references user (id),
+    foreign key gh_fk_w2 (w2) references user (id),
+    foreign key gh_fk_l1 (l1) references user (id),
+    foreign key gh_fk_l2 (l2) references user (id)
 );
 
 create index game_history_id_idx on game_history (id);

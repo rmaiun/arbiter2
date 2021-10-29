@@ -8,11 +8,11 @@ create table if not exists user
     tid        bigint      default null unique,
     active     boolean     default true,
     created_at timestamp   not null
-) CHARACTER SET utf8
-  COLLATE utf8_general_ci;
+) character set utf8
+  collate utf8_general_ci;
 
-ALTER TABLE user
-    CONVERT TO CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+alter table user
+    convert to character set utf8 collate utf8_unicode_ci;
 
 create index user_id_idx on user (id);
 create index user_name_idx on user (surname);

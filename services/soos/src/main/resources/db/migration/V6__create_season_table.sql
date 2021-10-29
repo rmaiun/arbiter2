@@ -7,7 +7,7 @@ create table if not exists season
     algorithm        bigint      not null,
     realm bigint not null,
     end_notification timestamp,
-    foreign key fk_realm (realm) references realm (id)
+    foreign key season_fk_realm (realm) references realm (id)
 );
 
 create index season_id_idx on season (id);

@@ -6,6 +6,7 @@ import dev.rmaiun.errorhandling.errors.codec.ErrorDtoOut
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.errors.Errors.ArbiterClientError
+import dev.rmaiun.mabel.services.ConfigProvider.ServerConfig
 import dev.rmaiun.mabel.utils.Constants
 import dev.rmaiun.protocol.http.GameDtoSet._
 import dev.rmaiun.protocol.http.RealmDtoSet._
@@ -15,15 +16,15 @@ import io.chrisdavenport.log4cats.Logger
 import io.circe.{ Decoder, Encoder }
 import org.http4s.Method.POST
 import org.http4s.Status.BadRequest
+import org.http4s._
 import org.http4s.circe._
 import org.http4s.client.Client
 import org.http4s.implicits._
-import org.http4s.{ EntityDecoder, EntityEncoder, Request, Response }
 
-case class ArbiterClient[F[_]: Sync: Monad: Logger](client: Client[F]) {
+case class ArbiterClient[F[_]: Sync: Monad: Logger](client: Client[F], cfg: ServerConfig) {
   implicit def circeJsonDecoder[A: Decoder]: EntityDecoder[F, A] = jsonOf[F, A]
   implicit def circeJsonEncoder[A: Encoder]: EntityEncoder[F, A] = jsonEncoderOf[F, A]
-  val baseUri                                                    = uri"http://localhost:9091"
+  private val baseUri                                            = Uri.fromString(cfg.mabelPath).getOrElse(uri"${cfg.mabelPathMock}")
   val onError: Response[F] => F[Throwable] = resp => {
     import cats.syntax.functor._
     import io.circe.parser._
@@ -99,6 +100,6 @@ case class ArbiterClient[F[_]: Sync: Monad: Logger](client: Client[F]) {
 
 object ArbiterClient {
   def apply[F[_]](implicit ev: ArbiterClient[F]): ArbiterClient[F] = ev
-  def impl[F[_]: Monad: Logger: Sync](c: Client[F]): ArbiterClient[F] =
-    new ArbiterClient[F](c)
+  def impl[F[_]: Monad: Logger: Sync](c: Client[F], cfg: ServerConfig): ArbiterClient[F] =
+    new ArbiterClient[F](c, cfg)
 }

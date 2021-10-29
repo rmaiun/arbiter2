@@ -54,7 +54,7 @@ lazy val soos = (project in file("services/soos"))
     Test / parallelExecution := false
   )
   .settings(
-    flywayUrl := "jdbc:mysql://127.0.0.1:3306/arbiter?useSSL=false&useUnicode=true&characterEncoding=UTF-8",
+    flywayUrl := "jdbc:mysql://127.0.0.1:3306/arbiter?allowPublicKeyRetrieval=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8",
     flywayUser := "root",
     flywayPassword := "rootpassword",
     flywayLocations += "db/migration"
@@ -108,9 +108,6 @@ lazy val dependencies =
     val fs2rabbit      = "dev.profunktor"        %% "fs2-rabbit"           % "3.0.1"
     val scalatest      = "org.scalatest"         %% "scalatest"            % ScalaTestVersion       % Test
     val spec2Core      = "org.specs2"            %% "specs2-core"          % Specs2Version          % Test
-    val munit          = "org.scalameta"         %% "munit"                % MunitVersion           % Test
-    val munitCE2       = "org.typelevel"         %% "munit-cats-effect-2"  % MunitCatsEffectVersion % Test
-    val scalaMock      = "org.scalamock"         %% "scalamock"            % "5.1.0"                % Test
     val mockito        = "org.scalatestplus"     %% "mockito-3-4"          % "3.2.10.0"             % Test
 
   }
@@ -175,9 +172,6 @@ lazy val mabelDependencies = Seq(
   dependencies.fs2rabbit,
   dependencies.scalatest,
   dependencies.spec2Core,
-  dependencies.munit,
-  dependencies.munitCE2,
-  dependencies.scalaMock,
   dependencies.mockito
 )
 
