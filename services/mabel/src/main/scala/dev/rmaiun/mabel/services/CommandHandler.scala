@@ -2,6 +2,7 @@ package dev.rmaiun.mabel.services
 
 import cats.Monad
 import cats.syntax.apply._
+import cats.syntax.foldable._
 import dev.profunktor.fs2rabbit.model.{ AmqpEnvelope, AmqpMessage, AmqpProperties }
 import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
 import dev.rmaiun.flowtypes.{ FLog, Flow }
@@ -22,14 +23,31 @@ case class CommandHandler[F[_]: MonadThrowable: Logger](
   def process(record: AmqpEnvelope[String]): Flow[F, Unit] = {
     val start = System.currentTimeMillis
     for {
-      json   <- Flow.fromEither(parse(new String(record.payload)))
-      input  <- Flow.fromEither(BotRequestDecoder.decodeJson(json))
+      json  <- Flow.fromEither(parse(new String(record.payload)))
+      input <- Flow.fromEither(BotRequestDecoder.decodeJson(json))
+      _     <- process(input)
+      _     <- FLog.info(s"Cmd ${input.cmd} (${input.user}) was processed in ${System.currentTimeMillis() - start} ms")
+    } yield ()
+  }
+
+  private def process(input: BotRequest): Flow[F, Unit] = {
+    val processResult = for {
       result <- processInput(input)
       _      <- sendResponse(result)
-      _      <- FLog.info(s"Cmd ${input.cmd} (${input.user}) was processed in ${System.currentTimeMillis() - start} ms")
     } yield result
 
+    processResult.flatMap(r => postProcess(input, r))
   }
+
+  private def postProcess(input: BotRequest, processorResponse: ProcessorResponse): Flow[F, Unit] =
+    if (processorResponse.error) {
+      Flow.unit
+    } else {
+      for {
+        ppList <- strategy.selectPostProcessor(input.cmd)
+        _      <- ppList.map(_.postProcess(input)).sequence_
+      } yield ()
+    }
 
   private def processInput(input: BotRequest): Flow[F, ProcessorResponse] = {
     val flow = for {

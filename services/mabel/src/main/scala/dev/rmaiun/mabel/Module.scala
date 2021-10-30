@@ -3,6 +3,7 @@ package dev.rmaiun.mabel
 import cats.Monad
 import cats.effect.{ ConcurrentEffect, ContextShift, Timer }
 import dev.rmaiun.mabel.dtos.AmqpStructures
+import dev.rmaiun.mabel.postprocessor.{ AddPlayerPostProcessor, AddRoundPostProcessor }
 import dev.rmaiun.mabel.processors.{ AddPlayerProcessor, AddRoundProcessor, EloRatingProcessor, SeasonStatsProcessor }
 import dev.rmaiun.mabel.routes.SysRoutes
 import dev.rmaiun.mabel.services.ConfigProvider.ServerConfig
@@ -18,14 +19,27 @@ object Module {
     amqpStructures: AmqpStructures[F],
     cfg: ServerConfig
   )(implicit T: Timer[F], C: ContextShift[F]): (HttpApp[F], CommandHandler[F]) = {
-    lazy val arbiterClient        = ArbiterClient.impl(client, cfg)
-    lazy val eloPointsCalculator  = EloPointsCalculator.impl(arbiterClient)
+    lazy val arbiterClient       = ArbiterClient.impl(client, cfg)
+    lazy val eloPointsCalculator = EloPointsCalculator.impl(arbiterClient)
+    lazy val cmdPublisher        = CmdPublisher.impl(cfg, amqpStructures.botOutputPublisher)
+    // processors
     lazy val addPlayerProcessor   = AddPlayerProcessor.impl(arbiterClient)
     lazy val addRoundProcessor    = AddRoundProcessor.impl(arbiterClient, eloPointsCalculator)
     lazy val seasonStatsProcessor = SeasonStatsProcessor.impl(arbiterClient)
     lazy val eloRatingProcessor   = EloRatingProcessor.impl(arbiterClient)
+    // post processors
+    lazy val addPlayerPostProcessor = AddPlayerPostProcessor.impl(arbiterClient, cmdPublisher)
+    lazy val addRoundPostProcessor  = AddRoundPostProcessor.impl(arbiterClient, cmdPublisher)
+    // high lvl dependencies
     lazy val strategy =
-      ProcessorStrategy.impl(addPlayerProcessor, addRoundProcessor, seasonStatsProcessor, eloRatingProcessor)
+      ProcessorStrategy.impl(
+        addPlayerProcessor,
+        addRoundProcessor,
+        seasonStatsProcessor,
+        eloRatingProcessor,
+        addRoundPostProcessor,
+        addPlayerPostProcessor
+      )
     lazy val cmdHandler  = CommandHandler.impl(strategy, amqpStructures.botOutputPublisher)
     lazy val pingManager = PingManager.impl
 

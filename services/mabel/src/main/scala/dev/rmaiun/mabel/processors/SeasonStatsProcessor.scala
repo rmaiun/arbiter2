@@ -39,21 +39,21 @@ class SeasonStatsProcessor[F[_]: Monad](ac: ArbiterClient[F]) extends Processor[
         .map(s => s"${s.player.capitalize}: ${s.games} in row")
         .getOrElse(DEFAULT_RESULT)
       val separator = "-" * 30
-      s"""$PREFIX Season: ${data.season}
-         |Games played: ${data.gamesPlayed}
-         |Season ends in: ${data.daysToSeasonEnd} days
-         |$separator
-         |Rating:
-         |$ratings
-         |${formatUnrankedPlayers(separator, data)}
-         |$separator
-         |Best streak:
-         |$bestStreak
-         |$separator
-         |Worst streak
-         |$worstStreak
-         |$SUFFIX
-         |""".stripMargin
+      PREFIX ++ s"""Season: ${data.season}
+                   |Games played: ${data.gamesPlayed}
+                   |Season ends in: ${data.daysToSeasonEnd} days
+                   |$separator
+                   |Rating:
+                   |$ratings
+                   |${formatUnrankedPlayers(separator, data)}
+                   |$separator
+                   |Best streak:
+                   |$bestStreak
+                   |$separator
+                   |Worst streak
+                   |$worstStreak
+                   |$SUFFIX
+                   |""".stripMargin
     }
 
   private def formatUnrankedPlayers(separator: String, data: SeasonShortStats): String =

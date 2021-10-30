@@ -2,12 +2,12 @@ package dev.rmaiun.soos.services
 
 import cats.Monad
 import cats.effect.Sync
-import dev.rmaiun.soos.db.entities.{ User, UserRealmRole }
-import dev.rmaiun.soos.errors.UserErrors.UserNotFoundException
-import dev.rmaiun.soos.repositories.UserRepo
 import dev.rmaiun.errorhandling.ThrowableOps._
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
+import dev.rmaiun.soos.db.entities.{User, UserRealmRole}
+import dev.rmaiun.soos.errors.UserErrors.UserNotFoundException
+import dev.rmaiun.soos.repositories.UserRepo
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
 import io.chrisdavenport.log4cats.Logger
@@ -19,6 +19,7 @@ trait UserService[F[_]] {
   def checkAllPresent(realm: String, users: List[String]): Flow[F, Unit]
   def update(u: User): Flow[F, User]
   def create(u: User): Flow[F, User]
+  def findAvailableId: Flow[F, Long]
 }
 
 object UserService {
@@ -72,5 +73,8 @@ object UserService {
           Flow.error(UserNotFoundException(Map("wrongUsers" -> useless.mkString(","))))
         }
       }
+
+    override def findAvailableId: Flow[F, Long] =
+      userRepo.findAvailableId.transact(xa).attemptSql.adaptError
   }
 }

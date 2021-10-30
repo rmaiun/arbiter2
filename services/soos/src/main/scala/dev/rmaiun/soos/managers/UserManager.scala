@@ -4,15 +4,15 @@ import cats.Monad
 import cats.data.EitherT
 import cats.implicits._
 import dev.rmaiun.common.DateFormatter
+import dev.rmaiun.flowtypes.Flow
+import dev.rmaiun.flowtypes.Flow.Flow
+import dev.rmaiun.protocol.http.UserDtoSet._
 import dev.rmaiun.soos.db.entities.{EloPoints, User}
 import dev.rmaiun.soos.errors.UserErrors.{UserAlreadyExistsException, UserNotFoundException}
 import dev.rmaiun.soos.helpers.ConfigProvider.Config
 import dev.rmaiun.soos.helpers.DtoMapper.userToDto
 import dev.rmaiun.soos.services._
 import dev.rmaiun.soos.validations.UserValidationSet._
-import dev.rmaiun.flowtypes.Flow
-import dev.rmaiun.flowtypes.Flow.Flow
-import dev.rmaiun.protocol.http.UserDtoSet._
 import dev.rmaiun.validation.Validator
 
 import java.time.{ZoneOffset, ZonedDateTime}
@@ -40,11 +40,12 @@ object UserManager {
 
     override def registerUser(dtoIn: RegisterUserDtoIn): Flow[F, RegisterUserDtoOut] =
       for {
-        _ <- Validator.validateDto[F, RegisterUserDtoIn](dtoIn)
-        _ <- userRightsService.isUserPrivileged(dtoIn.moderatorTid)
-        _ <- checkUserIsAlreadyRegistered(dtoIn.user.surname.toLowerCase)
-        u <- userService.create(User(0, dtoIn.user.surname.toLowerCase, None, dtoIn.user.tid))
-        _ <- gameService.createEloPoint(EloPoints(0, u.id, cfg.app.startPoints, DateFormatter.now))
+        _  <- Validator.validateDto[F, RegisterUserDtoIn](dtoIn)
+        _  <- userRightsService.isUserPrivileged(dtoIn.moderatorTid)
+        _  <- checkUserIsAlreadyRegistered(dtoIn.user.surname.toLowerCase)
+        id <- userService.findAvailableId
+        u  <- userService.create(User(id, dtoIn.user.surname.toLowerCase, None, dtoIn.user.tid))
+        _  <- gameService.createEloPoint(EloPoints(0, u.id, cfg.app.startPoints, DateFormatter.now))
       } yield RegisterUserDtoOut(userToDto(u))
 
     override def findUser(dtoIn: FindUserDtoIn): Flow[F, FindUserDtoOut] =
