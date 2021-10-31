@@ -1,0 +1,24 @@
+{
+  "name": "catabot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^0.7.1",
+    "axios": "^0.21.1",
+    "dotenv": "^8.2.0",
+    "minimist": "^1.2.5",
+    "telegraf": "^4.0.3"
+  },
+  "devDependencies": {
+    "eslint": "^7.29.0",
+    "standard": "^16.0.3"
+  }
+}
