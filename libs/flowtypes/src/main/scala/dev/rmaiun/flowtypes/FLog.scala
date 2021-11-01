@@ -10,6 +10,9 @@ object FLog {
   def info[F[_]: Logger: Functor](msg: String): Flow[F, Unit] =
     EitherT(Functor[F].map(Logger[F].info(msg))(_.asRight[Throwable]))
 
+  def debug[F[_]: Logger: Functor](msg: String): Flow[F, Unit] =
+    EitherT(Functor[F].map(Logger[F].debug(msg))(_.asRight[Throwable]))
+
   def warn[F[_]: Logger: Functor](msg: String): Flow[F, Unit] =
     EitherT(Functor[F].map(Logger[F].warn(msg))(_.asRight[Throwable]))
 

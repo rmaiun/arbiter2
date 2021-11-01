@@ -3,14 +3,14 @@ package dev.rmaiun.mabel.postprocessor
 import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
 import dev.rmaiun.mabel.commands.AddRoundCmd
 import dev.rmaiun.mabel.dtos.{ BotRequest, BotResponse }
-import dev.rmaiun.mabel.services.{ ArbiterClient, CmdPublisher }
+import dev.rmaiun.mabel.services.{ ArbiterClient, PublisherProxy }
 import dev.rmaiun.mabel.utils.Constants.{ PREFIX, SUFFIX }
 import dev.rmaiun.mabel.utils.IdGen
 import io.chrisdavenport.log4cats.Logger
 
 case class AddRoundPostProcessor[F[_]: MonadThrowable: Logger](
   arbiterClient: ArbiterClient[F],
-  cmdPublisher: CmdPublisher[F]
+  cmdPublisher: PublisherProxy[F]
 ) extends PostProcessor[F] {
   override def postProcess(input: BotRequest): Flow[F, Unit] =
     for {
@@ -37,7 +37,7 @@ object AddRoundPostProcessor {
   def apply[F[_]](implicit ev: AddRoundPostProcessor[F]): AddRoundPostProcessor[F] = ev
   def impl[F[_]: MonadThrowable: Logger](
     ac: ArbiterClient[F],
-    cmdPublisher: CmdPublisher[F]
+    cmdPublisher: PublisherProxy[F]
   ): AddRoundPostProcessor[F] =
     new AddRoundPostProcessor[F](ac, cmdPublisher)
 }

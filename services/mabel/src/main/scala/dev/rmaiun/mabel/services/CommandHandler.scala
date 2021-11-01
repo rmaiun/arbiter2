@@ -3,11 +3,9 @@ package dev.rmaiun.mabel.services
 import cats.Monad
 import cats.syntax.apply._
 import cats.syntax.foldable._
-import dev.profunktor.fs2rabbit.model.{ AmqpEnvelope, AmqpMessage, AmqpProperties }
+import dev.profunktor.fs2rabbit.model.AmqpEnvelope
 import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
 import dev.rmaiun.flowtypes.{ FLog, Flow }
-import dev.rmaiun.mabel.dtos.AmqpStructures.AmqpPublisher
-import dev.rmaiun.mabel.dtos.BotResponse._
 import dev.rmaiun.mabel.dtos.{ BotRequest, ProcessorResponse }
 import dev.rmaiun.mabel.utils.Constants.{ PREFIX, SUFFIX }
 import dev.rmaiun.mabel.utils.IdGen
@@ -17,7 +15,7 @@ import org.http4s.client.ConnectionFailure
 
 case class CommandHandler[F[_]: MonadThrowable: Logger](
   strategy: ProcessorStrategy[F],
-  publisher: AmqpPublisher[F]
+  publisherProxy: PublisherProxy[F]
 ) {
   import dev.rmaiun.mabel.dtos.BotRequest._
   def process(record: AmqpEnvelope[String]): Flow[F, Unit] = {
@@ -66,15 +64,15 @@ case class CommandHandler[F[_]: MonadThrowable: Logger](
 
   }
 
-  private def sendResponse(pr: ProcessorResponse): Flow[F, Unit] = {
-    val payload = BotResponseEncoder(pr.botResponse).toString()
-    val msg     = AmqpMessage[String](payload, AmqpProperties())
-    Flow.effect(publisher(msg))
-  }
+  private def sendResponse(pr: ProcessorResponse): Flow[F, Unit] =
+    publisherProxy.publishToBot(pr.botResponse)
 }
 
 object CommandHandler {
   def apply[F[_]](implicit ev: CommandHandler[F]): CommandHandler[F] = ev
-  def impl[F[_]: MonadThrowable: Logger](ps: ProcessorStrategy[F], publisher: AmqpPublisher[F]): CommandHandler[F] =
-    new CommandHandler[F](ps, publisher)
+  def impl[F[_]: MonadThrowable: Logger](
+    ps: ProcessorStrategy[F],
+    publisherProxy: PublisherProxy[F]
+  ): CommandHandler[F] =
+    new CommandHandler[F](ps, publisherProxy)
 }
