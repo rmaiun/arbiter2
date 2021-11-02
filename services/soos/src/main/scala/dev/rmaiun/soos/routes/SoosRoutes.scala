@@ -2,15 +2,16 @@ package dev.rmaiun.soos.routes
 
 import cats.effect.Sync
 import cats.{Applicative, Monad}
-import dev.rmaiun.soos.errors.RoutingErrors.RequiredParamsNotFound
-import dev.rmaiun.soos.managers.{GameManager, RealmManager, UserManager}
 import dev.rmaiun.errorhandling.errors.AppRuntimeException
 import dev.rmaiun.errorhandling.errors.codec._
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.protocol.http.GameDtoSet.{AddEloPointsDtoIn, AddGameHistoryDtoIn, ListEloPointsDtoIn, ListGameHistoryDtoIn}
 import dev.rmaiun.protocol.http.RealmDtoSet.{GetRealmDtoIn, RegisterRealmDtoIn, UpdateRealmAlgorithmDtoIn}
+import dev.rmaiun.protocol.http.SeasonDtoSet.CreateSeasonDtoIn
 import dev.rmaiun.protocol.http.UserDtoSet._
+import dev.rmaiun.soos.errors.RoutingErrors.RequiredParamsNotFound
+import dev.rmaiun.soos.managers.{GameManager, RealmManager, SeasonManager, UserManager}
 import io.chrisdavenport.log4cats.Logger
 import io.circe.{Decoder, Encoder}
 import org.http4s.circe.{jsonEncoderOf, jsonOf}
@@ -181,6 +182,20 @@ object SoosRoutes {
           result   <- gameManager.listCalculatedEloPoints(ListEloPointsDtoIn(Some(listUsers)))
         } yield result
         flowToResponse(userAllFlow)
+    }
+  }
+
+  def seasonRoutes[F[_]: Sync: Monad: Logger](seasonManager: SeasonManager[F]): HttpRoutes[F] = {
+    val dsl = new Http4sDsl[F] {}
+    import dev.rmaiun.protocol.http.codec.FullCodec._
+    import dsl._
+
+    HttpRoutes.of[F] { case req @ POST -> Root / "create" =>
+      val dtoOut = for {
+        dtoIn <- Flow.effect(req.as[CreateSeasonDtoIn])
+        res   <- seasonManager.createSeason(dtoIn)
+      } yield res
+      flowToResponse(dtoOut)
     }
   }
 

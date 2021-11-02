@@ -1,7 +1,7 @@
 package dev.rmaiun.soos.db.queries
 
 import cats.data.NonEmptyList
-import dev.rmaiun.soos.db.entities.{User, UserRealmRole}
+import dev.rmaiun.soos.db.entities.{ User, UserRealmRole }
 import doobie.Fragments
 import doobie.implicits._
 import doobie.util.fragment

@@ -61,7 +61,7 @@ object UserService {
       userRepo.update(u).transact(xa).attemptSql.adaptError
 
     def assignToRealm(realmId: Long, userId: Long, roleId: Long, botUsage: Boolean = false): Flow[F, Int] =
-      userRepo.assignUserToRealm(UserRealmRole(realmId, userId, roleId)).transact(xa).attemptSql.adaptError
+      userRepo.assignUserToRealm(UserRealmRole(realmId, userId, roleId,botUsage)).transact(xa).attemptSql.adaptError
 
     def checkAllPresent(realm: String, users: List[String]): Flow[F, Unit] =
       list(realm).flatMap { fromDb =>
