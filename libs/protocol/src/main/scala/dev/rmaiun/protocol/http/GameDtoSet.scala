@@ -10,7 +10,8 @@ object GameDtoSet {
     w2: String,
     l1: String,
     l2: String,
-    shutout: Boolean = false
+    shutout: Boolean = false,
+    created: Option[ZonedDateTime]
   )
 
   case class GameHistoryDto(

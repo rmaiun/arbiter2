@@ -1,16 +1,16 @@
 package dev.rmaiun.mabel.processors
 
 import cats.Monad
-import dev.rmaiun.common.{DateFormatter, SeasonHelper}
+import dev.rmaiun.common.{ DateFormatter, SeasonHelper }
 import dev.rmaiun.flowtypes.FLog
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.commands.AddRoundCmd
 import dev.rmaiun.mabel.commands.AddRoundCmd._
-import dev.rmaiun.mabel.dtos.EloRatingDto.{CalculatedPoints, EloPlayers, UserCalculatedPoints}
-import dev.rmaiun.mabel.dtos.{BotRequest, ProcessorResponse}
-import dev.rmaiun.mabel.services.{ArbiterClient, EloPointsCalculator}
-import dev.rmaiun.mabel.utils.{Constants, IdGen}
-import dev.rmaiun.mabel.utils.Constants.{PREFIX, SUFFIX}
+import dev.rmaiun.mabel.dtos.EloRatingDto.{ CalculatedPoints, EloPlayers, UserCalculatedPoints }
+import dev.rmaiun.mabel.dtos.{ BotRequest, ProcessorResponse }
+import dev.rmaiun.mabel.services.{ ArbiterClient, EloPointsCalculator }
+import dev.rmaiun.mabel.utils.Constants.{ PREFIX, SUFFIX }
+import dev.rmaiun.mabel.utils.{ Constants, IdGen }
 import dev.rmaiun.protocol.http.GameDtoSet._
 import dev.rmaiun.protocol.http.UserDtoSet.FindUserDtoOut
 import io.chrisdavenport.log4cats.Logger
@@ -41,12 +41,13 @@ case class AddRoundProcessor[F[_]: Monad: Logger](
   private def storeHistory(dto: AddRoundCmd): Flow[F, AddGameHistoryDtoOut] = {
     val ghDto = GameHistoryDtoIn(
       Constants.defaultRealm,
-      SeasonHelper.currentSeason,
+      dto.season.getOrElse(SeasonHelper.currentSeason),
       dto.w1.toLowerCase,
       dto.w2.toLowerCase,
       dto.l1.toLowerCase,
       dto.l2.toLowerCase,
-      dto.shutout
+      dto.shutout,
+      dto.created
     )
     arbiterClient.storeGameHistory(AddGameHistoryDtoIn(ghDto, dto.moderator))
   }

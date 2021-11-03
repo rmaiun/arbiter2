@@ -3,12 +3,12 @@ package dev.rmaiun.soos.managers
 import cats.Monad
 import cats.effect.Sync
 import dev.rmaiun.common.DateFormatter
-import dev.rmaiun.soos.db.entities.{ EloPoints, GameHistory }
+import dev.rmaiun.flowtypes.Flow.Flow
+import dev.rmaiun.protocol.http.GameDtoSet._
+import dev.rmaiun.soos.db.entities.{EloPoints, GameHistory}
 import dev.rmaiun.soos.dtos.GameHistoryCriteria
 import dev.rmaiun.soos.services._
 import dev.rmaiun.soos.validations.GameValidationSet._
-import dev.rmaiun.flowtypes.Flow.Flow
-import dev.rmaiun.protocol.http.GameDtoSet._
 import dev.rmaiun.validation.Validator
 
 trait GameManager[F[_]] {
@@ -48,7 +48,7 @@ object GameManager {
                l1.id,
                l2.id,
                dtoIn.historyElement.shutout,
-               DateFormatter.now
+               dtoIn.historyElement.created.getOrElse(DateFormatter.now)
              )
         created <- gameService.createGameHistory(gh)
       } yield AddGameHistoryDtoOut(

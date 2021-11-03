@@ -45,7 +45,7 @@ case class RateLimitedPublisher[F[_]: MonadThrowable: Logger](
         val dequeued = queue.dequeue
         dequeueRecursively(dequeued._2, elemsDequeue - 1, dequeued._1 :: acc)
       }
-    dequeueRecursively(queue, 15, Nil)
+    dequeueRecursively(queue, 7, Nil)
   }
 }
 
