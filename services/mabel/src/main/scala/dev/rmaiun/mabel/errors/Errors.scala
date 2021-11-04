@@ -8,4 +8,6 @@ object Errors extends ErrorInfo {
   case class NoProcessorFound(cmd: String) extends RuntimeException(s"Invalid command $cmd")
 
   case class ArbiterClientError(msg: String) extends RuntimeException(msg)
+
+  case class UserIsNotAuthorized(cause: Throwable) extends RuntimeException("User is not authorized", cause)
 }

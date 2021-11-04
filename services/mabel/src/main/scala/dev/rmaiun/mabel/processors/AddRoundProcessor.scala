@@ -52,7 +52,7 @@ case class AddRoundProcessor[F[_]: Monad: Logger](
     arbiterClient.storeGameHistory(AddGameHistoryDtoIn(ghDto, dto.moderator))
   }
   private def loadPlayer(surname: String): Flow[F, FindUserDtoOut] =
-    arbiterClient.findPlayer(surname.toLowerCase)
+    arbiterClient.findPlayerBySurname(surname.toLowerCase)
 
   private def calculateEloPoints(
     w1: FindUserDtoOut,

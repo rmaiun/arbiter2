@@ -13,7 +13,7 @@ import dev.rmaiun.protocol.http.RealmDtoSet._
 import dev.rmaiun.protocol.http.UserDtoSet._
 import dev.rmaiun.protocol.http.codec.FullCodec._
 import io.chrisdavenport.log4cats.Logger
-import io.circe.{ Decoder, Encoder }
+import io.circe.{Decoder, Encoder}
 import org.http4s.Method.POST
 import org.http4s.Status.BadRequest
 import org.http4s._
@@ -86,9 +86,15 @@ case class ArbiterClient[F[_]: Sync: Monad: Logger](client: Client[F], cfg: Serv
     Flow.effect(client.expectOr[ListEloPointsDtoOut](uriWithParams)(onError))
   }
 
-  def findPlayer(surname: String): Flow[F, FindUserDtoOut] = {
+  def findPlayerBySurname(surname: String): Flow[F, FindUserDtoOut] = {
     val uri           = baseUri / "users" / "find"
     val uriWithParams = uri.withQueryParam("surname", s"$surname")
+    Flow.effect(client.expectOr[FindUserDtoOut](uriWithParams)(onError))
+  }
+
+  def findPlayerByTid(tid: Long): Flow[F, FindUserDtoOut] = {
+    val uri           = baseUri / "users" / "find"
+    val uriWithParams = uri.withQueryParam("tid", s"$tid")
     Flow.effect(client.expectOr[FindUserDtoOut](uriWithParams)(onError))
   }
 

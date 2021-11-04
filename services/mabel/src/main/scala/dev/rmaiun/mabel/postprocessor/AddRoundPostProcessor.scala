@@ -23,7 +23,7 @@ case class AddRoundPostProcessor[F[_]: MonadThrowable: Logger](
 
   private def sendNotificationToUser(player: String, opponents: String, win: Boolean): Flow[F, Unit] =
     for {
-      userDto    <- arbiterClient.findPlayer(player.toLowerCase)
+      userDto    <- arbiterClient.findPlayerBySurname(player.toLowerCase)
       botResponse = BotResponse(userDto.user.tid.getOrElse(-1), IdGen.msgId, createOutput(opponents, win))
       _          <- cmdPublisher.publishToBot(botResponse)(userDto.user.active && botResponse.chatId > 0)
     } yield ()

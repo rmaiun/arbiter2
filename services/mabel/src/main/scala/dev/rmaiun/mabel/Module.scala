@@ -2,11 +2,11 @@ package dev.rmaiun.mabel
 
 import cats.Monad
 import cats.effect.concurrent.Ref
-import cats.effect.{ConcurrentEffect, ContextShift, Timer}
+import cats.effect.{ ConcurrentEffect, ContextShift, Timer }
 import dev.profunktor.fs2rabbit.model.AmqpMessage
 import dev.rmaiun.mabel.dtos.AmqpStructures
-import dev.rmaiun.mabel.postprocessor.{AddPlayerPostProcessor, AddRoundPostProcessor}
-import dev.rmaiun.mabel.processors.{AddPlayerProcessor, AddRoundProcessor, EloRatingProcessor, SeasonStatsProcessor}
+import dev.rmaiun.mabel.postprocessor.{ AddPlayerPostProcessor, AddRoundPostProcessor }
+import dev.rmaiun.mabel.processors.{ AddPlayerProcessor, AddRoundProcessor, EloRatingProcessor, SeasonStatsProcessor }
 import dev.rmaiun.mabel.routes.SysRoutes
 import dev.rmaiun.mabel.services.ConfigProvider.ServerConfig
 import dev.rmaiun.mabel.services._
@@ -52,7 +52,7 @@ object Module {
         addRoundPostProcessor,
         addPlayerPostProcessor
       )
-    lazy val cmdHandler  = CommandHandler.impl(strategy, publisherProxy)
+    lazy val cmdHandler  = CommandHandler.impl(arbiterClient, strategy, publisherProxy)
     lazy val pingManager = PingManager.impl
 
     //http app
