@@ -2,6 +2,7 @@ package dev.rmaiun.soos
 
 import cats.Monad
 import cats.effect.{ ConcurrentEffect, ContextShift, Timer }
+import dev.rmaiun.serverauth.middleware.Arbiter2Middleware
 import dev.rmaiun.soos.helpers.{ ConfigProvider, TransactorProvider }
 import dev.rmaiun.soos.managers.{ GameManager, RealmManager, SeasonManager, UserManager }
 import dev.rmaiun.soos.repositories._
@@ -14,9 +15,8 @@ import org.http4s.server.Router
 
 object Module {
   def initHttpApp[F[_]: ConcurrentEffect: Monad: Logger](
-  )(implicit T: Timer[F], C: ContextShift[F]): HttpApp[F] = {
-    implicit val cfg: ConfigProvider.Config = ConfigProvider.provideConfig
-    lazy val transactor                     = TransactorProvider.hikariTransactor(cfg)
+  )(implicit cfg: ConfigProvider.Config, T: Timer[F], C: ContextShift[F]): HttpApp[F] = {
+    lazy val transactor = TransactorProvider.hikariTransactor(cfg)
 
     lazy val algorithmRepo: AlgorithmRepo[F] = AlgorithmRepo.impl
     lazy val realmRepo                       = RealmRepo.impl
@@ -43,13 +43,14 @@ object Module {
     val seasonHttpApp      = SoosRoutes.seasonRoutes[F](seasonMng)
     val gameHistoryHttpApp = SoosRoutes.gameHistoryRoutes[F](gameMng)
     val eloPointsHttpApp   = SoosRoutes.eloPointsRoutes[F](gameMng)
-
-    Router[F](
+    // routes
+    val routes = Router[F](
       "/realms"          -> realmHttpApp,
       "/users"           -> userHttpApp,
       "/seasons"         -> seasonHttpApp,
       "/games/history"   -> gameHistoryHttpApp,
       "/games/eloPoints" -> eloPointsHttpApp
-    ).orNotFound
+    )
+    Arbiter2Middleware(routes, cfg.server.allowedTokens).orNotFound
   }
 }

@@ -23,11 +23,10 @@ object Module {
   def initHttpApp[F[_]: ConcurrentEffect: Monad: Logger](
     client: Client[F],
     amqpStructures: AmqpStructures[F],
-    cfg: ServerConfig,
     messagesRef: RateLimitQueue[F]
-  )(implicit T: Timer[F], C: ContextShift[F]): Module[F] = {
+  )(implicit cfg: ServerConfig, T: Timer[F], C: ContextShift[F]): Module[F] = {
 
-    lazy val arbiterClient        = ArbiterClient.impl(client, cfg)
+    lazy val arbiterClient        = ArbiterClient.impl(client)
     lazy val eloPointsCalculator  = EloPointsCalculator.impl(arbiterClient)
     lazy val publisherProxy       = PublisherProxy.impl(cfg, messagesRef)
     lazy val rateLimitedPublisher = RateLimitedPublisher.impl(messagesRef, amqpStructures.botOutputPublisher)

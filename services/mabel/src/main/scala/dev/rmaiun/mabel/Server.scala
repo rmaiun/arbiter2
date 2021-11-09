@@ -93,14 +93,14 @@ object Server {
   }
 
   def stream[F[_]: ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F], M: Monad[F]): Stream[F, Nothing] = {
-    val serverCfg = ConfigProvider.provideConfig
+    implicit val serverCfg: ServerConfig = ConfigProvider.provideConfig
     for {
       client     <- BlazeClientBuilder[F](global).withMaxWaitQueueLimit(1000).stream
       ref        <- Stream.eval(Ref[F].of(Queue[AmqpMessage[String]]()))
       rc         <- Stream.eval(RabbitClient[F](config(serverCfg), blocker))
       _          <- Stream.eval(initRabbitRoutes(rc))
       structures <- createRabbitConnection(rc)
-      module      = Module.initHttpApp(client, structures, serverCfg, ref)
+      module      = Module.initHttpApp(client, structures, ref)
 
       // With Middlewares in place
       finalHttpApp = Logger.httpApp(logHeaders = true, logBody = true)(module.httpApp)

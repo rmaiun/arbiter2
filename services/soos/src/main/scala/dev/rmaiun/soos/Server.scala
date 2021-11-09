@@ -2,6 +2,7 @@ package dev.rmaiun.soos
 
 import cats.Monad
 import cats.effect.{ ConcurrentEffect, ContextShift, Sync, Timer }
+import dev.rmaiun.soos.helpers.ConfigProvider
 import fs2.Stream
 import io.chrisdavenport.log4cats.SelfAwareStructuredLogger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
@@ -17,6 +18,7 @@ object Server {
   implicit def unsafeLogger[F[_]: Sync]: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]
 
   val clientEC: ExecutionContextExecutorService = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool())
+  implicit val cfg: ConfigProvider.Config       = ConfigProvider.provideConfig
 
   def stream[F[_]: ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F], M: Monad[F]): Stream[F, Nothing] = {
     for {

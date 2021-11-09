@@ -13,7 +13,8 @@ object ConfigProvider {
     mabelPathMock: String,
     notificationsEnabled: Boolean,
     host: String,
-    port: Int
+    port: Int,
+    soosToken:String
   )
 
   def provideConfig: ServerConfig =

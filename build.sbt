@@ -12,6 +12,15 @@ lazy val common = (project in file("libs/common"))
   .dependsOn(errorHandling)
   .disablePlugins(AssemblyPlugin)
 
+lazy val serverAuth = (project in file("libs/serverauth"))
+  .settings(
+    name := "serverauth",
+    settings,
+    libraryDependencies ++= serverAuthDependencies
+  )
+  .dependsOn(errorHandling)
+  .disablePlugins(AssemblyPlugin)
+
 lazy val tftypes = (project in file("libs/flowtypes"))
   .settings(
     name := "flowtypes",
@@ -59,7 +68,7 @@ lazy val soos = (project in file("services/soos"))
     flywayPassword := "rootpassword",
     flywayLocations += "db/migration"
   )
-  .dependsOn(common, tftypes, validation, errorHandling, protocol)
+  .dependsOn(common, tftypes, validation, errorHandling, protocol, serverAuth)
   .enablePlugins(FlywayPlugin)
   .disablePlugins(AssemblyPlugin)
 
@@ -70,7 +79,7 @@ lazy val mabel = (project in file("services/mabel"))
     libraryDependencies ++= mabelDependencies,
     Test / parallelExecution := false
   )
-  .dependsOn(common, tftypes, validation, errorHandling, protocol)
+  .dependsOn(common, tftypes, validation, errorHandling, protocol, serverAuth)
   .enablePlugins(FlywayPlugin)
   .disablePlugins(AssemblyPlugin)
 
@@ -106,9 +115,9 @@ lazy val dependencies =
     val fs2IO          = "co.fs2"                %% "fs2-io"               % "2.4.2"
     val accordCore     = "com.wix"               %% "accord-core"          % "0.7.6"
     val fs2rabbit      = "dev.profunktor"        %% "fs2-rabbit"           % "3.0.1"
-    val scalatest      = "org.scalatest"         %% "scalatest"            % ScalaTestVersion       % Test
-    val spec2Core      = "org.specs2"            %% "specs2-core"          % Specs2Version          % Test
-    val mockito        = "org.scalatestplus"     %% "mockito-3-4"          % "3.2.10.0"             % Test
+    val scalatest      = "org.scalatest"         %% "scalatest"            % ScalaTestVersion % Test
+    val spec2Core      = "org.specs2"            %% "specs2-core"          % Specs2Version    % Test
+    val mockito        = "org.scalatestplus"     %% "mockito-3-4"          % "3.2.10.0"       % Test
 
   }
 
@@ -116,6 +125,15 @@ lazy val tfTypesDependencies = Seq(
   dependencies.catsCore,
   dependencies.catsEffect,
   dependencies.log4cats
+)
+
+lazy val serverAuthDependencies = Seq(
+  dependencies.catsCore,
+  dependencies.catsEffect,
+  dependencies.blazeServer,
+  dependencies.httpDsl,
+  dependencies.circeGeneric,
+  dependencies.http4sCirce
 )
 
 lazy val validationDependencies = Seq(
