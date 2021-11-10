@@ -5,15 +5,15 @@ jobs:
       # specify the version you desire here
       - image: circleci/openjdk:8-jdk
       - image: circleci/buildpack-deps:stretch
-      - image: circleci/mysql:8.0.4
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASS
-        environment:
-          MYSQL_ROOT_PASSWORD: rootpassword
-          MYSQL_DATABASE: arbiter
-          MYSQL_USER: dev
-          MYSQL_PASSWORD: password
+#      - image: circleci/mysql:8.0.4
+#        auth:
+#          username: $DOCKERHUB_USERNAME
+#          password: $DOCKERHUB_PASS
+#        environment:
+#          MYSQL_ROOT_PASSWORD: rootpassword
+#          MYSQL_DATABASE: arbiter
+#          MYSQL_USER: dev
+#          MYSQL_PASSWORD: password
     working_directory: ~/repo
     environment:
       # Customize the JVM maximum heap limit
@@ -24,31 +24,34 @@ jobs:
 
     steps:
       - checkout
+#      - run:
+#          name: Waiting for MySQL to be ready
+#          command: |
+#            for i in `seq 1 20`;
+#            do
+#              nc -z 127.0.0.1 3306 && echo Success && exit 0
+#              echo -n .
+#              sleep 1
+#            done
+#            echo Failed waiting for MySQL && exit 1
+#      - run: cat /dev/null | sbt soos/flywayClean
+#      - run: cat /dev/null | sbt soos/flywayMigrate
+#      - run: cat /dev/null | sbt soos/clean
+#      - run: cat /dev/null | sbt soos/compile
+#      - run: cat /dev/null | sbt soos/test
       - run:
-          name: Waiting for MySQL to be ready
-          command: |
-            for i in `seq 1 20`;
-            do
-              nc -z 127.0.0.1 3306 && echo Success && exit 0
-              echo -n .
-              sleep 1
-            done
-            echo Failed waiting for MySQL && exit 1
-      - run: cat /dev/null | sbt soos/flywayClean
-      - run: cat /dev/null | sbt soos/flywayMigrate
-      - run: cat /dev/null | sbt soos/clean
-      - run: cat /dev/null | sbt soos/compile
-      - run: cat /dev/null | sbt soos/test
-      #        - run: cat /dev/null | sbt soos/test
-      - run: cat /dev/null | sbt mabel/clean
-      - run: cat /dev/null | sbt mabel/compile
-      - run: cat /dev/null | sbt mabel/test
+          name: Migrate prod env
+          command: cat /dev/null | sbt -Dfw.user=$PROD_MYSQL_USER -Dfw.pass=$PROD_MYSQL_PASS -Dfw.locations=db/migration -Dfw.host=$PROD_MYSQL_URI "soos/flywayMigrate"
+#      - run: cat /dev/null | sbt mabel/clean
+#      - run: cat /dev/null | sbt mabel/compile
+#      - run: cat /dev/null | sbt mabel/test
 
 workflows:
   version: 2
   build-master:
     jobs:
       - build:
+          context: myctx
           filters:
             branches:
               only:

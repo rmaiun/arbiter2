@@ -63,14 +63,13 @@ lazy val soos = (project in file("services/soos"))
     Test / parallelExecution := false
   )
   .settings(
-    flywayUrl := "jdbc:mysql://127.0.0.1:3306/arbiter?allowPublicKeyRetrieval=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8",
-    flywayUser := "root",
-    flywayPassword := "rootpassword",
-    flywayLocations += "db/migration"
+    flywayUrl := s"jdbc:mysql://${System.getProperty("fw.host","localhost")}:3306/arbiter?allowPublicKeyRetrieval=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8",
+    flywayUser := System.getProperty("fw.user","root"),
+    flywayPassword := System.getProperty("fw.pass","rootpassword"),
+    flywayLocations += System.getProperty("fw.locations","db/test")
   )
   .dependsOn(common, tftypes, validation, errorHandling, protocol, serverAuth)
   .enablePlugins(FlywayPlugin)
-  .disablePlugins(AssemblyPlugin)
 
 lazy val mabel = (project in file("services/mabel"))
   .settings(
@@ -81,7 +80,6 @@ lazy val mabel = (project in file("services/mabel"))
   )
   .dependsOn(common, tftypes, validation, errorHandling, protocol, serverAuth)
   .enablePlugins(FlywayPlugin)
-  .disablePlugins(AssemblyPlugin)
 
 lazy val dependencies =
   new {
