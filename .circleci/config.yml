@@ -1,57 +1,115 @@
 version: 2
 jobs:
-  build:
+  build-soos:
     docker:
       # specify the version you desire here
       - image: circleci/openjdk:8-jdk
       - image: circleci/buildpack-deps:stretch
-#      - image: circleci/mysql:8.0.4
-#        auth:
-#          username: $DOCKERHUB_USERNAME
-#          password: $DOCKERHUB_PASS
-#        environment:
-#          MYSQL_ROOT_PASSWORD: rootpassword
-#          MYSQL_DATABASE: arbiter
-#          MYSQL_USER: dev
-#          MYSQL_PASSWORD: password
+      - image: circleci/mysql:8.0.4
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
+        environment:
+          MYSQL_ROOT_PASSWORD: rootpassword
+          MYSQL_DATABASE: arbiter
+          MYSQL_USER: dev
+          MYSQL_PASSWORD: password
     working_directory: ~/repo
     environment:
       # Customize the JVM maximum heap limit
       SBT_VERSION: 1.3.10
-      IMAGE_NAME: mairo/tfbot
+      SOOS_IMAGE_NAME: mairo/soos
       JVM_OPTS: -Xmx3200m
       TERM: dumb
-
     steps:
       - checkout
-#      - run:
-#          name: Waiting for MySQL to be ready
-#          command: |
-#            for i in `seq 1 20`;
-#            do
-#              nc -z 127.0.0.1 3306 && echo Success && exit 0
-#              echo -n .
-#              sleep 1
-#            done
-#            echo Failed waiting for MySQL && exit 1
-#      - run: cat /dev/null | sbt soos/flywayClean
-#      - run: cat /dev/null | sbt soos/flywayMigrate
-#      - run: cat /dev/null | sbt soos/clean
-#      - run: cat /dev/null | sbt soos/compile
-#      - run: cat /dev/null | sbt soos/test
+      - run:
+          name: Waiting for MySQL to be ready
+          command: |
+            for i in `seq 1 20`;
+            do
+              nc -z 127.0.0.1 3306 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for MySQL && exit 1
+      - run:
+          name: Prepare mysql for tests
+          command: cat /dev/null | sbt soos/flywayClean soos/flywayMigrate
+      - run:
+          name: Prepare jar
+          command: cat /dev/null | sbt soos/clean soos/assembly
+      - setup_remote_docker
+      - run:
+          name: Build docker image
+          command: docker build -t $SOOS_IMAGE_NAME:dev-${CIRCLE_SHA1:0:8} services/soos
+      - run:
+          name: Save docker image
+          command: docker save -o image.tar $SOOS_IMAGE_NAME:dev-${CIRCLE_SHA1:0:8}
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./image.tar
+
+  migrate-prod-mysq:
+    environment:
+      # Customize the JVM maximum heap limit
+      SBT_VERSION: 1.3.10
+      SOOS_IMAGE_NAME: mairo/soos
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+    docker:
+      - image: circleci/openjdk:8-jdk
+      - image: circleci/buildpack-deps:stretch
+    working_directory: ~/repo
+    steps:
+      - checkout
       - run:
           name: Migrate prod env
           command: cat /dev/null | sbt -Dfw.user=$PROD_MYSQL_USER -Dfw.pass=$PROD_MYSQL_PASS -Dfw.locations=db/migration -Dfw.host=$PROD_MYSQL_URI "soos/flywayMigrate"
-#      - run: cat /dev/null | sbt mabel/clean
-#      - run: cat /dev/null | sbt mabel/compile
-#      - run: cat /dev/null | sbt mabel/test
+
+  publish-soos-image:
+    docker:
+      - image: circleci/openjdk:8-jdk
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - setup_remote_docker
+      - run:
+          name: Load docker image
+          command: docker load -i /tmp/workspace/image.tar
+      - run:
+          name: Login to dockerhub
+          command: cat /dev/null | echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+      - run:
+          name: Publish new docker image
+          command: cat /dev/null | docker push mairo/soos:dev-${CIRCLE_SHA1:0:8}
 
 workflows:
   version: 2
   build-master:
     jobs:
-      - build:
+      - build-soos:
           context: myctx
+          filters:
+            branches:
+              only:
+                - master
+                - dev
+      - migrate-prod-mysq:
+          context: myctx
+          requires:
+            - build-soos
+          filters:
+            branches:
+              only:
+                - master
+                - dev
+      - publish-soos-image:
+          context: myctx
+          requires:
+            - migrate-prod-mysq
           filters:
             branches:
               only:
