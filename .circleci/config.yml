@@ -45,11 +45,57 @@ jobs:
           command: docker build -t $SOOS_IMAGE_NAME:dev-${CIRCLE_SHA1:0:8} services/soos
       - run:
           name: Save docker image
-          command: docker save -o image.tar $SOOS_IMAGE_NAME:dev-${CIRCLE_SHA1:0:8}
+          command: docker save -o image_soos.tar $SOOS_IMAGE_NAME:dev-${CIRCLE_SHA1:0:8}
       - persist_to_workspace:
           root: .
           paths:
-            - ./image.tar
+            - ./image_soos.tar
+
+  build-mabel:
+    docker:
+      # specify the version you desire here
+      - image: circleci/openjdk:8-jdk
+      - image: circleci/buildpack-deps:stretch
+    working_directory: ~/repo
+    environment:
+      # Customize the JVM maximum heap limit
+      SBT_VERSION: 1.3.10
+      MABEL_IMAGE_NAME: mairo/mabel
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+    steps:
+      - checkout
+      - run:
+          name: Prepare jar
+          command: cat /dev/null | sbt mabel/clean mabel/assembly
+      - setup_remote_docker
+      - run:
+          name: Build docker image
+          command: docker build -t $MABEL_IMAGE_NAME:dev-${CIRCLE_SHA1:0:8} services/mabel
+      - run:
+          name: Save docker image
+          command: docker save -o image_mabel.tar $MABEL_IMAGE_NAME:dev-${CIRCLE_SHA1:0:8}
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./image_mabel.tar
+
+  build-dipper:
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    working_directory: ~/repo
+    environment:
+      BOT_IMAGE_NAME: mairo/dipper
+      TERM: dumb
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: cd services/dipper && docker build -t $BOT_IMAGE_NAME:dev-${CIRCLE_SHA1:0:8} .
+      - run: cd services/dipper && docker save -o ../../image_dipper.tar $BOT_IMAGE_NAME:dev-${CIRCLE_SHA1:0:8}
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./image_dipper.tar
 
   migrate-prod-mysq:
     environment:
@@ -78,7 +124,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Load docker image
-          command: docker load -i /tmp/workspace/image.tar
+          command: docker load -i /tmp/workspace/image_soos.tar
       - run:
           name: Login to dockerhub
           command: cat /dev/null | echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
@@ -86,17 +132,43 @@ jobs:
           name: Publish new docker image
           command: cat /dev/null | docker push mairo/soos:dev-${CIRCLE_SHA1:0:8}
 
+  publish-mabel-image:
+    docker:
+      - image: circleci/openjdk:8-jdk
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - setup_remote_docker
+      - run:
+          name: Load docker image
+          command: docker load -i /tmp/workspace/image_mabel.tar
+      - run:
+          name: Login to dockerhub
+          command: cat /dev/null | echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+      - run:
+          name: Publish new docker image
+          command: cat /dev/null | docker push mairo/mabel:dev-${CIRCLE_SHA1:0:8}
+
+  publish-dipper-image:
+    environment:
+      BOT_IMAGE_NAME: mairo/dipper
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - setup_remote_docker
+      - run: docker load -i /tmp/workspace/image_dipper.tar
+      - run: cat /dev/null | docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASS"
+      - run: cat /dev/null | docker push mairo/dipper:dev-${CIRCLE_SHA1:0:8}
+
 workflows:
   version: 2
   build-master:
     jobs:
       - build-soos:
           context: myctx
-          filters:
-            branches:
-              only:
-                - master
-                - dev
       - migrate-prod-mysq:
           context: myctx
           requires:
@@ -104,7 +176,6 @@ workflows:
           filters:
             branches:
               only:
-                - master
                 - dev
       - publish-soos-image:
           context: myctx
@@ -113,5 +184,24 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - dev
+      - build-mabel:
+          context: myctx
+      - publish-mabel-image:
+          context: myctx
+          requires:
+            - build-mabel
+          filters:
+            branches:
+              only:
+                - dev
+      - build-dipper:
+          context: myctx
+      - publish-dipper-image:
+          context: myctx
+          requires:
+            - build-dipper
+          filters:
+            branches:
+              only:
                 - dev
