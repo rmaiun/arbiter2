@@ -24,7 +24,7 @@ object Server {
   def stream[F[_]: ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F], M: Monad[F]): Stream[F, Nothing] = {
     for {
       //general
-      _ <- Stream.eval(FLog.info(cfg.toString).value)
+      _ <- Stream.eval(Sync[F].delay(println(cfg)))
       client <- BlazeClientBuilder[F](global).withMaxWaitQueueLimit(1000).stream
       httpApp = Module.initHttpApp()
       // With Middlewares in place

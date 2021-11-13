@@ -170,7 +170,15 @@ workflows:
     jobs:
       - build-soos:
           context: myctx
-      - migrate-prod-mysq:
+#      - migrate-prod-mysq:
+#          context: myctx
+#          requires:
+#            - build-soos
+#          filters:
+#            branches:
+#              only:
+#                - dev
+      - publish-soos-image:
           context: myctx
           requires:
             - build-soos
@@ -178,31 +186,23 @@ workflows:
             branches:
               only:
                 - dev
-      - publish-soos-image:
-          context: myctx
-          requires:
-            - migrate-prod-mysq
-          filters:
-            branches:
-              only:
-                - dev
-      - build-mabel:
-          context: myctx
-      - publish-mabel-image:
-          context: myctx
-          requires:
-            - build-mabel
-          filters:
-            branches:
-              only:
-                - dev
-      - build-dipper:
-          context: myctx
-      - publish-dipper-image:
-          context: myctx
-          requires:
-            - build-dipper
-          filters:
-            branches:
-              only:
-                - dev
+#      - build-mabel:
+#          context: myctx
+#      - publish-mabel-image:
+#          context: myctx
+#          requires:
+#            - build-mabel
+#          filters:
+#            branches:
+#              only:
+#                - dev
+#      - build-dipper:
+#          context: myctx
+#      - publish-dipper-image:
+#          context: myctx
+#          requires:
+#            - build-dipper
+#          filters:
+#            branches:
+#              only:
+#                - dev
