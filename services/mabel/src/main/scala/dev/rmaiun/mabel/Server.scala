@@ -3,12 +3,13 @@ package dev.rmaiun.mabel
 import cats.Monad
 import cats.data.Kleisli
 import cats.effect.concurrent.Ref
-import cats.effect.{Blocker, ConcurrentEffect, ContextShift, Sync, Timer}
+import cats.effect.{ Blocker, ConcurrentEffect, ContextShift, Sync, Timer }
 import dev.profunktor.fs2rabbit.config.Fs2RabbitConfig
 import dev.profunktor.fs2rabbit.config.declaration._
 import dev.profunktor.fs2rabbit.interpreter.RabbitClient
 import dev.profunktor.fs2rabbit.model.ExchangeType.Direct
 import dev.profunktor.fs2rabbit.model._
+import dev.rmaiun.flowtypes.FLog
 import dev.rmaiun.mabel.dtos.AmqpStructures
 import dev.rmaiun.mabel.services.ConfigProvider
 import dev.rmaiun.mabel.services.ConfigProvider.ServerConfig
@@ -24,7 +25,7 @@ import java.util.concurrent.Executors
 import scala.collection.immutable.Queue
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutorService}
+import scala.concurrent.{ ExecutionContext, ExecutionContextExecutorService }
 
 object Server {
   implicit def unsafeLogger[F[_]: Sync: Monad]: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]
@@ -95,6 +96,7 @@ object Server {
   def stream[F[_]: ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F], M: Monad[F]): Stream[F, Nothing] = {
     implicit val serverCfg: ServerConfig = ConfigProvider.provideConfig
     for {
+      _          <- Stream.eval(FLog.info(serverCfg.toString).value)
       client     <- BlazeClientBuilder[F](global).withMaxWaitQueueLimit(1000).stream
       ref        <- Stream.eval(Ref[F].of(Queue[AmqpMessage[String]]()))
       rc         <- Stream.eval(RabbitClient[F](config(serverCfg), blocker))

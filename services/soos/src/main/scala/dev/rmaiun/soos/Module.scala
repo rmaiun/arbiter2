@@ -51,6 +51,6 @@ object Module {
       "/games/history"   -> gameHistoryHttpApp,
       "/games/eloPoints" -> eloPointsHttpApp
     )
-    Arbiter2Middleware(routes, cfg.server.allowedTokens).orNotFound
+    Arbiter2Middleware(routes, cfg.server.allowedTokens.split(":").toList).orNotFound
   }
 }

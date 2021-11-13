@@ -26,8 +26,8 @@ case class ArbiterClient[F[_]: Sync: Monad: Logger](client: Client[F])(implicit 
   implicit def circeJsonDecoder[A: Decoder]: EntityDecoder[F, A] = jsonOf[F, A]
   implicit def circeJsonEncoder[A: Encoder]: EntityEncoder[F, A] = jsonEncoderOf[F, A]
   private val baseUri = Uri
-    .fromString(cfg.mabelPath)
-    .getOrElse(Uri.unsafeFromString(cfg.mabelPathMock))
+    .fromString(cfg.soosPath)
+    .getOrElse(Uri.unsafeFromString(cfg.soosPathMock))
   val onError: Response[F] => F[Throwable] = resp => {
     import cats.syntax.functor._
     import io.circe.parser._

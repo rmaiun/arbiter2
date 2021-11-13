@@ -7,12 +7,11 @@ object ConfigProvider {
 
   case class DbConfig(host: String, port: Int, database: String, username: String, password: String)
 
-  case class ServerConfig(port: Int, allowedTokens:List[String])
+  case class ServerConfig(host:String,port: Int, allowedTokens:String)
 
   case class AppConfig(
     privileged: String,
     archiveReceiver: String,
-    notificationsEnabled: Boolean,
     expectedGames: Int,
     reportTimezone: String,
     topPlayersLimit: Int,

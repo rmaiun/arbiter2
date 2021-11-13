@@ -9,12 +9,12 @@ object ConfigProvider {
 
   case class ServerConfig(
     broker: BrokerConfig,
-    mabelPath: String,
-    mabelPathMock: String,
+    soosPath: String,
+    soosPathMock: String,
     notificationsEnabled: Boolean,
     host: String,
     port: Int,
-    soosToken:String
+    soosToken: String
   )
 
   def provideConfig: ServerConfig =
