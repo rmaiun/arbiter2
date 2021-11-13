@@ -3,7 +3,7 @@ package dev.rmaiun.mabel
 import cats.Monad
 import cats.data.Kleisli
 import cats.effect.concurrent.Ref
-import cats.effect.{ Blocker, ConcurrentEffect, ContextShift, Sync, Timer }
+import cats.effect.{Blocker, ConcurrentEffect, ContextShift, Sync, Timer}
 import dev.profunktor.fs2rabbit.config.Fs2RabbitConfig
 import dev.profunktor.fs2rabbit.config.declaration._
 import dev.profunktor.fs2rabbit.interpreter.RabbitClient
@@ -12,7 +12,7 @@ import dev.profunktor.fs2rabbit.model._
 import dev.rmaiun.flowtypes.FLog
 import dev.rmaiun.mabel.dtos.AmqpStructures
 import dev.rmaiun.mabel.services.ConfigProvider
-import dev.rmaiun.mabel.services.ConfigProvider.ServerConfig
+import dev.rmaiun.mabel.services.ConfigProvider.Config
 import fs2.Stream
 import io.chrisdavenport.log4cats.SelfAwareStructuredLogger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
@@ -25,7 +25,7 @@ import java.util.concurrent.Executors
 import scala.collection.immutable.Queue
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{ ExecutionContext, ExecutionContextExecutorService }
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutorService}
 
 object Server {
   implicit def unsafeLogger[F[_]: Sync: Monad]: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]
@@ -34,7 +34,7 @@ object Server {
   val blocker: Blocker =
     Blocker.liftExecutionContext(ExecutionContext.fromExecutorService(Executors.newCachedThreadPool()))
 
-  def config(cfg: ServerConfig): Fs2RabbitConfig = Fs2RabbitConfig(
+  def config(cfg: Config): Fs2RabbitConfig = Fs2RabbitConfig(
     virtualHost = cfg.broker.virtualHost,
     host = cfg.broker.host,
     port = cfg.broker.port,
@@ -94,12 +94,12 @@ object Server {
   }
 
   def stream[F[_]: ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F], M: Monad[F]): Stream[F, Nothing] = {
-    implicit val serverCfg: ServerConfig = ConfigProvider.provideConfig
+    implicit val cfg: Config = ConfigProvider.provideConfig
     for {
-      _          <- Stream.eval(FLog.info(serverCfg.toString).value)
+      _          <- Stream.eval(FLog.info(cfg.toString).value)
       client     <- BlazeClientBuilder[F](global).withMaxWaitQueueLimit(1000).stream
       ref        <- Stream.eval(Ref[F].of(Queue[AmqpMessage[String]]()))
-      rc         <- Stream.eval(RabbitClient[F](config(serverCfg), blocker))
+      rc         <- Stream.eval(RabbitClient[F](config(cfg), blocker))
       _          <- Stream.eval(initRabbitRoutes(rc))
       structures <- createRabbitConnection(rc)
       module      = Module.initHttpApp(client, structures, ref)
@@ -108,7 +108,7 @@ object Server {
       finalHttpApp = Logger.httpApp(logHeaders = true, logBody = true)(module.httpApp)
       exitCode <-
         BlazeServerBuilder[F](clientEC)
-          .bindHttp(serverCfg.port, serverCfg.host)
+          .bindHttp(cfg.server.port, cfg.server.host)
           .withHttpApp(finalHttpApp)
           .serve
           .concurrently(structures.botInputConsumer.flatMap(x => Stream.eval(module.cmdHandler.process(x).value)))

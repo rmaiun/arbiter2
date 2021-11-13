@@ -8,7 +8,7 @@ import dev.rmaiun.mabel.dtos.AmqpStructures
 import dev.rmaiun.mabel.postprocessor.{ AddPlayerPostProcessor, AddRoundPostProcessor }
 import dev.rmaiun.mabel.processors.{ AddPlayerProcessor, AddRoundProcessor, EloRatingProcessor, SeasonStatsProcessor }
 import dev.rmaiun.mabel.routes.SysRoutes
-import dev.rmaiun.mabel.services.ConfigProvider.ServerConfig
+import dev.rmaiun.mabel.services.ConfigProvider.Config
 import dev.rmaiun.mabel.services._
 import io.chrisdavenport.log4cats.Logger
 import org.http4s.HttpApp
@@ -24,7 +24,7 @@ object Module {
     client: Client[F],
     amqpStructures: AmqpStructures[F],
     messagesRef: RateLimitQueue[F]
-  )(implicit cfg: ServerConfig, T: Timer[F], C: ContextShift[F]): Module[F] = {
+  )(implicit cfg: Config, T: Timer[F], C: ContextShift[F]): Module[F] = {
 
     lazy val arbiterClient        = ArbiterClient.impl(client)
     lazy val eloPointsCalculator  = EloPointsCalculator.impl(arbiterClient)

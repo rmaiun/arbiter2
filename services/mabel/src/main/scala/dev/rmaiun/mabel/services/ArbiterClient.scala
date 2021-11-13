@@ -6,7 +6,7 @@ import dev.rmaiun.errorhandling.errors.codec.ErrorDtoOut
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.errors.Errors.ArbiterClientError
-import dev.rmaiun.mabel.services.ConfigProvider.ServerConfig
+import dev.rmaiun.mabel.services.ConfigProvider.Config
 import dev.rmaiun.mabel.utils.Constants
 import dev.rmaiun.protocol.http.GameDtoSet._
 import dev.rmaiun.protocol.http.RealmDtoSet._
@@ -21,13 +21,13 @@ import org.http4s._
 import org.http4s.circe._
 import org.http4s.client.Client
 
-case class ArbiterClient[F[_]: Sync: Monad: Logger](client: Client[F])(implicit cfg: ServerConfig) {
+case class ArbiterClient[F[_]: Sync: Monad: Logger](client: Client[F])(implicit cfg: Config) {
   import ArbiterClient._
   implicit def circeJsonDecoder[A: Decoder]: EntityDecoder[F, A] = jsonOf[F, A]
   implicit def circeJsonEncoder[A: Encoder]: EntityEncoder[F, A] = jsonEncoderOf[F, A]
   private val baseUri = Uri
-    .fromString(cfg.soosPath)
-    .getOrElse(Uri.unsafeFromString(cfg.soosPathMock))
+    .fromString(cfg.integration.soos.path)
+    .getOrElse(Uri.unsafeFromString(cfg.integration.soos.stub))
   val onError: Response[F] => F[Throwable] = resp => {
     import cats.syntax.functor._
     import io.circe.parser._
@@ -53,26 +53,26 @@ case class ArbiterClient[F[_]: Sync: Monad: Logger](client: Client[F])(implicit 
     val uri = baseUri / "users" / "register"
     val request = Request[F](POST, uri)
       .withEntity(dtoIn)
-      .withSoosHeaders
+      .withSoosHeaders()
     Flow.effect(client.expectOr[RegisterUserDtoOut](request)(onError))
   }
 
   def assignUserToRealm(dtoIn: AssignUserToRealmDtoIn): Flow[F, AssignUserToRealmDtoOut] = {
     val uri     = baseUri / "users" / "assignToRealm"
-    val request = Request[F](POST, uri).withEntity(dtoIn).withSoosHeaders
+    val request = Request[F](POST, uri).withEntity(dtoIn).withSoosHeaders()
 
     Flow.effect(client.expectOr[AssignUserToRealmDtoOut](request)(onError))
   }
 
   def storeGameHistory(dtoIn: AddGameHistoryDtoIn): Flow[F, AddGameHistoryDtoOut] = {
     val uri     = baseUri / "games" / "history" / "store"
-    val request = Request[F](POST, uri).withEntity(dtoIn).withSoosHeaders
+    val request = Request[F](POST, uri).withEntity(dtoIn).withSoosHeaders()
     Flow.effect(client.expectOr[AddGameHistoryDtoOut](request)(onError))
   }
 
   def storeEloPoints(dtoIn: AddEloPointsDtoIn): Flow[F, AddEloPointsDtoOut] = {
     val uri     = baseUri / "games" / "eloPoints" / "store"
-    val request = Request[F](POST, uri).withEntity(dtoIn).withSoosHeaders
+    val request = Request[F](POST, uri).withEntity(dtoIn).withSoosHeaders()
     Flow.effect(client.expectOr[AddEloPointsDtoOut](request)(onError))
   }
 
@@ -81,7 +81,7 @@ case class ArbiterClient[F[_]: Sync: Monad: Logger](client: Client[F])(implicit 
     val uriWithParams = uri
       .withQueryParam("realm", s"$realm")
       .withQueryParam("season", s"$season")
-    val request = Request[F](GET, uriWithParams).withSoosHeaders
+    val request = Request[F](GET, uriWithParams).withSoosHeaders()
     Flow.effect(client.expectOr[ListGameHistoryDtoOut](request)(onError))
   }
 
@@ -89,14 +89,14 @@ case class ArbiterClient[F[_]: Sync: Monad: Logger](client: Client[F])(implicit 
     val uri = baseUri / "games" / "eloPoints" / "listCalculated"
     val uriWithParams = uri
       .withQueryParam("users", users.mkString(","))
-    val request = Request[F](GET, uriWithParams).withSoosHeaders
+    val request = Request[F](GET, uriWithParams).withSoosHeaders()
     Flow.effect(client.expectOr[ListEloPointsDtoOut](request)(onError))
   }
 
   def findPlayerBySurname(surname: String): Flow[F, FindUserDtoOut] = {
     val uri           = baseUri / "users" / "find"
     val uriWithParams = uri.withQueryParam("surname", s"$surname")
-    val request       = Request[F](GET, uriWithParams).withSoosHeaders
+    val request       = Request[F](GET, uriWithParams).withSoosHeaders()
     Flow.effect(client.expectOr[FindUserDtoOut](request)(onError))
   }
 
@@ -109,18 +109,18 @@ case class ArbiterClient[F[_]: Sync: Monad: Logger](client: Client[F])(implicit 
   def findAllPlayers: Flow[F, FindAllUsersDtoOut] = {
     val uri           = baseUri / "users" / "list"
     val uriWithParams = uri.withQueryParam("realm", s"${Constants.defaultRealm}").withQueryParam("activeStatus", true)
-    val request       = Request[F](GET, uriWithParams).withSoosHeaders
+    val request       = Request[F](GET, uriWithParams).withSoosHeaders()
     Flow.effect(client.expectOr[FindAllUsersDtoOut](request)(onError))
   }
 }
 
 object ArbiterClient {
   def apply[F[_]](implicit ev: ArbiterClient[F]): ArbiterClient[F] = ev
-  def impl[F[_]: Monad: Logger: Sync](c: Client[F])(implicit cfg: ServerConfig): ArbiterClient[F] =
+  def impl[F[_]: Monad: Logger: Sync](c: Client[F])(implicit cfg: Config): ArbiterClient[F] =
     new ArbiterClient[F](c)
 
   implicit class RichRequest[F[_]](r: Request[F]) {
-    def withSoosHeaders()(implicit cfg: ServerConfig): Request[F] =
-      r.withHeaders(Header.Raw(Arbiter2Middleware.Arbiter2AuthHeader, cfg.soosToken))
+    def withSoosHeaders()(implicit cfg: Config): Request[F] =
+      r.withHeaders(Header.Raw(Arbiter2Middleware.Arbiter2AuthHeader, cfg.integration.soos.token))
   }
 }
