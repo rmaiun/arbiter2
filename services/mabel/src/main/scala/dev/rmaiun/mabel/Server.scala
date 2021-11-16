@@ -38,7 +38,7 @@ object Server {
     virtualHost = cfg.broker.virtualHost,
     host = cfg.broker.host,
     port = cfg.broker.port,
-    connectionTimeout = 3,
+    connectionTimeout = cfg.broker.timeout,
     username = Some(cfg.broker.username),
     password = Some(cfg.broker.password),
     ssl = false,
