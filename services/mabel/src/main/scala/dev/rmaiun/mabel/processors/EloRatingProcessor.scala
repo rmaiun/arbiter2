@@ -1,9 +1,9 @@
 package dev.rmaiun.mabel.processors
 import cats.Monad
 import dev.rmaiun.flowtypes.Flow.Flow
-import dev.rmaiun.mabel.dtos.{BotRequest, ProcessorResponse}
+import dev.rmaiun.mabel.dtos.{ BotRequest, ProcessorResponse }
 import dev.rmaiun.mabel.services.ArbiterClient
-import dev.rmaiun.mabel.utils.Constants.{LINE_SEPARATOR, PREFIX, SUFFIX}
+import dev.rmaiun.mabel.utils.Constants.{ LINE_SEPARATOR, PREFIX, SUFFIX }
 import dev.rmaiun.mabel.utils.IdGen
 import dev.rmaiun.protocol.http.GameDtoSet.ListEloPointsDtoOut
 import io.chrisdavenport.log4cats.Logger
@@ -21,10 +21,10 @@ case class EloRatingProcessor[F[_]: Monad](ac: ArbiterClient[F]) extends Process
         .zipWithIndex
         .map(e => s"${e._2 + 1}. ${e._1.user.capitalize} ${e._1.value}")
         .mkString(LINE_SEPARATOR)
-      val msg = s"""$PREFIX Global Rating:
-                   |$separator
-                   |$playersRating
-                   |$SUFFIX""".stripMargin
+      val msg = PREFIX + s"""Global Rating:
+                            |$separator
+                            |$playersRating
+                            |$SUFFIX""".stripMargin
       ProcessorResponse.ok(input.chatId, IdGen.msgId, msg)
     }
 

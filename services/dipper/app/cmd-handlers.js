@@ -64,22 +64,18 @@ class CmdHandlers {
     await this._rc.publish(this._dtoIn('eloRating', ctx, {}))
   }
 
-  // async lastGamesCmdHandler (ctx, isCmd = true) {
-  //   const data = {
-  //     season: this._currentQuarter(),
-  //     qty: 6
-  //   }
-  //   if (isCmd) {
-  //     const args = this._parseArgs(ctx.message.text)
-  //     if (args.length === 1) {
-  //       data.season = args[0]
-  //     } else if (args.length === 2) {
-  //       data.season = args[0]
-  //       data.qty = args[1]
-  //     }
-  //   }
-  //   await this._rc.publish(this._dtoIn('findLastRounds', ctx, data))
-  // }
+  async lastGamesCmdHandler (ctx, isCmd = true) {
+    const data = {
+      season: this._currentQuarter()
+    }
+    if (isCmd) {
+      const args = this._parseArgs(ctx.message.text)
+      if (args.length === 1) {
+        data.season = args[0]
+      }
+    }
+    await this._rc.publish(this._dtoIn('lastGames', ctx, data))
+  }
 
   // async xlsxReportCmdHandler (ctx, isCmd = true) {
   //   let season = this._currentQuarter()

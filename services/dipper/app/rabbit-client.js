@@ -39,15 +39,14 @@ class RabbitClient {
               parse_mode: 'Markdown',
               reply_markup: JSON.stringify({
                 keyboard: [
-                  [{ text: 'Season Stats \uD83D\uDCC8' }, { text: 'Elo Rating \uD83D\uDDFF' }]
+                  [{ text: 'Season Stats \uD83D\uDCC8' }, { text: 'Elo Rating \uD83D\uDDFF' }],
+                  [{ text: 'Last Games \uD83D\uDCCB' }]
                 ],
                 resize_keyboard: true
               })
             })
-          console.log('ok')
           consChannel.ack(msg)
         } catch (e) {
-          console.log('nok')
           console.error(e)
           consChannel.nack(msg)
         }

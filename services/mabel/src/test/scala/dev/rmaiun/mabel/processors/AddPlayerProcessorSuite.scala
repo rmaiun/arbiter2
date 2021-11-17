@@ -1,18 +1,17 @@
-package dev.rmaiun.mabel
+package dev.rmaiun.mabel.processors
 
 import cats.effect.IO
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.mabel.commands.AddPlayerCmd
 import dev.rmaiun.mabel.dtos.BotRequest
-import dev.rmaiun.mabel.processors.AddPlayerProcessor
 import dev.rmaiun.mabel.services.ArbiterClient
 import dev.rmaiun.mabel.utils.Loggable
-import dev.rmaiun.protocol.http.UserDtoSet.{ AssignUserToRealmDtoOut, RegisterUserDtoOut, UserDto }
+import dev.rmaiun.protocol.http.UserDtoSet.{AssignUserToRealmDtoOut, RegisterUserDtoOut, UserDto}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.{ BeforeAndAfterEach, OptionValues }
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
 
 class AddPlayerProcessorSuite
     extends AnyFlatSpec

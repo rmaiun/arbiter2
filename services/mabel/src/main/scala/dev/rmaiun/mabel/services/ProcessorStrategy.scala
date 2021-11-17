@@ -6,13 +6,14 @@ import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.errors.Errors.NoProcessorFound
 import dev.rmaiun.mabel.postprocessor.{ AddPlayerPostProcessor, AddRoundPostProcessor, PostProcessor }
 import dev.rmaiun.mabel.processors._
-import dev.rmaiun.mabel.services.ProcessorStrategy.{ ADD_PLAYER_CMD, ADD_ROUND_CMD, ELO_RATING_CMD, SHORT_STATS_CMD }
+import dev.rmaiun.mabel.services.ProcessorStrategy._
 
 case class ProcessorStrategy[F[_]: Applicative](
   addPlayerProcessor: AddPlayerProcessor[F],
   addRoundProcessor: AddRoundProcessor[F],
   seasonStatsProcessor: SeasonStatsProcessor[F],
   eloRatingProcessor: EloRatingProcessor[F],
+  lastGamesProcessor: LastGamesProcessor[F],
   addRoundPostProcessor: AddRoundPostProcessor[F],
   addPlayerPostProcessor: AddPlayerPostProcessor[F]
 ) {
@@ -22,6 +23,7 @@ case class ProcessorStrategy[F[_]: Applicative](
       case ADD_ROUND_CMD   => Flow.pure(addRoundProcessor)
       case SHORT_STATS_CMD => Flow.pure(seasonStatsProcessor)
       case ELO_RATING_CMD  => Flow.pure(eloRatingProcessor)
+      case LAST_GAMES_CMD  => Flow.pure(lastGamesProcessor)
       case _               => Flow.error(NoProcessorFound(cmd))
     }
 
@@ -38,12 +40,14 @@ object ProcessorStrategy {
   val ADD_ROUND_CMD                                                        = "addRound"
   val SHORT_STATS_CMD                                                      = "shortStats"
   val ELO_RATING_CMD                                                       = "eloRating"
+  val LAST_GAMES_CMD                                                       = "lastGames"
   def apply[F[_]](implicit ev: ProcessorStrategy[F]): ProcessorStrategy[F] = ev
   def impl[F[_]: Applicative](
     addPlayerProcessor: AddPlayerProcessor[F],
     addRoundProcessor: AddRoundProcessor[F],
     seasonStatsProcessor: SeasonStatsProcessor[F],
     eloRatingProcessor: EloRatingProcessor[F],
+    lastGamesProcessor: LastGamesProcessor[F],
     addRoundPostProcessor: AddRoundPostProcessor[F],
     addPlayerPostProcessor: AddPlayerPostProcessor[F]
   ): ProcessorStrategy[F] =
@@ -52,6 +56,7 @@ object ProcessorStrategy {
       addRoundProcessor,
       seasonStatsProcessor,
       eloRatingProcessor,
+      lastGamesProcessor,
       addRoundPostProcessor,
       addPlayerPostProcessor
     )
