@@ -4,11 +4,11 @@ import cats.Monad
 import cats.syntax.apply._
 import cats.syntax.foldable._
 import dev.profunktor.fs2rabbit.model.AmqpEnvelope
-import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
-import dev.rmaiun.flowtypes.{ FLog, Flow }
-import dev.rmaiun.mabel.dtos.{ BotRequest, ProcessorResponse }
+import dev.rmaiun.flowtypes.Flow.{Flow, MonadThrowable}
+import dev.rmaiun.flowtypes.{FLog, Flow}
+import dev.rmaiun.mabel.dtos.{BotRequest, ProcessorResponse}
 import dev.rmaiun.mabel.errors.Errors.UserIsNotAuthorized
-import dev.rmaiun.mabel.utils.Constants.{ PREFIX, SUFFIX }
+import dev.rmaiun.mabel.utils.Constants.{PREFIX, SUFFIX}
 import dev.rmaiun.mabel.utils.IdGen
 import io.chrisdavenport.log4cats.Logger
 import io.circe.parser._
@@ -39,6 +39,7 @@ case class CommandHandler[F[_]: MonadThrowable: Logger](
       .map(_.user.surname.capitalize)
       .leftFlatMap(err =>
         FLog.info(s"User ${input.user} (${input.tid}) tried to process ${input.cmd}") *>
+          sendResponse(ProcessorResponse.error(input.chatId, IdGen.msgId, s"$PREFIX You are not authorized $SUFFIX")) *>
           Flow.error(UserIsNotAuthorized(err))
       )
 

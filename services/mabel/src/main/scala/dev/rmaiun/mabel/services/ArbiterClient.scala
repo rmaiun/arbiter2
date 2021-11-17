@@ -103,7 +103,8 @@ case class ArbiterClient[F[_]: Sync: Monad: Logger](client: Client[F])(implicit 
   def findPlayerByTid(tid: Long): Flow[F, FindUserDtoOut] = {
     val uri           = baseUri / "users" / "find"
     val uriWithParams = uri.withQueryParam("tid", s"$tid")
-    Flow.effect(client.expectOr[FindUserDtoOut](uriWithParams)(onError))
+    val request       = Request[F](GET, uriWithParams).withSoosHeaders()
+    Flow.effect(client.expectOr[FindUserDtoOut](request)(onError))
   }
 
   def findAllPlayers: Flow[F, FindAllUsersDtoOut] = {
