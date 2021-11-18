@@ -129,7 +129,7 @@ object SoosRoutes {
         } yield res
         flowToResponse(dtoOut)
 
-      case req @ GET -> Root / "availableRealms" =>
+      case req @ POST -> Root / "availableRealms" =>
         val dtoOut = for {
           dtoIn <- Flow.effect(req.as[FindAvailableRealmsDtoIn])
           res   <- userManager.findAvailableRealms(dtoIn)

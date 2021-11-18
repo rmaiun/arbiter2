@@ -17,6 +17,7 @@ case class EloRatingProcessor[F[_]: Monad](ac: ArbiterClient[F]) extends Process
     } yield {
       val separator = "-" * 30
       val playersRating = points.calculatedEloPoints
+        .filter(_.gamesPlayed >= 30)
         .sortBy(-_.value)
         .zipWithIndex
         .map(e => s"${e._2 + 1}. ${e._1.user.capitalize} ${e._1.value}")
