@@ -32,7 +32,7 @@ object GameManager {
         _      <- Validator.validateDto[F, AddGameHistoryDtoIn](dtoIn)
         users   = List(dtoIn.historyElement.w1, dtoIn.historyElement.w2, dtoIn.historyElement.l1, dtoIn.historyElement.l2)
         _      <- seasonService.checkAllUsersAreDifferent(users)
-        _      <- userRightsService.isUserPrivileged(dtoIn.moderatorTid)
+        _      <- userRightsService.checkUserWritePermissions(dtoIn.historyElement.realm,dtoIn.moderatorTid)
         realm  <- realmService.getByName(dtoIn.historyElement.realm)
         season <- seasonService.findSeason(dtoIn.historyElement.season, realm)
         w1     <- userService.findByInputType(Some(dtoIn.historyElement.w1.toLowerCase))
@@ -87,7 +87,7 @@ object GameManager {
     override def addEloPoints(dtoIn: AddEloPointsDtoIn): Flow[F, AddEloPointsDtoOut] =
       for {
         _         <- Validator.validateDto[F, AddEloPointsDtoIn](dtoIn)
-        _         <- userRightsService.isUserPrivileged(dtoIn.moderatorTid)
+        _         <- userRightsService.checkUserWritePermissions(dtoIn.realm, dtoIn.moderatorTid)
         user      <- userService.findByInputType(Some(dtoIn.points.user))
         eloPoints <- gameService.createEloPoint(EloPoints(0, user.id, dtoIn.points.value, DateFormatter.now))
       } yield AddEloPointsDtoOut(eloPoints.id)

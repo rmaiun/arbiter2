@@ -76,7 +76,7 @@ case class AddRoundProcessor[F[_]: Monad: Logger](
   }
 
   private def formDto(dto: CalculatedPoints, moderatorTid: Long): AddEloPointsDtoIn =
-    AddEloPointsDtoIn(EloPointsDto(dto.player, dto.points, DateFormatter.now), moderatorTid)
+    AddEloPointsDtoIn(EloPointsDto(dto.player, dto.points, DateFormatter.now), moderatorTid, Constants.defaultRealm)
 }
 
 object AddRoundProcessor {
