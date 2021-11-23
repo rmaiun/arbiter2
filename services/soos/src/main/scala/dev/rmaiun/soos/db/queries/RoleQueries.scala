@@ -2,6 +2,7 @@ package dev.rmaiun.soos.db.queries
 
 import cats.data.NonEmptyList
 import dev.rmaiun.soos.db.entities.Role
+import dev.rmaiun.soos.db.projections.UserRole
 import doobie.Fragments
 import doobie.implicits._
 
@@ -52,6 +53,16 @@ object RoleQueries {
          | inner join user on user_realm_role.user = user.id
          | where realm.name = $realm and user.tid = $userTid
     """.stripMargin.query[Role]
+
+  def findAllUserRolesForRealm(realm: String): doobie.Query0[UserRole] =
+    sql"""
+         | select user.surname, user.tid, role.value as role
+         | from user_realm_role
+         | inner join realm on user_realm_role.realm = realm.id
+         | inner join role on user_realm_role.role = role.id
+         | inner join user on user_realm_role.user = user.id
+         | where realm.name = $realm and user.active is true
+    """.stripMargin.query[UserRole]
 
   def listAll: doobie.Query0[Role] =
     sql"select id, value, permission from role"

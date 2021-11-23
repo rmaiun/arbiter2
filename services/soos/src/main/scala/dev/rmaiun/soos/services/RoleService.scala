@@ -8,6 +8,7 @@ import dev.rmaiun.soos.repositories.RoleRepo
 import dev.rmaiun.errorhandling.ThrowableOps._
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
+import dev.rmaiun.soos.db.projections.UserRole
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
 import io.chrisdavenport.log4cats.Logger
@@ -17,6 +18,7 @@ trait RoleService[F[_]] {
   def findRoleByName(value: String): Flow[F, Role]
   def findUserRoleByRealm(surname: String, realm: String): Flow[F, Role]
   def findUserRoleByRealm(userTid: Long, realm: String): Flow[F, Role]
+  def findAllUserRolesForRealm(realm: String): Flow[F, List[UserRole]]
 }
 
 object RoleService {
@@ -44,5 +46,9 @@ object RoleService {
           case Some(r) => Flow.pure(r)
           case None    => Flow.error(RoleNotFoundRuntimeException(Map("userTid" -> s"$userTid", "realm" -> s"$realm")))
         }
+
+      override def findAllUserRolesForRealm(realm: String): Flow[F, List[UserRole]] = {
+        roleRepo.findAllUserRolesForRealm(realm).transact(xa).attemptSql.adaptError
+      }
     }
 }

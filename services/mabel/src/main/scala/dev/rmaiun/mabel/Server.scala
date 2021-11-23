@@ -112,7 +112,7 @@ object Server {
           .withHttpApp(finalHttpApp)
           .serve
           .concurrently(structures.botInputConsumer.flatMap(x => Stream.eval(module.cmdHandler.process(x).value)))
-          .concurrently(Stream.awakeDelay[F](250 milliseconds).evalTap(_ => module.rlPublisher.safePublish().value))
+          .concurrently(Stream.awakeDelay[F](166 milliseconds).evalTap(_ => module.rlPublisher.safePublish().value))
     } yield exitCode
   }.drain
 }

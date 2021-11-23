@@ -10,7 +10,7 @@ import io.chrisdavenport.log4cats.Logger
 
 case class EloRatingProcessor[F[_]: Monad](ac: ArbiterClient[F]) extends Processor[F] {
 
-  override def process(input: BotRequest): Flow[F, ProcessorResponse] =
+  override def process(input: BotRequest): Flow[F, Option[ProcessorResponse]] =
     for {
       users  <- loadActiveUsers
       points <- loadEloPoints(users)
@@ -26,7 +26,7 @@ case class EloRatingProcessor[F[_]: Monad](ac: ArbiterClient[F]) extends Process
                             |$separator
                             |$playersRating
                             |$SUFFIX""".stripMargin
-      ProcessorResponse.ok(input.chatId, IdGen.msgId, msg)
+      Some(ProcessorResponse.ok(input.chatId, IdGen.msgId, msg))
     }
 
   private def loadActiveUsers: Flow[F, List[String]] =

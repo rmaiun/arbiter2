@@ -12,7 +12,7 @@ import dev.rmaiun.protocol.http.GameDtoSet.StoredGameHistoryDto
 import io.chrisdavenport.log4cats.Logger
 
 case class LastGamesProcessor[F[_]: Monad: Logger](arbiterClient: ArbiterClient[F]) extends Processor[F] {
-  override def process(input: BotRequest): Flow[F, ProcessorResponse] =
+  override def process(input: BotRequest): Flow[F, Option[ProcessorResponse]] =
     for {
       dto         <- parseDto[LastGamesCmd](input.data)
       season       = dto.season.getOrElse(SeasonHelper.currentSeason)
@@ -20,7 +20,7 @@ case class LastGamesProcessor[F[_]: Monad: Logger](arbiterClient: ArbiterClient[
     } yield {
       val result      = format(historyList, season)
       val botResponse = BotResponse(input.chatId, IdGen.msgId, result)
-      ProcessorResponse.ok(botResponse)
+      Some(ProcessorResponse.ok(botResponse))
     }
 
   private def loadHistory(season: String): Flow[F, List[StoredGameHistoryDto]] =

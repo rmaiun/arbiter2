@@ -1,7 +1,7 @@
 package dev.rmaiun.protocol.http.codec
-import dev.rmaiun.protocol.http.UserDtoSet.{AssignUserToRealmDtoIn, AssignUserToRealmDtoOut, FindAllUsersDtoIn, FindAllUsersDtoOut, FindAvailableRealmsDtoIn, FindAvailableRealmsDtoOut, FindUserDtoIn, FindUserDtoOut, LinkTidDtoIn, LinkTidDtoOut, ProcessActivationDtoIn, ProcessActivationDtoOut, RegisterUserDtoIn, RegisterUserDtoOut, SwitchActiveRealmDtoIn, SwitchActiveRealmDtoOut}
-import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
-import io.circe.{Decoder, Encoder}
+import dev.rmaiun.protocol.http.UserDtoSet._
+import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
+import io.circe.{ Decoder, Encoder }
 
 trait UserDtoCodec extends SubDtoCodec {
   implicit val RegisterUserDtoInEncoder: Encoder[RegisterUserDtoIn] = deriveEncoder[RegisterUserDtoIn]
@@ -59,4 +59,11 @@ trait UserDtoCodec extends SubDtoCodec {
     deriveEncoder[FindAvailableRealmsDtoOut]
   implicit val FindAvailableRealmsDtoOutDecoder: Decoder[FindAvailableRealmsDtoOut] =
     deriveDecoder[FindAvailableRealmsDtoOut]
+
+  implicit val FindRealmAdminsDtoInEncoder: Encoder[FindRealmAdminsDtoIn] = deriveEncoder[FindRealmAdminsDtoIn]
+  implicit val FindRealmAdminsDtoInDecoder: Decoder[FindRealmAdminsDtoIn] = deriveDecoder[FindRealmAdminsDtoIn]
+
+  implicit val FindRealmAdminsDtoOutEncoder: Encoder[FindRealmAdminsDtoOut] = deriveEncoder[FindRealmAdminsDtoOut]
+  implicit val FindRealmAdminsDtoOutDecoder: Decoder[FindRealmAdminsDtoOut] = deriveDecoder[FindRealmAdminsDtoOut]
+
 }

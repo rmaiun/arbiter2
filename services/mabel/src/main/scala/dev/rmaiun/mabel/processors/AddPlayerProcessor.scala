@@ -14,7 +14,7 @@ import io.chrisdavenport.log4cats.Logger
 
 case class AddPlayerProcessor[F[_]: Monad: Logger](arbiterClient: ArbiterClient[F]) extends Processor[F] {
 
-  override def process(input: BotRequest): Flow[F, ProcessorResponse] =
+  override def process(input: BotRequest): Flow[F, Option[ProcessorResponse]] =
     for {
       dto             <- parseDto[AddPlayerCmd](input.data)
       addPlayerResult <- registerPlayer(dto)
@@ -23,7 +23,7 @@ case class AddPlayerProcessor[F[_]: Monad: Logger](arbiterClient: ArbiterClient[
     } yield {
       val result      = s"$PREFIX New player was registered with id ${addPlayerResult.user.id} $SUFFIX"
       val botResponse = BotResponse(input.chatId, IdGen.msgId, result)
-      ProcessorResponse.ok(botResponse)
+      Some(ProcessorResponse.ok(botResponse))
     }
 
   private def registerPlayer(dto: AddPlayerCmd): Flow[F, RegisterUserDtoOut] = {

@@ -13,7 +13,7 @@ object UserDtoSet {
   )
   case class RealmShortInfo(name: String, role: String, botUsage: Boolean)
   case class UserData(surname: String, tid: Option[Long] = None)
-
+  case class UserRoleData(surname: String, tid: Option[Long] = None, role: String)
   case class RegisterUserDtoIn(user: UserData, moderatorTid: Long)
   case class RegisterUserDtoOut(user: UserDto)
 
@@ -53,4 +53,7 @@ object UserDtoSet {
 
   case class FindAvailableRealmsDtoIn(surname: String)
   case class FindAvailableRealmsDtoOut(availableRealms: List[RealmShortInfo])
+
+  case class FindRealmAdminsDtoIn(realm: String)
+  case class FindRealmAdminsDtoOut(adminUsers: List[UserRoleData])
 }

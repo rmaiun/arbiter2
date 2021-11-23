@@ -7,12 +7,12 @@ import dev.rmaiun.mabel.commands.LastGamesCmd
 import dev.rmaiun.mabel.dtos.BotRequest
 import dev.rmaiun.mabel.services.ArbiterClient
 import dev.rmaiun.mabel.utils.Loggable
-import dev.rmaiun.protocol.http.GameDtoSet.{ ListGameHistoryDtoOut, StoredGameHistoryDto }
+import dev.rmaiun.protocol.http.GameDtoSet.{ListGameHistoryDtoOut, StoredGameHistoryDto}
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{ mock, when }
+import org.mockito.Mockito.{mock, when}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.{ BeforeAndAfterEach, OptionValues }
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
 
 class ListGamesProcessorSuite
     extends AnyFlatSpec
@@ -31,9 +31,9 @@ class ListGamesProcessorSuite
     val input = BotRequest("lastGames", 1234, 4444, "testuser", Some(LastGamesCmd.LastGamesCmdEncoder(dto)))
     val res   = processor.process(input).value.unsafeRunSync()
     val r     = res.fold(_ => fail(), x => x)
-    r.error should be(false)
-    r.botResponse.result should include("Last 10 games")
-    r.botResponse.result should include("No games found for season S4|2021")
+    r.value.error should be(false)
+    r.value.botResponse.result should include("Last 10 games")
+    r.value.botResponse.result should include("No games found for season S4|2021")
   }
 
   it should "should work correctly for [0 < games < 10]" in {
@@ -43,10 +43,10 @@ class ListGamesProcessorSuite
     val input = BotRequest("lastGames", 1234, 4444, "testuser", Some(LastGamesCmd.LastGamesCmdEncoder(dto)))
     val res   = processor.process(input).value.unsafeRunSync()
     val r     = res.fold(_ => fail(), x => x)
-    r.error should be(false)
-    r.botResponse.result should include("Last 10 games")
+    r.value.error should be(false)
+    r.value.botResponse.result should include("Last 10 games")
     for (a <- 0 to 3) {
-      r.botResponse.result should include(s"A$a")
+      r.value.botResponse.result should include(s"A$a")
     }
   }
 
@@ -57,10 +57,10 @@ class ListGamesProcessorSuite
     val input = BotRequest("lastGames", 1234, 4444, "testuser", Some(LastGamesCmd.LastGamesCmdEncoder(dto)))
     val res   = processor.process(input).value.unsafeRunSync()
     val r     = res.fold(_ => fail(), x => x)
-    r.error should be(false)
-    r.botResponse.result should include("Last 10 games")
+    r.value.error should be(false)
+    r.value.botResponse.result should include("Last 10 games")
     for (a <- 45 to 55) {
-      r.botResponse.result should include(s"A$a")
+      r.value.botResponse.result should include(s"A$a")
     }
   }
 

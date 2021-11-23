@@ -11,14 +11,14 @@ import dev.rmaiun.mabel.utils.IdGen
 import io.chrisdavenport.log4cats.Logger
 
 class SeasonStatsProcessor[F[_]: Monad](ac: ArbiterClient[F]) extends Processor[F] {
-  override def process(input: BotRequest): Flow[F, ProcessorResponse] =
+  override def process(input: BotRequest): Flow[F, Option[ProcessorResponse]] =
     for {
       dto         <- parseDto[SeasonStatsCmd](input.data)
       historyList <- ac.listGameHistory(defaultRealm, dto.season)
     } yield {
       val stats = StatsCalculator.calculate(dto.season, historyList.games)
       val msg   = message(stats)
-      ProcessorResponse.ok(input.chatId, IdGen.msgId, msg)
+      Some(ProcessorResponse.ok(input.chatId, IdGen.msgId, msg))
     }
 
   private def message(data: SeasonShortStats): String =

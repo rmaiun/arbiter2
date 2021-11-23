@@ -1,16 +1,19 @@
 package dev.rmaiun.protocol.http.codec
 
-import dev.rmaiun.protocol.http.GameDtoSet.{CalculatedEloPointsDto, EloPointsDto, GameHistoryDto}
+import dev.rmaiun.protocol.http.GameDtoSet.{ CalculatedEloPointsDto, EloPointsDto, GameHistoryDto }
 import dev.rmaiun.protocol.http.RealmDtoSet.RealmDto
-import dev.rmaiun.protocol.http.UserDtoSet.{RealmShortInfo, UserData, UserDto}
-import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
-import io.circe.{Decoder, Encoder}
+import dev.rmaiun.protocol.http.UserDtoSet.{ RealmShortInfo, UserData, UserDto, UserRoleData }
+import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
+import io.circe.{ Decoder, Encoder }
 trait SubDtoCodec {
   implicit val RealmDtoEncoder: Encoder[RealmDto] = deriveEncoder[RealmDto]
   implicit val RealmDtoDecoder: Decoder[RealmDto] = deriveDecoder[RealmDto]
 
   implicit val UserDataEncoder: Encoder[UserData] = deriveEncoder[UserData]
   implicit val UserDataDecoder: Decoder[UserData] = deriveDecoder[UserData]
+
+  implicit val UserRoleDataEncoder: Encoder[UserRoleData] = deriveEncoder[UserRoleData]
+  implicit val UserRoleDataDecoder: Decoder[UserRoleData] = deriveDecoder[UserRoleData]
 
   implicit val UserDtoEncoder: Encoder[UserDto] = deriveEncoder[UserDto]
   implicit val UserDtoDecoder: Decoder[UserDto] = deriveDecoder[UserDto]

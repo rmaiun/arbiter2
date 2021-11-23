@@ -36,8 +36,11 @@ class AddPlayerProcessorSuite
     val res   = processor.process(input).value.unsafeRunSync()
     res.isRight should be(true)
     val r = res.fold(_ => fail(), x => x)
-    r.error should be(false)
-    r.botResponse.result should include("New player was registered with id 24")
+    r.fold(fail())(x => {
+      x.error should be(false)
+      x.botResponse.result should include("New player was registered with id 24")
+    })
+
   }
 
 }

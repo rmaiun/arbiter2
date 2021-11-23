@@ -7,15 +7,15 @@ import dev.rmaiun.common.DateFormatter
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.protocol.http.UserDtoSet._
-import dev.rmaiun.soos.db.entities.{ EloPoints, User }
-import dev.rmaiun.soos.errors.UserErrors.{ UserAlreadyExistsException, UserNotFoundException }
+import dev.rmaiun.soos.db.entities.{EloPoints, User}
+import dev.rmaiun.soos.errors.UserErrors.{UserAlreadyExistsException, UserNotFoundException}
 import dev.rmaiun.soos.helpers.ConfigProvider.Config
 import dev.rmaiun.soos.helpers.DtoMapper.userToDto
 import dev.rmaiun.soos.services._
 import dev.rmaiun.soos.validations.UserValidationSet._
 import dev.rmaiun.validation.Validator
 
-import java.time.{ ZoneOffset, ZonedDateTime }
+import java.time.{ZoneOffset, ZonedDateTime}
 
 trait UserManager[F[_]] {
   def registerUser(dtoIn: RegisterUserDtoIn): Flow[F, RegisterUserDtoOut]
@@ -26,8 +26,10 @@ trait UserManager[F[_]] {
   def processActivation(dtoIn: ProcessActivationDtoIn): Flow[F, ProcessActivationDtoOut]
   def linkTid(dtoIn: LinkTidDtoIn): Flow[F, LinkTidDtoOut]
   def findAvailableRealms(dtoIn: FindAvailableRealmsDtoIn): Flow[F, FindAvailableRealmsDtoOut]
+  def findRealmAdmins(dtoIn: FindRealmAdminsDtoIn): Flow[F, FindRealmAdminsDtoOut]
 }
 object UserManager {
+  val adminRole                                                = "RealmAdmin"
   def apply[F[_]](implicit ev: UserManager[F]): UserManager[F] = ev
 
   def impl[F[_]: Monad](
@@ -115,6 +117,18 @@ object UserManager {
       } yield {
         val realmsData = realms.map(r => RealmShortInfo(r.name, r.role, r.botUsage))
         FindAvailableRealmsDtoOut(realmsData)
+      }
+
+    override def findRealmAdmins(dtoIn: FindRealmAdminsDtoIn): Flow[F, FindRealmAdminsDtoOut] =
+      for {
+        _          <- Validator.validateDto[F, FindRealmAdminsDtoIn](dtoIn)
+        _          <- realmService.getByName(dtoIn.realm)
+        realmRoles <- roleService.findAllUserRolesForRealm(dtoIn.realm)
+      } yield {
+        val dtoList = realmRoles
+          .map(rr => UserRoleData(rr.surname, rr.tid, rr.role))
+          .filter(_.role == adminRole)
+        FindRealmAdminsDtoOut(dtoList)
       }
 
     private def processUsersActivations(users: List[String], activationState: Boolean): Flow[F, List[User]] =

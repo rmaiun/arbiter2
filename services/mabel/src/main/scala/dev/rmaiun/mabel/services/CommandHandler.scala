@@ -4,11 +4,11 @@ import cats.Monad
 import cats.syntax.apply._
 import cats.syntax.foldable._
 import dev.profunktor.fs2rabbit.model.AmqpEnvelope
-import dev.rmaiun.flowtypes.Flow.{Flow, MonadThrowable}
-import dev.rmaiun.flowtypes.{FLog, Flow}
-import dev.rmaiun.mabel.dtos.{BotRequest, ProcessorResponse}
+import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
+import dev.rmaiun.flowtypes.{ FLog, Flow }
+import dev.rmaiun.mabel.dtos.{ BotRequest, ProcessorResponse }
 import dev.rmaiun.mabel.errors.Errors.UserIsNotAuthorized
-import dev.rmaiun.mabel.utils.Constants.{PREFIX, SUFFIX}
+import dev.rmaiun.mabel.utils.Constants.{ PREFIX, SUFFIX }
 import dev.rmaiun.mabel.utils.IdGen
 import io.chrisdavenport.log4cats.Logger
 import io.circe.parser._
@@ -39,7 +39,9 @@ case class CommandHandler[F[_]: MonadThrowable: Logger](
       .map(_.user.surname.capitalize)
       .leftFlatMap(err =>
         FLog.info(s"User ${input.user} (${input.tid}) tried to process ${input.cmd}") *>
-          sendResponse(ProcessorResponse.error(input.chatId, IdGen.msgId, s"$PREFIX You are not authorized $SUFFIX")) *>
+          sendResponse(
+            Some(ProcessorResponse.error(input.chatId, IdGen.msgId, s"$PREFIX You are not authorized $SUFFIX"))
+          ) *>
           Flow.error(UserIsNotAuthorized(err))
       )
 
@@ -52,8 +54,9 @@ case class CommandHandler[F[_]: MonadThrowable: Logger](
     processResult.flatMap(r => postProcess(input, r))
   }
 
-  private def postProcess(input: BotRequest, processorResponse: ProcessorResponse): Flow[F, Unit] =
-    if (processorResponse.error) {
+  private def postProcess(input: BotRequest, processorResponse: Option[ProcessorResponse]): Flow[F, Unit] = {
+    val isErrorResponse = processorResponse.fold(false)(pr => pr.error)
+    if (isErrorResponse) {
       Flow.unit
     } else {
       for {
@@ -61,8 +64,9 @@ case class CommandHandler[F[_]: MonadThrowable: Logger](
         _      <- ppList.map(_.postProcess(input)).sequence_
       } yield ()
     }
+  }
 
-  private def processInput(input: BotRequest): Flow[F, ProcessorResponse] = {
+  private def processInput(input: BotRequest): Flow[F, Option[ProcessorResponse]] = {
     val flow = for {
       processor <- strategy.selectProcessor(input.cmd)
       result    <- processor.process(input)
@@ -74,13 +78,16 @@ case class CommandHandler[F[_]: MonadThrowable: Logger](
       }
       FLog.error(err.getMessage) *>
         Flow.effect(Monad[F].pure(err.printStackTrace())) *>
-        Flow.pure(ProcessorResponse.error(input.chatId, IdGen.msgId, msg))
+        Flow.pure(Some(ProcessorResponse.error(input.chatId, IdGen.msgId, msg)))
     }
 
   }
 
-  private def sendResponse(pr: ProcessorResponse): Flow[F, Unit] =
-    publisherProxy.publishToBot(pr.botResponse)
+  private def sendResponse(pr: Option[ProcessorResponse]): Flow[F, Unit] =
+    pr match {
+      case Some(value) => publisherProxy.publishToBot(value.botResponse)
+      case None        => Flow.unit
+    }
 }
 
 object CommandHandler {

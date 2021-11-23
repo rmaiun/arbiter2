@@ -135,6 +135,13 @@ object SoosRoutes {
           res   <- userManager.findAvailableRealms(dtoIn)
         } yield res
         flowToResponse(dtoOut)
+
+      case req @ GET -> Root / "listAdminsForRealm" =>
+        val userAllFlow = for {
+          realm  <- Flow.fromOpt(req.params.get("realm"), RequiredParamsNotFound(Map("requestParam" -> "realm")))
+          result <- userManager.findRealmAdmins(FindRealmAdminsDtoIn(realm))
+        } yield result
+        flowToResponse(userAllFlow)
     }
   }
 

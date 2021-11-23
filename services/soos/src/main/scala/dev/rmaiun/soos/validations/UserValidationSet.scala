@@ -55,4 +55,9 @@ object UserValidationSet extends CustomValidationRules {
     validator[FindAvailableRealmsDtoIn] { dto =>
       dto.surname is notBlank and sizeBetween(2, 20)
     }
+
+  implicit val FindRealmAdminsDtoInValidator: TransformedValidator[FindRealmAdminsDtoIn] =
+    validator[FindRealmAdminsDtoIn] { dto =>
+      dto.realm is notBlank and realm
+    }
 }

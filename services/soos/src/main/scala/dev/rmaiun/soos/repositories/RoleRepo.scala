@@ -2,6 +2,7 @@ package dev.rmaiun.soos.repositories
 
 import cats.Monad
 import dev.rmaiun.soos.db.entities.Role
+import dev.rmaiun.soos.db.projections.UserRole
 import dev.rmaiun.soos.db.queries.RoleQueries
 import doobie.ConnectionIO
 
@@ -14,6 +15,7 @@ trait RoleRepo[F[_]] {
   def removeN(idList: List[Long] = Nil): ConnectionIO[Int]
   def findUserRoleInRealm(surname: String, realm: String): ConnectionIO[Option[Role]]
   def findUserRoleInRealm(userTid: Long, realm: String): ConnectionIO[Option[Role]]
+  def findAllUserRolesForRealm(realm: String): ConnectionIO[List[UserRole]]
 }
 
 object RoleRepo {
@@ -44,5 +46,9 @@ object RoleRepo {
 
     override def findUserRoleInRealm(userTid: Long, realm: String): ConnectionIO[Option[Role]] =
       RoleQueries.findUserRoleByRealm(userTid, realm).option
+
+    override def findAllUserRolesForRealm(realm: String): ConnectionIO[List[UserRole]] =
+      RoleQueries.findAllUserRolesForRealm(realm).to[List]
+
   }
 }
