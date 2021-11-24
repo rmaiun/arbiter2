@@ -7,15 +7,16 @@ import dev.rmaiun.common.DateFormatter
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.protocol.http.UserDtoSet._
-import dev.rmaiun.soos.db.entities.{EloPoints, User}
-import dev.rmaiun.soos.errors.UserErrors.{UserAlreadyExistsException, UserNotFoundException}
+import dev.rmaiun.soos.db.entities.{ EloPoints, User }
+import dev.rmaiun.soos.errors.UserErrors.{ UserAlreadyExistsException, UserNotFoundException }
 import dev.rmaiun.soos.helpers.ConfigProvider.Config
 import dev.rmaiun.soos.helpers.DtoMapper.userToDto
 import dev.rmaiun.soos.services._
 import dev.rmaiun.soos.validations.UserValidationSet._
 import dev.rmaiun.validation.Validator
+import io.chrisdavenport.log4cats.Logger
 
-import java.time.{ZoneOffset, ZonedDateTime}
+import java.time.{ ZoneOffset, ZonedDateTime }
 
 trait UserManager[F[_]] {
   def registerUser(dtoIn: RegisterUserDtoIn): Flow[F, RegisterUserDtoOut]
@@ -32,7 +33,7 @@ object UserManager {
   val adminRole                                                = "RealmAdmin"
   def apply[F[_]](implicit ev: UserManager[F]): UserManager[F] = ev
 
-  def impl[F[_]: Monad](
+  def impl[F[_]: Monad: Logger](
     userService: UserService[F],
     userRightsService: UserRightsService[F],
     realmService: RealmService[F],
@@ -99,7 +100,6 @@ object UserManager {
         _ <- userRightsService.checkUserWritePermissions(dtoIn.realm, dtoIn.moderatorTid)
         _ <- userService.checkAllPresent(dtoIn.realm, dtoIn.users.map(_.toLowerCase))
         _ <- processUsersActivations(dtoIn.users, dtoIn.activate)
-
       } yield ProcessActivationDtoOut(dtoIn.users, dtoIn.activate)
 
     override def linkTid(dtoIn: LinkTidDtoIn): Flow[F, LinkTidDtoOut] =
@@ -122,12 +122,14 @@ object UserManager {
     override def findRealmAdmins(dtoIn: FindRealmAdminsDtoIn): Flow[F, FindRealmAdminsDtoOut] =
       for {
         _          <- Validator.validateDto[F, FindRealmAdminsDtoIn](dtoIn)
-        _          <- realmService.getByName(dtoIn.realm)
-        realmRoles <- roleService.findAllUserRolesForRealm(dtoIn.realm)
+        realm      <- realmService.getByName(dtoIn.realm)
+        allRoles   <- roleService.findAllRoles
+        realmRoles <- roleService.findAllUserRolesForRealm(realm.name)
       } yield {
+        val writeRoles = allRoles.filter(_.permission >= 50).map(_.value)
         val dtoList = realmRoles
           .map(rr => UserRoleData(rr.surname, rr.tid, rr.role))
-          .filter(_.role == adminRole)
+          .filter(rr => writeRoles.contains(rr.role))
         FindRealmAdminsDtoOut(dtoList)
       }
 

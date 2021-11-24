@@ -1,8 +1,7 @@
 package dev.rmaiun.soos
 
 import cats.Monad
-import cats.effect.{ConcurrentEffect, ContextShift, Sync, Timer}
-import dev.rmaiun.flowtypes.FLog
+import cats.effect.{ ConcurrentEffect, ContextShift, Sync, Timer }
 import dev.rmaiun.soos.helpers.ConfigProvider
 import fs2.Stream
 import io.chrisdavenport.log4cats.SelfAwareStructuredLogger
@@ -13,7 +12,7 @@ import org.http4s.server.middleware.Logger
 
 import java.util.concurrent.Executors
 import scala.concurrent.ExecutionContext.global
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutorService}
+import scala.concurrent.{ ExecutionContext, ExecutionContextExecutorService }
 
 object Server {
   implicit def unsafeLogger[F[_]: Sync]: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]
@@ -24,7 +23,6 @@ object Server {
   def stream[F[_]: ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F], M: Monad[F]): Stream[F, Nothing] = {
     for {
       //general
-      _ <- Stream.eval(Sync[F].delay(println(cfg)))
       client <- BlazeClientBuilder[F](global).withMaxWaitQueueLimit(1000).stream
       httpApp = Module.initHttpApp()
       // With Middlewares in place

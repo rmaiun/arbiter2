@@ -2,13 +2,13 @@ package dev.rmaiun.soos.services
 
 import cats.Monad
 import cats.effect.Sync
-import dev.rmaiun.soos.db.entities.Role
-import dev.rmaiun.soos.errors.RoleErrors.RoleNotFoundRuntimeException
-import dev.rmaiun.soos.repositories.RoleRepo
 import dev.rmaiun.errorhandling.ThrowableOps._
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
+import dev.rmaiun.soos.db.entities.Role
 import dev.rmaiun.soos.db.projections.UserRole
+import dev.rmaiun.soos.errors.RoleErrors.RoleNotFoundRuntimeException
+import dev.rmaiun.soos.repositories.RoleRepo
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
 import io.chrisdavenport.log4cats.Logger
@@ -19,6 +19,7 @@ trait RoleService[F[_]] {
   def findUserRoleByRealm(surname: String, realm: String): Flow[F, Role]
   def findUserRoleByRealm(userTid: Long, realm: String): Flow[F, Role]
   def findAllUserRolesForRealm(realm: String): Flow[F, List[UserRole]]
+  def findAllRoles: Flow[F, List[Role]]
 }
 
 object RoleService {
@@ -47,8 +48,10 @@ object RoleService {
           case None    => Flow.error(RoleNotFoundRuntimeException(Map("userTid" -> s"$userTid", "realm" -> s"$realm")))
         }
 
-      override def findAllUserRolesForRealm(realm: String): Flow[F, List[UserRole]] = {
+      override def findAllUserRolesForRealm(realm: String): Flow[F, List[UserRole]] =
         roleRepo.findAllUserRolesForRealm(realm).transact(xa).attemptSql.adaptError
-      }
+
+      override def findAllRoles: Flow[F, List[Role]] =
+        roleRepo.listAll.transact(xa).attemptSql.adaptError
     }
 }

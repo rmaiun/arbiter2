@@ -1,13 +1,13 @@
 {
   "_type": "export",
   "__export_format": 4,
-  "__export_date": "2021-11-18T07:01:37.704Z",
+  "__export_date": "2021-11-24T19:40:36.924Z",
   "__export_source": "insomnia.desktop.app:v2021.6.0",
   "resources": [
     {
       "_id": "req_9cf0c0e34e064857847005ff72426d49",
       "parentId": "fld_1a110c50f0b943718241f116c32059cb",
-      "modified": 1637218842353,
+      "modified": 1637221922591,
       "created": 1636482330712,
       "url": "http://{{ _.host }}/users/find?surname=%D0%BC%D0%B0%D1%8E%D0%BD",
       "name": "users/find",
@@ -59,7 +59,7 @@
     {
       "_id": "req_07fefcfc5f4a45f8a006c0cb88aa47ae",
       "parentId": "fld_1a110c50f0b943718241f116c32059cb",
-      "modified": 1637218844311,
+      "modified": 1637781813597,
       "created": 1637218069172,
       "url": "http://{{ _.host }}/users/list",
       "name": "users/list",
@@ -87,9 +87,54 @@
       "_type": "request"
     },
     {
+      "_id": "req_dbe3274428624762ba49afc87afd9d94",
+      "parentId": "fld_1a110c50f0b943718241f116c32059cb",
+      "modified": 1637782795626,
+      "created": 1637782022909,
+      "url": "http://{{ _.host }}/users/listAdminsForRealm",
+      "name": "listAdminsForRealm",
+      "description": "",
+      "method": "GET",
+      "body": {
+        "mimeType": "application/json",
+        "text": ""
+      },
+      "parameters": [
+        {
+          "id": "pair_1db7f9a85261458382f2bc9eb8076045",
+          "name": "realm",
+          "value": "bla",
+          "description": ""
+        }
+      ],
+      "headers": [
+        {
+          "id": "pair_bfec7831c0bd415a8742fb20bee41b13",
+          "name": "Arbiter2Auth",
+          "value": "{{ _.token }}",
+          "description": ""
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "id": "pair_4eec18690f0f48be8edb12d60f48f919"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1635670324211.125,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
       "_id": "req_abdc0ad38e224ea79207a0d316355099",
       "parentId": "fld_1a110c50f0b943718241f116c32059cb",
-      "modified": 1637218845259,
+      "modified": 1637781808607,
       "created": 1637217964871,
       "url": "http://{{ _.host }}/users/create",
       "name": "users/create",
@@ -97,7 +142,7 @@
       "method": "POST",
       "body": {
         "mimeType": "application/json",
-        "text": "{\n\t\"user\": {\n\t\t\"surname\":\"\",\n\t\t\"tid\": 1\n\t},\n\t\"moderatorTid\": 1\n}"
+        "text": "{\n\t\"user\": {\n\t\t\"surname\":\"itd\",\n\t\t\"tid\": 1\n\t},\n\t\"moderatorTid\": 1\n}"
       },
       "parameters": [],
       "headers": [
@@ -279,7 +324,7 @@
     {
       "_id": "req_acf333b42fc34b4698101e6c9afe6803",
       "parentId": "fld_1a110c50f0b943718241f116c32059cb",
-      "modified": 1637218851244,
+      "modified": 1637221921726,
       "created": 1637218420275,
       "url": "http://{{ _.host }}/users/availableRealms",
       "name": "users/availableRealms",
@@ -378,12 +423,12 @@
     {
       "_id": "env_eb4d2b484b044359886a353e978029a1",
       "parentId": "env_db6b4dd9102089149f8ea6fe46927b5f16c0aafd",
-      "modified": 1637218839112,
+      "modified": 1637221919320,
       "created": 1637217511847,
       "name": "prod",
       "data": {
         "host": "194.163.186.15:9091",
-        "token": ""
+        "token": "63684a55cb124f0292bbbc145aad691f"
       },
       "dataPropertyOrder": {
         "&": [
