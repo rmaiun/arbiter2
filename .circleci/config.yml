@@ -42,7 +42,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Build docker image
-#          command: docker build -t $SOOS_IMAGE_NAME:dev-${CIRCLE_SHA1:0:8} services/soos
+          #          command: docker build -t $SOOS_IMAGE_NAME:dev-${CIRCLE_SHA1:0:8} services/soos
           command: docker build -t $SOOS_IMAGE_NAME:latest services/soos
       - run:
           name: Save docker image
@@ -164,6 +164,22 @@ jobs:
       - run: cat /dev/null | docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASS"
       - run: cat /dev/null | docker push mairo/dipper:latest
 
+  redeploy-services:
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - add_ssh_keys
+      - attach_workspace:
+          at: /tmp/workspace
+      - setup_remote_docker
+      - run: echo $SSH_IDENTITY
+      - run:
+          name: Update known hosts
+          command: ssh-keyscan -H $HOST_TO_DEPLOY >> ~/.ssh/known_hosts
+      - run:
+          name: Redeploy images
+          command: ssh $SSH_IDENTITY 'cd arbiter_infra && zx deployer.mjs'
+
 workflows:
   version: 2
   build-master:
@@ -202,6 +218,16 @@ workflows:
           context: myctx
           requires:
             - build-dipper
+          filters:
+            branches:
+              only:
+                - dev
+      - redeploy-services:
+          context: myctx
+          requires:
+            - publish-soos-image
+            - publish-mabel-image
+            - publish-dipper-image
           filters:
             branches:
               only:
