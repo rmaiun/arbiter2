@@ -118,7 +118,7 @@ case class ArbiterClient[F[_]: Sync: Monad: Logger](client: Client[F])(implicit 
     val uri           = baseUri / "users" / "listAdminsForRealm"
     val uriWithParams = uri.withQueryParam("realm", s"${Constants.defaultRealm}")
     val request       = Request[F](GET, uriWithParams).withSoosHeaders()
-    Flow.effect(client.expectOr[FindAllUsersDtoOut](request)(onError))
+    Flow.effect(client.expectOr[FindRealmAdminsDtoOut](request)(onError))
   }
 }
 

@@ -32,7 +32,7 @@ class AddPlayerProcessorSuite
     when(arbiterClient.assignUserToRealm(any)).thenReturn(assignUserResult)
 
     val dto   = AddPlayerCmd("ebobo", 1111, admin = false, 12345)
-    val input = BotRequest("/addPlayer", 1234, 4444, "testuser", Some(AddPlayerCmd.AddPlayerCmdEncoder(dto)))
+    val input = BotRequest("addPlayer", 1234, 4444, "testuser", Some(AddPlayerCmd.AddPlayerCmdEncoder(dto)))
     val res   = processor.process(input).value.unsafeRunSync()
     res.isRight should be(true)
     val r = res.fold(_ => fail(), x => x)
