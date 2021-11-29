@@ -2,6 +2,7 @@ package dev.rmaiun.protocol.http.codec
 
 import dev.rmaiun.protocol.http.GameDtoSet.{ CalculatedEloPointsDto, EloPointsDto, GameHistoryDto }
 import dev.rmaiun.protocol.http.RealmDtoSet.RealmDto
+import dev.rmaiun.protocol.http.SeasonDtoSet.SeasonDto
 import dev.rmaiun.protocol.http.UserDtoSet.{ RealmShortInfo, UserData, UserDto, UserRoleData }
 import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
 import io.circe.{ Decoder, Encoder }
@@ -30,4 +31,6 @@ trait SubDtoCodec {
   implicit val RealmShortInfoEncoder: Encoder[RealmShortInfo] = deriveEncoder[RealmShortInfo]
   implicit val RealmShortInfoDecoder: Decoder[RealmShortInfo] = deriveDecoder[RealmShortInfo]
 
+  implicit val SeasonDtoEncoder: Encoder[SeasonDto] = deriveEncoder[SeasonDto]
+  implicit val SeasonDtoDecoder: Decoder[SeasonDto] = deriveDecoder[SeasonDto]
 }
