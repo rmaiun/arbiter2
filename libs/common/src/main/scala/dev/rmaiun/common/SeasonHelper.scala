@@ -37,4 +37,10 @@ object SeasonHelper {
     case 4 => (10, 12)
     case _ => (0, 0)
   }
+
+  def firstBeforeSecond(season1: String, season2: String): Boolean = {
+    val firstSeasonEndDate = seasonGate(season1)._2
+    val secondSeasonEndDate = seasonGate(season2)._2
+    firstSeasonEndDate.isBefore(secondSeasonEndDate)
+  }
 }

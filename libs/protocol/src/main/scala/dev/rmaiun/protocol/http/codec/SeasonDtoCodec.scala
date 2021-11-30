@@ -3,13 +3,12 @@ package dev.rmaiun.protocol.http.codec
 import dev.rmaiun.protocol.http.SeasonDtoSet.{
   CreateSeasonDtoIn,
   CreateSeasonDtoOut,
-  FindSeasonWithoutNotificationDtoOut,
-  SeasonDto
+  FindSeasonWithoutNotificationDtoOut
 }
 import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
 import io.circe.{ Decoder, Encoder }
 
-trait SeasonDtoCodec {
+trait SeasonDtoCodec extends SubDtoCodec {
   implicit val CreateSeasonDtoInEncoder: Encoder[CreateSeasonDtoIn] = deriveEncoder[CreateSeasonDtoIn]
   implicit val CreateSeasonDtoInDecoder: Decoder[CreateSeasonDtoIn] = deriveDecoder[CreateSeasonDtoIn]
 

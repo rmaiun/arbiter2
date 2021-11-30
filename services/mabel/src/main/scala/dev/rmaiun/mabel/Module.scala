@@ -6,7 +6,7 @@ import cats.effect.{ConcurrentEffect, ContextShift, Timer}
 import dev.profunktor.fs2rabbit.model.AmqpMessage
 import dev.rmaiun.mabel.dtos.AmqpStructures
 import dev.rmaiun.mabel.postprocessor.{AddPlayerPostProcessor, AddRoundPostProcessor}
-import dev.rmaiun.mabel.processors.{AddPlayerProcessor, AddRoundProcessor, EloRatingProcessor, LastGamesProcessor, SeasonStatsProcessor}
+import dev.rmaiun.mabel.processors._
 import dev.rmaiun.mabel.routes.SysRoutes
 import dev.rmaiun.mabel.services.ConfigProvider.Config
 import dev.rmaiun.mabel.services._
@@ -36,11 +36,11 @@ object Module {
     lazy val addRoundProcessor    = AddRoundProcessor.impl(arbiterClient, eloPointsCalculator)
     lazy val seasonStatsProcessor = SeasonStatsProcessor.impl(arbiterClient)
     lazy val eloRatingProcessor   = EloRatingProcessor.impl(arbiterClient)
-    lazy val lastGamesProcessor = LastGamesProcessor.impl(arbiterClient)
+    lazy val lastGamesProcessor   = LastGamesProcessor.impl(arbiterClient)
     // post processors
     lazy val addPlayerPostProcessor = AddPlayerPostProcessor.impl(arbiterClient, publisherProxy)
     lazy val addRoundPostProcessor  = AddRoundPostProcessor.impl(arbiterClient, publisherProxy)
-
+    lazy val seasonResultsProcessor = SeasonResultsProcessor.impl(arbiterClient, publisherProxy, cfg.app)
     // high lvl dependencies
     lazy val strategy =
       ProcessorStrategy.impl(
@@ -49,6 +49,7 @@ object Module {
         seasonStatsProcessor,
         eloRatingProcessor,
         lastGamesProcessor,
+        seasonResultsProcessor,
         addRoundPostProcessor,
         addPlayerPostProcessor
       )
