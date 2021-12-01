@@ -2,16 +2,17 @@ package dev.rmaiun.soos.managers
 
 import cats.Monad
 import dev.rmaiun.flowtypes.Flow.Flow
-import dev.rmaiun.protocol.http.SeasonDtoSet.{ CreateSeasonDtoIn, CreateSeasonDtoOut }
+import dev.rmaiun.protocol.http.SeasonDtoSet.{CreateSeasonDtoIn, CreateSeasonDtoOut, FindSeasonWithoutNotificationDtoOut}
 import dev.rmaiun.soos.db.entities.Season
 import dev.rmaiun.soos.helpers.ConfigProvider.AppConfig
-import dev.rmaiun.soos.services.{ AlgorithmService, RealmService, SeasonService }
+import dev.rmaiun.soos.services.{AlgorithmService, RealmService, SeasonService}
 import dev.rmaiun.soos.validations.SeasonValidationSet._
 import dev.rmaiun.validation.Validator
 
 trait SeasonManager[F[_]] {
   def createSeason(dtoIn: CreateSeasonDtoIn): Flow[F, CreateSeasonDtoOut]
   def listAllSeasons(): Flow[F, List[Season]]
+  def findSeasonWithoutNotification():Flow[F, FindSeasonWithoutNotificationDtoOut]
 }
 object SeasonManager {
   def apply[F[_]](implicit ev: UserManager[F]): UserManager[F] = ev
@@ -33,5 +34,9 @@ object SeasonManager {
 
     override def listAllSeasons(): Flow[F, List[Season]] =
       seasonService.listSeasons()
+
+    override def findSeasonWithoutNotification(): Flow[F, FindSeasonWithoutNotificationDtoOut] = {
+      seasonService.
+    }
   }
 }

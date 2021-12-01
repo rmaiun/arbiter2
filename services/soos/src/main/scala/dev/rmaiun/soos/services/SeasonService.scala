@@ -20,6 +20,7 @@ trait SeasonService[F[_]] {
   def updateSeason(s: Season): Flow[F, Season]
   def listSeasons(realms: Option[List[String]] = None, seasons: Option[List[String]] = None): Flow[F, List[Season]]
   def checkAllUsersAreDifferent(players: List[String]): Flow[F, Unit]
+  def findFirstUnnotifiedSeason(realm:String):Flow[F, Option[Season]]
 }
 
 object SeasonService {
@@ -52,6 +53,10 @@ object SeasonService {
         } else {
           Flow.unit
         }
+
+      override def findFirstUnnotifiedSeason(realm: String): Flow[F, Option[Season]] = {
+
+      }
 
       private def findInternally(name: String, realm: String): Flow[F, Option[Season]] =
         seasonRepo.getBySeasonNameRealm(name, realm).transact(xa).attemptSql.adaptError
