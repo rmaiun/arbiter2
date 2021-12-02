@@ -22,6 +22,16 @@ object SeasonQueries extends CustomMeta {
          | limit 1
     """.stripMargin.query[Season]
 
+  def getFirstByRealmWithoutNotifications(realm: String): doobie.Query0[Season] =
+    sql"""
+         | select s.id, s.name, s.algorithm, s.realm, s.end_notification
+         | from realm r
+         |         inner join season s on r.id = s.realm
+         | where r.name = $realm
+         |   and s.end_notification is null
+         | limit 1
+    """.stripMargin.query[Season]
+
   def insert(season: Season): doobie.Update0 =
     sql"""
          | insert into season (id, name, algorithm, realm, end_notification)

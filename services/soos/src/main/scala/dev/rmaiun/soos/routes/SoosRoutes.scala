@@ -8,7 +8,7 @@ import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.protocol.http.GameDtoSet.{AddEloPointsDtoIn, AddGameHistoryDtoIn, ListEloPointsDtoIn, ListGameHistoryDtoIn}
 import dev.rmaiun.protocol.http.RealmDtoSet.{GetRealmDtoIn, RegisterRealmDtoIn, UpdateRealmAlgorithmDtoIn}
-import dev.rmaiun.protocol.http.SeasonDtoSet.CreateSeasonDtoIn
+import dev.rmaiun.protocol.http.SeasonDtoSet.{CreateSeasonDtoIn, FindSeasonWithoutNotificationDtoIn, NotifySeasonDtoIn}
 import dev.rmaiun.protocol.http.UserDtoSet._
 import dev.rmaiun.soos.errors.RoutingErrors.RequiredParamsNotFound
 import dev.rmaiun.soos.managers.{GameManager, RealmManager, SeasonManager, UserManager}
@@ -197,13 +197,29 @@ object SoosRoutes {
     import dev.rmaiun.protocol.http.codec.FullCodec._
     import dsl._
 
-    HttpRoutes.of[F] { case req @ POST -> Root / "create" =>
-      val dtoOut = for {
-        dtoIn <- Flow.effect(req.as[CreateSeasonDtoIn])
-        res   <- seasonManager.createSeason(dtoIn)
-      } yield res
-      flowToResponse(dtoOut)
+    HttpRoutes.of[F] {
+
+      case req @ POST -> Root / "create" =>
+        val dtoOut = for {
+          dtoIn <- Flow.effect(req.as[CreateSeasonDtoIn])
+          res   <- seasonManager.createSeason(dtoIn)
+        } yield res
+        flowToResponse(dtoOut)
+
+      case req @ GET -> Root / "findWithoutNotification" =>
+        val dtoOut = for {
+          realm  <- Flow.fromOpt(req.params.get("realm"), RequiredParamsNotFound(Map("requestParam" -> "realm")))
+          result <- seasonManager.findSeasonWithoutNotification(FindSeasonWithoutNotificationDtoIn(realm))
+        } yield result
+        flowToResponse(dtoOut)
+
+      case req @ GET -> Root / "notify" =>
+        val dtoOut = for {
+          season <- Flow.fromOpt(req.params.get("season"), RequiredParamsNotFound(Map("requestParam" -> "season")))
+          realm  <- Flow.fromOpt(req.params.get("realm"), RequiredParamsNotFound(Map("requestParam" -> "realm")))
+          result <- seasonManager.notifySeason(NotifySeasonDtoIn(season, realm))
+        } yield result
+        flowToResponse(dtoOut)
     }
   }
-
 }

@@ -9,6 +9,7 @@ import doobie.ConnectionIO
 trait SeasonRepo[F[_]] {
   def getById(id: Long): ConnectionIO[Option[Season]]
   def getBySeasonNameRealm(name: String, realm: String): ConnectionIO[Option[Season]]
+  def getFirstSeasonWithoutNotification(realm: String): ConnectionIO[Option[Season]]
   def create(season: Season): ConnectionIO[Season]
   def update(season: Season): ConnectionIO[Season]
   def listAll(
@@ -25,6 +26,9 @@ object SeasonRepo {
 
     override def getBySeasonNameRealm(name: String, realm: String): ConnectionIO[Option[Season]] =
       SeasonQueries.getByNameRealm(name, realm).option
+
+    override def getFirstSeasonWithoutNotification(realm: String): ConnectionIO[Option[Season]] =
+      SeasonQueries.getFirstByRealmWithoutNotifications(realm).option
 
     override def create(season: Season): ConnectionIO[Season] = SeasonQueries
       .insert(season)

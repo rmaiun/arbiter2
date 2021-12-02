@@ -5,11 +5,11 @@ import cats.syntax.apply._
 import cats.syntax.foldable._
 import dev.rmaiun.common.SeasonHelper
 import dev.rmaiun.flowtypes.Flow.Flow
-import dev.rmaiun.flowtypes.{ FLog, Flow }
+import dev.rmaiun.flowtypes.{FLog, Flow}
 import dev.rmaiun.mabel.dtos._
-import dev.rmaiun.mabel.dtos.stats.{ PlayerStats, SeasonShortStats, UnrankedStats }
+import dev.rmaiun.mabel.dtos.stats.{PlayerStats, SeasonShortStats, UnrankedStats}
 import dev.rmaiun.mabel.services.ConfigProvider.AppCfg
-import dev.rmaiun.mabel.services.{ ArbiterClient, PublisherProxy, StatsCalculator }
+import dev.rmaiun.mabel.services.{ArbiterClient, PublisherProxy, StatsCalculator}
 import dev.rmaiun.mabel.utils.Constants._
 import dev.rmaiun.mabel.utils.IdGen
 import dev.rmaiun.protocol.http.GameDtoSet.StoredGameHistoryDto
@@ -17,7 +17,7 @@ import dev.rmaiun.protocol.http.SeasonDtoSet.FindSeasonWithoutNotificationDtoOut
 import dev.rmaiun.protocol.http.UserDtoSet.UserDto
 import io.chrisdavenport.log4cats.Logger
 
-import java.time.{ ZoneId, ZonedDateTime }
+import java.time.{ZoneId, ZonedDateTime}
 
 //todo move to postprocessor with processor forwarder
 class SeasonResultsProcessor[F[_]: Monad: Logger](
@@ -52,6 +52,8 @@ class SeasonResultsProcessor[F[_]: Monad: Logger](
           _        <- FLog.info(s"Prepared ${messages.size} with season results")
           _        <- sendMessages(messages)
           _        <- FLog.info("Messages were successfully sent")
+          season   <- arbiterClient.notifySeason(season)
+          _        <- FLog.info(s"Season $season was updated with enabled notification")
         } yield ()
       case _ =>
         Flow.unit
@@ -61,7 +63,6 @@ class SeasonResultsProcessor[F[_]: Monad: Logger](
     for {
       gameHistoryDto <- arbiterClient.listGameHistory(defaultRealm, season)
       players        <- loadActivePlayersForRealm
-      stats          <- Flow.pure(StatsCalculator.calculate(season, gameHistoryDto.games))
       messages       <- prepareMessagesToSend(season, players, gameHistoryDto.games)
     } yield messages
 

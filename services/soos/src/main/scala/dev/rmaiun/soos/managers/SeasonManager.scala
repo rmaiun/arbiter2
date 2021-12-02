@@ -1,18 +1,22 @@
 package dev.rmaiun.soos.managers
 
 import cats.Monad
+import dev.rmaiun.common.DateFormatter
 import dev.rmaiun.flowtypes.Flow.Flow
-import dev.rmaiun.protocol.http.SeasonDtoSet.{CreateSeasonDtoIn, CreateSeasonDtoOut, FindSeasonWithoutNotificationDtoOut}
+import dev.rmaiun.protocol.http.SeasonDtoSet._
 import dev.rmaiun.soos.db.entities.Season
 import dev.rmaiun.soos.helpers.ConfigProvider.AppConfig
-import dev.rmaiun.soos.services.{AlgorithmService, RealmService, SeasonService}
+import dev.rmaiun.soos.services.{ AlgorithmService, RealmService, SeasonService }
 import dev.rmaiun.soos.validations.SeasonValidationSet._
 import dev.rmaiun.validation.Validator
 
 trait SeasonManager[F[_]] {
   def createSeason(dtoIn: CreateSeasonDtoIn): Flow[F, CreateSeasonDtoOut]
   def listAllSeasons(): Flow[F, List[Season]]
-  def findSeasonWithoutNotification():Flow[F, FindSeasonWithoutNotificationDtoOut]
+  def findSeasonWithoutNotification(
+    dtoIn: FindSeasonWithoutNotificationDtoIn
+  ): Flow[F, FindSeasonWithoutNotificationDtoOut]
+  def notifySeason(dtoIn: NotifySeasonDtoIn): Flow[F, NotifySeasonDtoOut]
 }
 object SeasonManager {
   def apply[F[_]](implicit ev: UserManager[F]): UserManager[F] = ev
@@ -35,8 +39,26 @@ object SeasonManager {
     override def listAllSeasons(): Flow[F, List[Season]] =
       seasonService.listSeasons()
 
-    override def findSeasonWithoutNotification(): Flow[F, FindSeasonWithoutNotificationDtoOut] = {
-      seasonService.
+    override def findSeasonWithoutNotification(
+      dtoIn: FindSeasonWithoutNotificationDtoIn
+    ): Flow[F, FindSeasonWithoutNotificationDtoOut] =
+      for {
+        _      <- Validator.validateDto[F, FindSeasonWithoutNotificationDtoIn](dtoIn)
+        realm  <- realmService.getByName(dtoIn.realm)
+        season <- seasonService.findFirstSeasonWithoutNotification(realm.name)
+      } yield {
+        val seasonDto = season.map(s => SeasonDto(s.id, s.name))
+        FindSeasonWithoutNotificationDtoOut(seasonDto)
+      }
+
+    override def notifySeason(dtoIn: NotifySeasonDtoIn): Flow[F, NotifySeasonDtoOut] = {
+      val now = DateFormatter.now
+      for {
+        _      <- Validator.validateDto[F, NotifySeasonDtoIn](dtoIn)
+        realm  <- realmService.getByName(dtoIn.realm)
+        season <- seasonService.findSeason(dtoIn.season, realm)
+        upd    <- seasonService.updateSeason(season.copy(endNotification = Some(now)))
+      } yield NotifySeasonDtoOut(upd.name, now)
     }
   }
 }
