@@ -5,11 +5,11 @@ import cats.syntax.apply._
 import cats.syntax.foldable._
 import dev.rmaiun.common.SeasonHelper
 import dev.rmaiun.flowtypes.Flow.Flow
-import dev.rmaiun.flowtypes.{FLog, Flow}
+import dev.rmaiun.flowtypes.{ FLog, Flow }
 import dev.rmaiun.mabel.dtos._
-import dev.rmaiun.mabel.dtos.stats.{PlayerStats, SeasonShortStats, UnrankedStats}
+import dev.rmaiun.mabel.dtos.stats.{ PlayerStats, SeasonShortStats, UnrankedStats }
 import dev.rmaiun.mabel.services.ConfigProvider.AppCfg
-import dev.rmaiun.mabel.services.{ArbiterClient, PublisherProxy, StatsCalculator}
+import dev.rmaiun.mabel.services.{ ArbiterClient, PublisherProxy, StatsCalculator }
 import dev.rmaiun.mabel.utils.Constants._
 import dev.rmaiun.mabel.utils.IdGen
 import dev.rmaiun.protocol.http.GameDtoSet.StoredGameHistoryDto
@@ -17,7 +17,7 @@ import dev.rmaiun.protocol.http.SeasonDtoSet.FindSeasonWithoutNotificationDtoOut
 import dev.rmaiun.protocol.http.UserDtoSet.UserDto
 import io.chrisdavenport.log4cats.Logger
 
-import java.time.{ZoneId, ZonedDateTime}
+import java.time.{ ZoneId, ZonedDateTime }
 
 //todo move to postprocessor with processor forwarder
 class SeasonResultsProcessor[F[_]: Monad: Logger](
@@ -96,7 +96,7 @@ class SeasonResultsProcessor[F[_]: Monad: Logger](
 
   private def ratingMessage(ps: PlayerStats, pos: Int): String =
     s"""Your achievements:
-       |Position in rating - $pos
+       |Position in rating - #$pos
        |Win Rate - ${ps.score}%
        |Played games - ${ps.games}
        |👍👍👍""".stripMargin
@@ -104,17 +104,19 @@ class SeasonResultsProcessor[F[_]: Monad: Logger](
   private def nonRatingMessage(us: UnrankedStats): String =
     s"""Your achievements:
        |Took part in ${20 - us.gamesToPlay} games.
-       |Unfortunately, need to play 20 games
+       |Unfortunately need to play 20 games
        |to be included into rating.
-       |Hope, that next time you will do your best
+       |Hope that next time you will do your best
        |and will show us your real power.
        |⭐⭐⭐""".stripMargin
 
-  private def messageHeader(stats: SeasonShortStats): String =
+  private def messageHeader(stats: SeasonShortStats): String = {
+    val playersInSeason = stats.playersRating.length + stats.unrankedStats.length
     s"""Congrats!
        |Season ${stats.season} is successfully finished.
-       |Our winner - ${stats.playersRating.headOption.fold("n/a")(pr => pr.surname)}
-       |${stats.playersRating.length} players played ${stats.gamesPlayed} in total.""".stripMargin
+       |Our winner - ${stats.playersRating.headOption.fold("n/a")(pr => pr.surname.capitalize)}
+       |$playersInSeason players played ${stats.gamesPlayed} games in total.""".stripMargin
+  }
 
   private def loadActivePlayersForRealm: Flow[F, Map[String, UserDto]] =
     arbiterClient.findAllPlayers
@@ -140,7 +142,12 @@ class SeasonResultsProcessor[F[_]: Monad: Logger](
     }
 
   private def sendMessages(messages: List[BotResponse]): Flow[F, Unit] =
-    messages.map(m => publisherProxy.publishToBot(m)).sequence_
+    messages.map { m =>
+      for {
+        _ <- FLog.info(s"Sending msg ${m.result} to ${m.chatId}")
+        _ <- publisherProxy.publishToBot(m)
+      } yield ()
+    }.sequence_
 
   private def notLateToSend(dateTime: ZonedDateTime): Boolean =
     dateTime.getHour >= 10 && dateTime.getHour <= 23
