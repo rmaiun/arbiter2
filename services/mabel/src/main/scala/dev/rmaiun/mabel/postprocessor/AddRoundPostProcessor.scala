@@ -41,7 +41,7 @@ case class AddRoundPostProcessor[F[_]: MonadThrowable: Logger](
     val shutout = if (cmd.shutout) "(✓)" else ""
     val msg =
       s"""Round 
-         |"${cmd.w1.capitalize}/${cmd.w2.capitalize} vs ${cmd.l1.capitalize}/${cmd.l2.capitalize} $shutout
+         |${cmd.w1.capitalize}/${cmd.w2.capitalize} vs ${cmd.l1.capitalize}/${cmd.l2.capitalize} $shutout
          |was stored
          """.stripMargin
     admins
