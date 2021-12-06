@@ -3,14 +3,14 @@ package dev.rmaiun.soos.services
 import cats.Monad
 import cats.effect.Sync
 import dev.rmaiun.common.SeasonHelper
+import dev.rmaiun.errorhandling.ThrowableOps._
+import dev.rmaiun.flowtypes.Flow
+import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.soos.db.entities.{ Algorithm, Realm, Season }
 import dev.rmaiun.soos.errors.SeasonErrors.SeasonNotFoundRuntimeException
 import dev.rmaiun.soos.errors.UserErrors.SameUsersInRoundException
 import dev.rmaiun.soos.helpers.ConfigProvider.Config
 import dev.rmaiun.soos.repositories.SeasonRepo
-import dev.rmaiun.errorhandling.ThrowableOps._
-import dev.rmaiun.flowtypes.Flow
-import dev.rmaiun.flowtypes.Flow.Flow
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
 
@@ -20,7 +20,8 @@ trait SeasonService[F[_]] {
   def updateSeason(s: Season): Flow[F, Season]
   def listSeasons(realms: Option[List[String]] = None, seasons: Option[List[String]] = None): Flow[F, List[Season]]
   def checkAllUsersAreDifferent(players: List[String]): Flow[F, Unit]
-  def findFirstSeasonWithoutNotification(realm:String):Flow[F, Option[Season]]
+  def findFirstSeasonWithoutNotification(realm: String): Flow[F, Option[Season]]
+  def remove(idList: List[Long] = Nil): Flow[F, Int]
 }
 
 object SeasonService {
@@ -54,9 +55,11 @@ object SeasonService {
           Flow.unit
         }
 
-      override def findFirstSeasonWithoutNotification(realm: String): Flow[F, Option[Season]] = {
-          seasonRepo.getFirstSeasonWithoutNotification(realm).transact(xa).attemptSql.adaptError
-      }
+      override def findFirstSeasonWithoutNotification(realm: String): Flow[F, Option[Season]] =
+        seasonRepo.getFirstSeasonWithoutNotification(realm).transact(xa).attemptSql.adaptError
+
+      override def remove(idList: List[Long]): Flow[F, Int] =
+        seasonRepo.removeN(idList).transact(xa).attemptSql.adaptError
 
       private def findInternally(name: String, realm: String): Flow[F, Option[Season]] =
         seasonRepo.getBySeasonNameRealm(name, realm).transact(xa).attemptSql.adaptError
