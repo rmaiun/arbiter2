@@ -4,7 +4,8 @@ import cats.Monad
 import dev.rmaiun.common.SeasonHelper
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.commands.LastGamesCmd
-import dev.rmaiun.mabel.dtos.{ BotRequest, BotResponse, ProcessorResponse }
+import dev.rmaiun.mabel.dtos.CmdType.LAST_GAMES_CMD
+import dev.rmaiun.mabel.dtos.{ BotRequest, BotResponse, Definition, ProcessorResponse }
 import dev.rmaiun.mabel.services.ArbiterClient
 import dev.rmaiun.mabel.utils.Constants.{ LINE_SEPARATOR, PREFIX, SUFFIX }
 import dev.rmaiun.mabel.utils.{ Constants, IdGen }
@@ -12,6 +13,9 @@ import dev.rmaiun.protocol.http.GameDtoSet.StoredGameHistoryDto
 import io.chrisdavenport.log4cats.Logger
 
 case class LastGamesProcessor[F[_]: Monad: Logger](arbiterClient: ArbiterClient[F]) extends Processor[F] {
+
+  override def definition: Definition = Definition.query(LAST_GAMES_CMD)
+
   override def process(input: BotRequest): Flow[F, Option[ProcessorResponse]] =
     for {
       dto         <- parseDto[LastGamesCmd](input.data)

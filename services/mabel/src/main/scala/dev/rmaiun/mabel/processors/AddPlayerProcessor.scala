@@ -5,7 +5,8 @@ import dev.rmaiun.flowtypes.FLog
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.commands.AddPlayerCmd
 import dev.rmaiun.mabel.commands.AddPlayerCmd._
-import dev.rmaiun.mabel.dtos.{ BotRequest, BotResponse, ProcessorResponse }
+import dev.rmaiun.mabel.dtos.CmdType.ADD_PLAYER_CMD
+import dev.rmaiun.mabel.dtos.{ BotRequest, BotResponse, Definition, ProcessorResponse }
 import dev.rmaiun.mabel.services.ArbiterClient
 import dev.rmaiun.mabel.utils.Constants.{ PREFIX, SUFFIX }
 import dev.rmaiun.mabel.utils.{ Constants, IdGen }
@@ -13,6 +14,8 @@ import dev.rmaiun.protocol.http.UserDtoSet._
 import io.chrisdavenport.log4cats.Logger
 
 case class AddPlayerProcessor[F[_]: Monad: Logger](arbiterClient: ArbiterClient[F]) extends Processor[F] {
+
+  override def definition: Definition = Definition.persistence(ADD_PLAYER_CMD)
 
   override def process(input: BotRequest): Flow[F, Option[ProcessorResponse]] =
     for {

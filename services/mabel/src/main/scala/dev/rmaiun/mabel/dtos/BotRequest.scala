@@ -1,7 +1,7 @@
 package dev.rmaiun.mabel.dtos
 
-import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
-import io.circe.{Decoder, Encoder, Json}
+import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
+import io.circe.{ Decoder, Encoder, Json }
 
 case class BotRequest(cmd: String, chatId: Long, tid: Long, user: String, data: Option[Json] = None)
 

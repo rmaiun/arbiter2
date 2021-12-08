@@ -6,8 +6,10 @@ import cats.syntax.foldable._
 import dev.profunktor.fs2rabbit.model.AmqpEnvelope
 import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
 import dev.rmaiun.flowtypes.{ FLog, Flow }
-import dev.rmaiun.mabel.dtos.{ BotRequest, ProcessorResponse }
-import dev.rmaiun.mabel.errors.Errors.UserIsNotAuthorized
+import dev.rmaiun.mabel.dtos.{ BotRequest, CmdType, ProcessorResponse }
+import dev.rmaiun.mabel.errors.Errors.{ NoProcessorFound, UserIsNotAuthorized }
+import dev.rmaiun.mabel.postprocessor.PostProcessor
+import dev.rmaiun.mabel.processors.Processor
 import dev.rmaiun.mabel.utils.Constants.{ PREFIX, SUFFIX }
 import dev.rmaiun.mabel.utils.IdGen
 import io.chrisdavenport.log4cats.Logger
@@ -16,9 +18,10 @@ import org.http4s.client.ConnectionFailure
 
 import java.lang.System.currentTimeMillis
 
-case class CommandHandler[F[_]: MonadThrowable: Logger](
+case class CommandHandler[F[_]: MonadThrowable: Logger](commandType: CmdType)(
   arbiterClient: ArbiterClient[F],
-  strategy: ProcessorStrategy[F],
+  processors: List[Processor[F]],
+  postProcessors: List[PostProcessor[F]],
   publisherProxy: PublisherProxy[F]
 ) {
   import dev.rmaiun.mabel.dtos.BotRequest._
@@ -29,7 +32,7 @@ case class CommandHandler[F[_]: MonadThrowable: Logger](
       input   <- Flow.fromEither(BotRequestDecoder.decodeJson(json))
       surname <- checkUserRegistered(input)
       _       <- process(input)
-      _       <- FLog.info(s"Cmd ${input.cmd} ($surname) was processed in ${currentTimeMillis() - start} ms")
+      _       <- FLog.info(s"$commandType| Cmd ${input.cmd} ($surname) was processed in ${currentTimeMillis() - start} ms")
     } yield ()
   }
 
@@ -38,7 +41,7 @@ case class CommandHandler[F[_]: MonadThrowable: Logger](
       .findPlayerByTid(input.tid)
       .map(_.user.surname.capitalize)
       .leftFlatMap(err =>
-        FLog.info(s"User ${input.user} (${input.tid}) tried to process ${input.cmd}") *>
+        FLog.info(s"$commandType| User ${input.user} (${input.tid}) tried to process ${input.cmd}") *>
           sendResponse(
             Some(ProcessorResponse.error(input.chatId, IdGen.msgId, s"$PREFIX You are not authorized $SUFFIX"))
           ) *>
@@ -60,7 +63,7 @@ case class CommandHandler[F[_]: MonadThrowable: Logger](
       Flow.unit
     } else {
       for {
-        ppList <- strategy.selectPostProcessor(input.cmd)
+        ppList <- selectPostProcessor(input.cmd)
         _      <- ppList.map(_.postProcess(input)).sequence_
       } yield ()
     }
@@ -68,7 +71,7 @@ case class CommandHandler[F[_]: MonadThrowable: Logger](
 
   private def processInput(input: BotRequest): Flow[F, Option[ProcessorResponse]] = {
     val flow = for {
-      processor <- strategy.selectProcessor(input.cmd)
+      processor <- selectProcessor(input.cmd)
       result    <- processor.process(input)
     } yield result
     flow.leftFlatMap { err =>
@@ -76,7 +79,7 @@ case class CommandHandler[F[_]: MonadThrowable: Logger](
         case _: ConnectionFailure => s"$PREFIX ERROR: Connection issue $SUFFIX"
         case _                    => s"$PREFIX ERROR: ${err.getMessage} $SUFFIX"
       }
-      FLog.error(err.getMessage) *>
+      FLog.error(s"$commandType| ${err.getMessage}") *>
         Flow.effect(Monad[F].pure(err.printStackTrace())) *>
         Flow.pure(Some(ProcessorResponse.error(input.chatId, IdGen.msgId, msg)))
     }
@@ -88,14 +91,25 @@ case class CommandHandler[F[_]: MonadThrowable: Logger](
       case Some(value) => publisherProxy.publishToBot(value.botResponse)
       case None        => Flow.unit
     }
+
+  private def selectProcessor(cmd: String): Flow[F, Processor[F]] =
+    Flow.fromOpt(
+      processors.find(p => p.definition.cmdType == commandType && p.definition.supportCommands.contains(cmd)),
+      NoProcessorFound(cmd)
+    )
+
+  private def selectPostProcessor(cmd: String): Flow[F, List[PostProcessor[F]]] =
+    Flow.pure(postProcessors.filter(_.definition.supportCommands.contains(cmd)))
+
 }
 
 object CommandHandler {
   def apply[F[_]](implicit ev: CommandHandler[F]): CommandHandler[F] = ev
-  def impl[F[_]: MonadThrowable: Logger](
+  def impl[F[_]: MonadThrowable: Logger](cmdType: CmdType)(
     arbiterClient: ArbiterClient[F],
-    ps: ProcessorStrategy[F],
+    processors: List[Processor[F]],
+    postProcessors: List[PostProcessor[F]],
     publisherProxy: PublisherProxy[F]
   ): CommandHandler[F] =
-    new CommandHandler[F](arbiterClient, ps, publisherProxy)
+    new CommandHandler[F](cmdType)(arbiterClient, processors, postProcessors, publisherProxy)
 }

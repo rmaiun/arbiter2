@@ -109,7 +109,7 @@ class CmdHandlers {
       data.l1 = players[2]
       data.l2 = players[3]
     }
-    await this._rc.publish(this._dtoIn('addRound', ctx, data))
+    await this._rc.publishPersist(this._dtoIn('addRound', ctx, data))
   }
 
   async addPlayerCmdHandler (ctx) {
@@ -124,7 +124,7 @@ class CmdHandlers {
     } else if (args.length < 2) {
       data.surname = args[0]
     }
-    await this._rc.publish(this._dtoIn('addPlayer', ctx, data))
+    await this._rc.publishPersist(this._dtoIn('addPlayer', ctx, data))
   }
 
   // async _loadFile (uri, method) {

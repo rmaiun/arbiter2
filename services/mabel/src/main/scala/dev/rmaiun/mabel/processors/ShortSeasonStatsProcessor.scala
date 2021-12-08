@@ -3,14 +3,18 @@ package dev.rmaiun.mabel.processors
 import cats.Monad
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.commands.SeasonStatsCmd
+import dev.rmaiun.mabel.dtos.CmdType.SHORT_STATS_CMD
 import dev.rmaiun.mabel.dtos.stats.SeasonShortStats
-import dev.rmaiun.mabel.dtos.{ BotRequest, ProcessorResponse }
+import dev.rmaiun.mabel.dtos.{ BotRequest, Definition, ProcessorResponse }
 import dev.rmaiun.mabel.services.{ ArbiterClient, StatsCalculator }
 import dev.rmaiun.mabel.utils.Constants._
 import dev.rmaiun.mabel.utils.IdGen
 import io.chrisdavenport.log4cats.Logger
 
-class SeasonStatsProcessor[F[_]: Monad](ac: ArbiterClient[F]) extends Processor[F] {
+class ShortSeasonStatsProcessor[F[_]: Monad](ac: ArbiterClient[F]) extends Processor[F] {
+
+  override def definition: Definition = Definition.query(SHORT_STATS_CMD)
+
   override def process(input: BotRequest): Flow[F, Option[ProcessorResponse]] =
     for {
       dto         <- parseDto[SeasonStatsCmd](input.data)
@@ -70,8 +74,8 @@ class SeasonStatsProcessor[F[_]: Monad](ac: ArbiterClient[F]) extends Processor[
 
 }
 
-object SeasonStatsProcessor {
-  def apply[F[_]](implicit ev: SeasonStatsProcessor[F]): SeasonStatsProcessor[F] = ev
-  def impl[F[_]: Monad: Logger](ac: ArbiterClient[F]): SeasonStatsProcessor[F] =
-    new SeasonStatsProcessor[F](ac)
+object ShortSeasonStatsProcessor {
+  def apply[F[_]](implicit ev: ShortSeasonStatsProcessor[F]): ShortSeasonStatsProcessor[F] = ev
+  def impl[F[_]: Monad: Logger](ac: ArbiterClient[F]): ShortSeasonStatsProcessor[F] =
+    new ShortSeasonStatsProcessor[F](ac)
 }

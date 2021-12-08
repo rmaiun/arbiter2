@@ -3,7 +3,7 @@ package dev.rmaiun.mabel
 import cats.Monad
 import cats.data.Kleisli
 import cats.effect.concurrent.Ref
-import cats.effect.{Blocker, ConcurrentEffect, ContextShift, Sync, Timer}
+import cats.effect.{ Blocker, ConcurrentEffect, ContextShift, Sync, Timer }
 import dev.profunktor.fs2rabbit.config.Fs2RabbitConfig
 import dev.profunktor.fs2rabbit.config.declaration._
 import dev.profunktor.fs2rabbit.interpreter.RabbitClient
@@ -25,7 +25,7 @@ import java.util.concurrent.Executors
 import scala.collection.immutable.Queue
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutorService}
+import scala.concurrent.{ ExecutionContext, ExecutionContextExecutorService }
 
 object Server {
   implicit def unsafeLogger[F[_]: Sync: Monad]: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]
@@ -87,22 +87,26 @@ object Server {
       y <- Stream
              .resource(rc.createConnectionChannel)
              .flatMap(implicit ch => Stream.eval(rc.createAutoAckConsumer(inputPersistenceQ)))
-      p <- Stream
-             .resource(rc.createConnectionChannel)
-             .flatMap(implicit ch => Stream.eval(rc.createPublisher[AmqpMessage[String]](botExchange, outRK)))
-    } yield AmqpStructures(p, y, x)
+      inPub <- Stream
+                 .resource(rc.createConnectionChannel)
+                 .flatMap(implicit ch => Stream.eval(rc.createPublisher[AmqpMessage[String]](botExchange, inRK)))
+
+      outPub <- Stream
+                  .resource(rc.createConnectionChannel)
+                  .flatMap(implicit ch => Stream.eval(rc.createPublisher[AmqpMessage[String]](botExchange, outRK)))
+    } yield AmqpStructures(inPub, outPub, y, x)
   }
 
   def stream[F[_]: ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F], M: Monad[F]): Stream[F, Nothing] = {
     implicit val cfg: Config = ConfigProvider.provideConfig
     for {
-      _          <- Stream.eval(FLog.info(cfg.toString).value)
-      client     <- BlazeClientBuilder[F](global).withMaxWaitQueueLimit(1000).stream
-      ref        <- Stream.eval(Ref[F].of(Queue[AmqpMessage[String]]()))
-      rc         <- Stream.eval(RabbitClient[F](config(cfg), blocker))
-      _          <- Stream.eval(initRabbitRoutes(rc))
-      structures <- createRabbitConnection(rc)
-      module      = Module.initHttpApp(client, structures, ref)
+      _       <- Stream.eval(FLog.info(cfg.toString).value)
+      client  <- BlazeClientBuilder[F](global).withMaxWaitQueueLimit(1000).stream
+      ref     <- Stream.eval(Ref[F].of(Queue[AmqpMessage[String]]()))
+      rc      <- Stream.eval(RabbitClient[F](config(cfg), blocker))
+      _       <- Stream.eval(initRabbitRoutes(rc))
+      structs <- createRabbitConnection(rc)
+      module   = Module.initHttpApp(client, structs, ref)
 
       // With Middlewares in place
       finalHttpApp = Logger.httpApp(logHeaders = true, logBody = true)(module.httpApp)
@@ -111,7 +115,9 @@ object Server {
           .bindHttp(cfg.server.port, cfg.server.host)
           .withHttpApp(finalHttpApp)
           .serve
-          .concurrently(structures.botInputConsumer.flatMap(x => Stream.eval(module.cmdHandler.process(x).value)))
+          .concurrently(structs.botInConsumer.flatMap(x => Stream.eval(module.queryHandler.process(x).value)))
+          .concurrently(structs.botInPersistConsumer.flatMap(x => Stream.eval(module.persistHandler.process(x).value)))
+          .concurrently(Stream.awakeDelay[F](1 hour).evalTap(_ => module.queryPublisher.run().value))
           .concurrently(Stream.awakeDelay[F](166 milliseconds).evalTap(_ => module.rlPublisher.safePublish().value))
     } yield exitCode
   }.drain

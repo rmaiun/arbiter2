@@ -3,7 +3,8 @@ package dev.rmaiun.mabel.postprocessor
 import cats.syntax.foldable._
 import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
 import dev.rmaiun.mabel.commands.AddPlayerCmd
-import dev.rmaiun.mabel.dtos.{ BotRequest, BotResponse }
+import dev.rmaiun.mabel.dtos.CmdType.ADD_PLAYER_CMD
+import dev.rmaiun.mabel.dtos.{ BotRequest, BotResponse, Definition }
 import dev.rmaiun.mabel.services.{ ArbiterClient, PublisherProxy }
 import dev.rmaiun.mabel.utils.Constants.{ PREFIX, SUFFIX }
 import dev.rmaiun.mabel.utils.IdGen
@@ -14,6 +15,8 @@ case class AddPlayerPostProcessor[F[_]: MonadThrowable: Logger](
   arbiterClient: ArbiterClient[F],
   cmdPublisher: PublisherProxy[F]
 ) extends PostProcessor[F] {
+  override def definition: Definition = Definition.internal(ADD_PLAYER_CMD)
+
   override def postProcess(input: BotRequest): Flow[F, Unit] =
     for {
       cmd <- parseDto[AddPlayerCmd](input.data)
@@ -23,7 +26,7 @@ case class AddPlayerPostProcessor[F[_]: MonadThrowable: Logger](
 
   private def notifyAdmins(cmd: AddPlayerCmd): Flow[F, Unit] =
     for {
-      adminsDto <- arbiterClient.findRealmAdmins
+      adminsDto <- arbiterClient.findRealmAdmins()
       admins     = adminsDto.adminUsers.filter(urd => urd.tid.fold(false)(tid => tid != cmd.moderator))
       _         <- sendToAdministrators(admins, cmd.surname)
     } yield ()

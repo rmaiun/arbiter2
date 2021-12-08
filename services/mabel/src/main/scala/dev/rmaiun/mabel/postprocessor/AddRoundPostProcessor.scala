@@ -3,7 +3,8 @@ package dev.rmaiun.mabel.postprocessor
 import cats.syntax.foldable._
 import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
 import dev.rmaiun.mabel.commands.AddRoundCmd
-import dev.rmaiun.mabel.dtos.{ BotRequest, BotResponse }
+import dev.rmaiun.mabel.dtos.CmdType.ADD_ROUND_CMD
+import dev.rmaiun.mabel.dtos.{ BotRequest, BotResponse, Definition }
 import dev.rmaiun.mabel.services.{ ArbiterClient, PublisherProxy }
 import dev.rmaiun.mabel.utils.Constants.{ PREFIX, SUFFIX }
 import dev.rmaiun.mabel.utils.IdGen
@@ -14,6 +15,9 @@ case class AddRoundPostProcessor[F[_]: MonadThrowable: Logger](
   arbiterClient: ArbiterClient[F],
   cmdPublisher: PublisherProxy[F]
 ) extends PostProcessor[F] {
+
+  override def definition: Definition = Definition.internal(ADD_ROUND_CMD)
+
   override def postProcess(input: BotRequest): Flow[F, Unit] =
     for {
       cmd <- parseDto[AddRoundCmd](input.data)
@@ -33,7 +37,7 @@ case class AddRoundPostProcessor[F[_]: MonadThrowable: Logger](
 
   private def notifyRealmAdmins(cmd: AddRoundCmd): Flow[F, Unit] =
     for {
-      adminsDto <- arbiterClient.findRealmAdmins
+      adminsDto <- arbiterClient.findRealmAdmins()
       _         <- sendMsgToAdmins(cmd, adminsWithoutModerator(cmd.moderator, adminsDto.adminUsers))
     } yield ()
 

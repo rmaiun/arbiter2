@@ -4,8 +4,8 @@ import cats.effect.IO
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.mabel.commands.AddPlayerCmd
 import dev.rmaiun.mabel.dtos.BotRequest
+import dev.rmaiun.mabel.dtos.CmdType.ADD_PLAYER_CMD
 import dev.rmaiun.mabel.postprocessor.AddPlayerPostProcessor
-import dev.rmaiun.mabel.services.ProcessorStrategy.ADD_PLAYER_CMD
 import dev.rmaiun.mabel.services.{ ArbiterClient, PublisherProxy }
 import dev.rmaiun.mabel.utils.Loggable
 import dev.rmaiun.protocol.http.UserDtoSet.{ FindRealmAdminsDtoOut, FindUserDtoOut, UserDto, UserRoleData }
@@ -28,7 +28,7 @@ class AddPlayerPostProcessorSuite extends AnyFlatSpec with Matchers with EitherV
       UserRoleData("user3", None, "Owner")
     )
     val dtoOut = FindRealmAdminsDtoOut(userRoles)
-    when(arbiterClient.findRealmAdmins).thenReturn(Flow.pure(dtoOut))
+    when(arbiterClient.findRealmAdmins()).thenReturn(Flow.pure(dtoOut))
     val findUserDto = FindUserDtoOut(UserDto(1, "test", tid = Some(4)), Nil)
     when(arbiterClient.findPlayerBySurname(any())).thenReturn(Flow.pure(findUserDto))
     val addPlayerCmd = AddPlayerCmd("x", 1, admin = false, 2)

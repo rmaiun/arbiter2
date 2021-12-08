@@ -1,4 +1,4 @@
-package dev.rmaiun.mabel.processors
+package dev.rmaiun.mabel.postprocessor
 
 import cats.Monad
 import cats.syntax.apply._
@@ -6,6 +6,7 @@ import cats.syntax.foldable._
 import dev.rmaiun.common.SeasonHelper
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.flowtypes.{ FLog, Flow }
+import dev.rmaiun.mabel.dtos.CmdType.SEASON_RESULTS_CMD
 import dev.rmaiun.mabel.dtos._
 import dev.rmaiun.mabel.dtos.stats.{ PlayerStats, SeasonShortStats, UnrankedStats }
 import dev.rmaiun.mabel.services.ConfigProvider.AppCfg
@@ -19,17 +20,19 @@ import io.chrisdavenport.log4cats.Logger
 
 import java.time.{ ZoneId, ZonedDateTime }
 
-//todo move to postprocessor with processor forwarder
-class SeasonResultsProcessor[F[_]: Monad: Logger](
+class SeasonResultPostProcessor[F[_]: Monad: Logger](
   arbiterClient: ArbiterClient[F],
   publisherProxy: PublisherProxy[F],
   cfg: AppCfg
-) extends Processor[F] {
-  override def process(input: BotRequest): Flow[F, Option[ProcessorResponse]] =
+) extends PostProcessor[F] {
+
+  override def definition: Definition = Definition.internal(SEASON_RESULTS_CMD)
+
+  override def postProcess(input: BotRequest): Flow[F, Unit] =
     for {
       _ <- FLog.info(s"Starting Final Season Stats Reports generation with notificationEnabled: ${cfg.notifications}")
       _ <- processWithNotificationsCfgCheck()
-    } yield None
+    } yield ()
 
   private def processWithNotificationsCfgCheck(): Flow[F, Unit] =
     if (cfg.notifications) {
@@ -153,12 +156,12 @@ class SeasonResultsProcessor[F[_]: Monad: Logger](
     dateTime.getHour >= 10 && dateTime.getHour <= 23
 
 }
-object SeasonResultsProcessor {
-  def apply[F[_]](implicit ev: SeasonResultsProcessor[F]): SeasonResultsProcessor[F] = ev
+object SeasonResultPostProcessor {
+  def apply[F[_]](implicit ev: SeasonResultPostProcessor[F]): SeasonResultPostProcessor[F] = ev
   def impl[F[_]: Monad: Logger](
     ac: ArbiterClient[F],
     publisherProxy: PublisherProxy[F],
     cfg: AppCfg
-  ): SeasonResultsProcessor[F] =
-    new SeasonResultsProcessor[F](ac, publisherProxy, cfg)
+  ): SeasonResultPostProcessor[F] =
+    new SeasonResultPostProcessor[F](ac, publisherProxy, cfg)
 }

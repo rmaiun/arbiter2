@@ -6,12 +6,12 @@ import dev.rmaiun.mabel.commands.AddPlayerCmd
 import dev.rmaiun.mabel.dtos.BotRequest
 import dev.rmaiun.mabel.services.ArbiterClient
 import dev.rmaiun.mabel.utils.Loggable
-import dev.rmaiun.protocol.http.UserDtoSet.{AssignUserToRealmDtoOut, RegisterUserDtoOut, UserDto}
+import dev.rmaiun.protocol.http.UserDtoSet.{ AssignUserToRealmDtoOut, RegisterUserDtoOut, UserDto }
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import org.scalatest.{ BeforeAndAfterEach, OptionValues }
 
 class AddPlayerProcessorSuite
     extends AnyFlatSpec
@@ -36,10 +36,10 @@ class AddPlayerProcessorSuite
     val res   = processor.process(input).value.unsafeRunSync()
     res.isRight should be(true)
     val r = res.fold(_ => fail(), x => x)
-    r.fold(fail())(x => {
+    r.fold(fail()) { x =>
       x.error should be(false)
       x.botResponse.result should include("New player was registered with id 24")
-    })
+    }
 
   }
 

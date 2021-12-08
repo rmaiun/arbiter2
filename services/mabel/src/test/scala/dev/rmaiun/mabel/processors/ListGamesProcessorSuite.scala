@@ -7,12 +7,12 @@ import dev.rmaiun.mabel.commands.LastGamesCmd
 import dev.rmaiun.mabel.dtos.BotRequest
 import dev.rmaiun.mabel.services.ArbiterClient
 import dev.rmaiun.mabel.utils.Loggable
-import dev.rmaiun.protocol.http.GameDtoSet.{ListGameHistoryDtoOut, StoredGameHistoryDto}
+import dev.rmaiun.protocol.http.GameDtoSet.{ ListGameHistoryDtoOut, StoredGameHistoryDto }
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{mock, when}
+import org.mockito.Mockito.{ mock, when }
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
+import org.scalatest.{ BeforeAndAfterEach, OptionValues }
 
 class ListGamesProcessorSuite
     extends AnyFlatSpec

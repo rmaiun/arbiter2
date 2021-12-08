@@ -1,16 +1,17 @@
 package dev.rmaiun.mabel.processors
 
 import cats.Monad
-import dev.rmaiun.common.{DateFormatter, SeasonHelper}
+import dev.rmaiun.common.{ DateFormatter, SeasonHelper }
 import dev.rmaiun.flowtypes.FLog
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.commands.AddRoundCmd
 import dev.rmaiun.mabel.commands.AddRoundCmd._
-import dev.rmaiun.mabel.dtos.EloRatingDto.{CalculatedPoints, EloPlayers, UserCalculatedPoints}
-import dev.rmaiun.mabel.dtos.{BotRequest, ProcessorResponse}
-import dev.rmaiun.mabel.services.{ArbiterClient, EloPointsCalculator}
-import dev.rmaiun.mabel.utils.Constants.{PREFIX, SUFFIX}
-import dev.rmaiun.mabel.utils.{Constants, IdGen}
+import dev.rmaiun.mabel.dtos.CmdType._
+import dev.rmaiun.mabel.dtos.EloRatingDto.{ CalculatedPoints, EloPlayers, UserCalculatedPoints }
+import dev.rmaiun.mabel.dtos.{ BotRequest, Definition, ProcessorResponse }
+import dev.rmaiun.mabel.services.{ ArbiterClient, EloPointsCalculator }
+import dev.rmaiun.mabel.utils.Constants.{ PREFIX, SUFFIX }
+import dev.rmaiun.mabel.utils.{ Constants, IdGen }
 import dev.rmaiun.protocol.http.GameDtoSet._
 import dev.rmaiun.protocol.http.UserDtoSet.FindUserDtoOut
 import io.chrisdavenport.log4cats.Logger
@@ -19,6 +20,9 @@ case class AddRoundProcessor[F[_]: Monad: Logger](
   arbiterClient: ArbiterClient[F],
   eloPointsCalculator: EloPointsCalculator[F]
 ) extends Processor[F] {
+
+  override def definition: Definition = Definition.persistence(ADD_ROUND_CMD)
+
   override def process(input: BotRequest): Flow[F, Option[ProcessorResponse]] =
     for {
       dto           <- parseDto[AddRoundCmd](input.data)

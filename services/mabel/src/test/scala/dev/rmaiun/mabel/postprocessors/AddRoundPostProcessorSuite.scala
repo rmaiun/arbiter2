@@ -4,8 +4,8 @@ import cats.effect.IO
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.mabel.commands.AddRoundCmd
 import dev.rmaiun.mabel.dtos.BotRequest
+import dev.rmaiun.mabel.dtos.CmdType.ADD_ROUND_CMD
 import dev.rmaiun.mabel.postprocessor.AddRoundPostProcessor
-import dev.rmaiun.mabel.services.ProcessorStrategy.ADD_ROUND_CMD
 import dev.rmaiun.mabel.services.{ ArbiterClient, PublisherProxy }
 import dev.rmaiun.mabel.utils.Loggable
 import dev.rmaiun.protocol.http.UserDtoSet.{ FindRealmAdminsDtoOut, FindUserDtoOut, UserDto, UserRoleData }
@@ -29,7 +29,7 @@ class AddRoundPostProcessorSuite extends AnyFlatSpec with Matchers with EitherVa
       UserRoleData("user4", Some(4), "Admin")
     )
     val dtoOut = FindRealmAdminsDtoOut(userRoles)
-    when(arbiterClient.findRealmAdmins).thenReturn(Flow.pure(dtoOut))
+    when(arbiterClient.findRealmAdmins()).thenReturn(Flow.pure(dtoOut))
     val findUserDto = FindUserDtoOut(UserDto(1, "test", tid = Some(4)), Nil)
     when(arbiterClient.findPlayerBySurname(any())).thenReturn(Flow.pure(findUserDto))
     val addRoundCmd = AddRoundCmd("x1", "x2", "y1", "y2", shutout = false, 2)

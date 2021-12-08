@@ -26,6 +26,12 @@ class RabbitClient {
     return prodChannel.publish('bot_exchange', 'bot_in_rk', Buffer.from(JSON.stringify(data)), null)
   }
 
+  async publishPersist (data) {
+    const prodChannel = await this._getProdChannel()
+    // await prodChannel.assertExchange("bot_exchange", "Topic")
+    return prodChannel.publish('bot_exchange', 'bot_in_p_rk', Buffer.from(JSON.stringify(data)), null)
+  }
+
   async initConsumer (bot) {
     const connection = await this._getConnection()
     const consChannel = await connection.createChannel()

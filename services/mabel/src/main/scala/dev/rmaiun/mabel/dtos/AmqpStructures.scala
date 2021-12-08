@@ -5,9 +5,10 @@ import dev.rmaiun.mabel.dtos.AmqpStructures.{ AmqpConsumer, AmqpPublisher }
 import fs2.Stream
 
 case class AmqpStructures[F[_]: Concurrent](
-  botOutputPublisher: AmqpPublisher[F],
-  botInputPersistenceConsumer: AmqpConsumer[F],
-  botInputConsumer: AmqpConsumer[F]
+  botInPublisher: AmqpPublisher[F],
+  botOutPublisher: AmqpPublisher[F],
+  botInPersistConsumer: AmqpConsumer[F],
+  botInConsumer: AmqpConsumer[F]
 )
 
 object AmqpStructures {

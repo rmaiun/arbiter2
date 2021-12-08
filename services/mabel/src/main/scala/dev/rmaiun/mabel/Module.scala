@@ -2,10 +2,10 @@ package dev.rmaiun.mabel
 
 import cats.Monad
 import cats.effect.concurrent.Ref
-import cats.effect.{ConcurrentEffect, ContextShift, Timer}
+import cats.effect.{ ConcurrentEffect, ContextShift, Timer }
 import dev.profunktor.fs2rabbit.model.AmqpMessage
-import dev.rmaiun.mabel.dtos.AmqpStructures
-import dev.rmaiun.mabel.postprocessor.{AddPlayerPostProcessor, AddRoundPostProcessor}
+import dev.rmaiun.mabel.dtos.{ AmqpStructures, CmdType }
+import dev.rmaiun.mabel.postprocessor.{ AddPlayerPostProcessor, AddRoundPostProcessor, SeasonResultPostProcessor }
 import dev.rmaiun.mabel.processors._
 import dev.rmaiun.mabel.routes.SysRoutes
 import dev.rmaiun.mabel.services.ConfigProvider.Config
@@ -16,7 +16,13 @@ import org.http4s.client.Client
 import org.http4s.server.Router
 
 import scala.collection.immutable.Queue
-case class Module[F[_]](httpApp: HttpApp[F], cmdHandler: CommandHandler[F], rlPublisher: RateLimitedPublisher[F])
+case class Module[F[_]](
+  httpApp: HttpApp[F],
+  persistHandler: CommandHandler[F],
+  queryHandler: CommandHandler[F],
+  rlPublisher: RateLimitedPublisher[F],
+  queryPublisher: SeasonResultsTrigger[F]
+)
 object Module {
   type RateLimitQueue[F[_]] = Ref[F, Queue[AmqpMessage[String]]]
 
@@ -29,39 +35,36 @@ object Module {
     lazy val arbiterClient        = ArbiterClient.impl(client)
     lazy val eloPointsCalculator  = EloPointsCalculator.impl(arbiterClient)
     lazy val publisherProxy       = PublisherProxy.impl(cfg, messagesRef)
-    lazy val rateLimitedPublisher = RateLimitedPublisher.impl(messagesRef, amqpStructures.botOutputPublisher)
+    lazy val rateLimitedPublisher = RateLimitedPublisher.impl(messagesRef, amqpStructures.botOutPublisher)
 
     // processors
-    lazy val addPlayerProcessor   = AddPlayerProcessor.impl(arbiterClient)
-    lazy val addRoundProcessor    = AddRoundProcessor.impl(arbiterClient, eloPointsCalculator)
-    lazy val seasonStatsProcessor = SeasonStatsProcessor.impl(arbiterClient)
-    lazy val eloRatingProcessor   = EloRatingProcessor.impl(arbiterClient)
-    lazy val lastGamesProcessor   = LastGamesProcessor.impl(arbiterClient)
+    lazy val processors = List(
+      AddPlayerProcessor.impl(arbiterClient),
+      AddRoundProcessor.impl(arbiterClient, eloPointsCalculator),
+      ShortSeasonStatsProcessor.impl(arbiterClient),
+      EloRatingProcessor.impl(arbiterClient),
+      LastGamesProcessor.impl(arbiterClient),
+      ForwardProcessor.impl
+    )
     // post processors
-    lazy val addPlayerPostProcessor = AddPlayerPostProcessor.impl(arbiterClient, publisherProxy)
-    lazy val addRoundPostProcessor  = AddRoundPostProcessor.impl(arbiterClient, publisherProxy)
-    lazy val seasonResultsProcessor = SeasonResultsProcessor.impl(arbiterClient, publisherProxy, cfg.app)
-    // high lvl dependencies
-    lazy val strategy =
-      ProcessorStrategy.impl(
-        addPlayerProcessor,
-        addRoundProcessor,
-        seasonStatsProcessor,
-        eloRatingProcessor,
-        lastGamesProcessor,
-        seasonResultsProcessor,
-        addRoundPostProcessor,
-        addPlayerPostProcessor
-      )
-    lazy val cmdHandler  = CommandHandler.impl(arbiterClient, strategy, publisherProxy)
+    lazy val postProcessors = List(
+      AddPlayerPostProcessor.impl(arbiterClient, publisherProxy),
+      AddRoundPostProcessor.impl(arbiterClient, publisherProxy),
+      SeasonResultPostProcessor.impl(arbiterClient, publisherProxy, cfg.app)
+    )
+    lazy val persistenceCmdHandler =
+      CommandHandler.impl(CmdType.Persistence)(arbiterClient, processors, postProcessors, publisherProxy)
+    lazy val queryCmdHandler =
+      CommandHandler.impl(CmdType.Query)(arbiterClient, processors, postProcessors, publisherProxy)
     lazy val pingManager = PingManager.impl
 
     //http app
-    val httpApp = Router[F](
+    lazy val httpApp = Router[F](
       "/sys" -> SysRoutes.sysRoutes(pingManager)
     ).orNotFound
-
+    // query publisher
+    lazy val seasonResultsTrigger = SeasonResultsTrigger.impl(arbiterClient, amqpStructures.botInPublisher)
     // module
-    Module(httpApp, cmdHandler, rateLimitedPublisher)
+    Module(httpApp, persistenceCmdHandler, queryCmdHandler, rateLimitedPublisher, seasonResultsTrigger)
   }
 }

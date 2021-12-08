@@ -8,9 +8,10 @@ object Constants {
   val DEFAULT_RESULT: String = ""
 
   val defaultRealm: String = "ua_foosball"
+  val ownerRole: String    = "Owner"
   val expectedGames        = 20
 
-  implicit class RichBotMsg(val msg:String) extends AnyVal {
+  implicit class RichBotMsg(val msg: String) extends AnyVal {
     def toBotMsg: String = PREFIX + msg + SUFFIX
   }
 }
