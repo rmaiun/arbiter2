@@ -38,7 +38,7 @@ case class AddRoundPostProcessor[F[_]: MonadThrowable: Logger](
   private def notifyRealmAdmins(cmd: AddRoundCmd): Flow[F, Unit] =
     for {
       adminsDto <- arbiterClient.findRealmAdmins()
-      _         <- sendMsgToAdmins(cmd, adminsWithoutModerator(cmd.moderator, adminsDto.adminUsers))
+      _         <- sendMsgToAdmins(cmd, adminsWithoutModeratorAndPlayers(cmd, adminsDto.adminUsers))
     } yield ()
 
   private def sendMsgToAdmins(cmd: AddRoundCmd, admins: List[UserRoleData]): Flow[F, Unit] = {
@@ -54,8 +54,12 @@ case class AddRoundPostProcessor[F[_]: MonadThrowable: Logger](
       .sequence_
   }
 
-  private def adminsWithoutModerator(moderatorTid: Long, data: List[UserRoleData]): List[UserRoleData] =
-    data.filter(urd => urd.tid.fold(false)(tid => tid != moderatorTid))
+  private def adminsWithoutModeratorAndPlayers(cmd: AddRoundCmd, data: List[UserRoleData]): List[UserRoleData] = {
+    val affectedPlayers = Set(cmd.w1.toLowerCase, cmd.w2.toLowerCase, cmd.l1.toLowerCase, cmd.l2.toLowerCase)
+    data
+      .filter(urd => urd.tid.fold(false)(tid => tid != cmd.moderator))
+      .filter(urd => !affectedPlayers.contains(urd.surname.toLowerCase))
+  }
 
   private def createOutput(opponents: String, win: Boolean): String = {
     val action = if (win) "win" else "lose"

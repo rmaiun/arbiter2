@@ -11,6 +11,8 @@ object DateFormatter {
   def now: ZonedDateTime =
     ZonedDateTime.now(ZoneOffset.UTC)
 
+  def now(timezone: String): ZonedDateTime = ZonedDateTime.now(ZoneId.of(timezone))
+
   def formatDateWithHour(date: ZonedDateTime): String = {
     val month    = date.getMonth.getDisplayName(TextStyle.SHORT, Locale.ENGLISH)
     val day      = date.getDayOfMonth

@@ -3,14 +3,14 @@ package dev.rmaiun.mabel.postprocessor
 import cats.Monad
 import cats.syntax.apply._
 import cats.syntax.foldable._
-import dev.rmaiun.common.SeasonHelper
+import dev.rmaiun.common.{DateFormatter, SeasonHelper}
 import dev.rmaiun.flowtypes.Flow.Flow
-import dev.rmaiun.flowtypes.{ FLog, Flow }
+import dev.rmaiun.flowtypes.{FLog, Flow}
 import dev.rmaiun.mabel.dtos.CmdType.SEASON_RESULTS_CMD
 import dev.rmaiun.mabel.dtos._
-import dev.rmaiun.mabel.dtos.stats.{ PlayerStats, SeasonShortStats, UnrankedStats }
+import dev.rmaiun.mabel.dtos.stats.{PlayerStats, SeasonShortStats, UnrankedStats}
 import dev.rmaiun.mabel.services.ConfigProvider.AppCfg
-import dev.rmaiun.mabel.services.{ ArbiterClient, PublisherProxy, StatsCalculator }
+import dev.rmaiun.mabel.services.{ArbiterClient, PublisherProxy, StatsCalculator}
 import dev.rmaiun.mabel.utils.Constants._
 import dev.rmaiun.mabel.utils.IdGen
 import dev.rmaiun.protocol.http.GameDtoSet.StoredGameHistoryDto
@@ -18,7 +18,7 @@ import dev.rmaiun.protocol.http.SeasonDtoSet.FindSeasonWithoutNotificationDtoOut
 import dev.rmaiun.protocol.http.UserDtoSet.UserDto
 import io.chrisdavenport.log4cats.Logger
 
-import java.time.{ ZoneId, ZonedDateTime }
+import java.time.ZonedDateTime
 
 class SeasonResultPostProcessor[F[_]: Monad: Logger](
   arbiterClient: ArbiterClient[F],
@@ -36,7 +36,7 @@ class SeasonResultPostProcessor[F[_]: Monad: Logger](
 
   private def processWithNotificationsCfgCheck(): Flow[F, Unit] =
     if (cfg.notifications) {
-      val now = ZonedDateTime.now(ZoneId.of(cfg.reportTimezone))
+      val now = DateFormatter.now(cfg.reportTimezone)
       for {
         _                <- FLog.info(s"Check that ${now.toString} equals to last day of current season where time = 20:00")
         seasonDto        <- arbiterClient.findSeasonWithoutNotifications
@@ -124,6 +124,7 @@ class SeasonResultPostProcessor[F[_]: Monad: Logger](
   private def loadActivePlayersForRealm: Flow[F, Map[String, UserDto]] =
     arbiterClient.findAllPlayers
       .map(dtoOut => dtoOut.items.map(i => i.surname -> i).toMap)
+
   private def takeNotificationData(
     seasonDto: FindSeasonWithoutNotificationDtoOut,
     now: ZonedDateTime
