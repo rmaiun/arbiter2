@@ -10,17 +10,26 @@ import dev.rmaiun.protocol.http.GameDtoSet.{AddEloPointsDtoIn, AddGameHistoryDto
 import dev.rmaiun.protocol.http.RealmDtoSet.{GetRealmDtoIn, RegisterRealmDtoIn, UpdateRealmAlgorithmDtoIn}
 import dev.rmaiun.protocol.http.SeasonDtoSet.{CreateSeasonDtoIn, FindSeasonWithoutNotificationDtoIn, NotifySeasonDtoIn}
 import dev.rmaiun.protocol.http.UserDtoSet._
-import dev.rmaiun.soos.errors.RoutingErrors.RequiredParamsNotFound
 import dev.rmaiun.soos.managers.{GameManager, RealmManager, SeasonManager, UserManager}
 import io.chrisdavenport.log4cats.Logger
 import io.circe.{Decoder, Encoder}
+import org.http4s._
 import org.http4s.circe.{jsonEncoderOf, jsonOf}
 import org.http4s.dsl.Http4sDsl
-import org.http4s.{EntityDecoder, EntityEncoder, HttpRoutes, Response}
+import org.http4s.dsl.impl.{OptionalQueryParamDecoderMatcher, QueryParamDecoderMatcher}
 object SoosRoutes {
 
   implicit def errorEntityEncoder[F[_]: Applicative, T: Encoder]: EntityEncoder[F, T] = jsonEncoderOf[F, T]
   implicit def errorEntityDecoder[F[_]: Sync, T: Decoder]: EntityDecoder[F, T]        = jsonOf[F, T]
+  implicit val dataListQueryParamDecoder: QueryParamDecoder[List[String]] =
+    QueryParamDecoder[String].map(_.split(",").toList)
+
+  object RealmQueryParamMatcher           extends QueryParamDecoderMatcher[String]("realm")
+  object SeasonQueryParamMatcher          extends QueryParamDecoderMatcher[String]("season")
+  object OptActiveStatusQueryParamMatcher extends OptionalQueryParamDecoderMatcher[Boolean]("activeStatus")
+  object OptSurnameQueryParamMatcher      extends OptionalQueryParamDecoderMatcher[String]("surname")
+  object OptTidQueryParamMatcher          extends OptionalQueryParamDecoderMatcher[Long]("tid")
+  object UsersQueryParamMatcher           extends QueryParamDecoderMatcher[List[String]]("users")
 
   def flowToResponse[F[_]: Sync: Monad: Logger, T](
     flow: Flow[F, T]
@@ -88,16 +97,12 @@ object SoosRoutes {
         } yield res
         flowToResponse(dtoOut)
 
-      case req @ GET -> Root / "find" =>
-        val surname = req.params.get("surname")
-        val tid     = req.params.get("tid").map(_.toLong)
+      case GET -> Root / "find" :? OptSurnameQueryParamMatcher(surname) +& OptTidQueryParamMatcher(tid) =>
         flowToResponse(userManager.findUser(FindUserDtoIn(surname, tid)))
 
-      case req @ GET -> Root / "list" =>
-        val actStatus = req.params.get("activeStatus").map(_.toBoolean)
+      case GET -> Root / "list" :? OptActiveStatusQueryParamMatcher(activeStatus) +& RealmQueryParamMatcher(realm) =>
         val userAllFlow = for {
-          realm  <- Flow.fromOpt(req.params.get("realm"), RequiredParamsNotFound(Map("requestParam" -> "realm")))
-          result <- userManager.findAllUsers(FindAllUsersDtoIn(realm, actStatus))
+          result <- userManager.findAllUsers(FindAllUsersDtoIn(realm, activeStatus))
         } yield result
         flowToResponse(userAllFlow)
 
@@ -136,9 +141,8 @@ object SoosRoutes {
         } yield res
         flowToResponse(dtoOut)
 
-      case req @ GET -> Root / "listAdminsForRealm" =>
+      case GET -> Root / "listAdminsForRealm" :? RealmQueryParamMatcher(realm) =>
         val userAllFlow = for {
-          realm  <- Flow.fromOpt(req.params.get("realm"), RequiredParamsNotFound(Map("requestParam" -> "realm")))
           result <- userManager.findRealmAdmins(FindRealmAdminsDtoIn(realm))
         } yield result
         flowToResponse(userAllFlow)
@@ -158,10 +162,8 @@ object SoosRoutes {
         } yield res
         flowToResponse(dtoOut)
 
-      case req @ GET -> Root / "list" =>
+      case GET -> Root / "list" :? RealmQueryParamMatcher(realm) +& SeasonQueryParamMatcher(season) =>
         val userAllFlow = for {
-          realm  <- Flow.fromOpt(req.params.get("realm"), RequiredParamsNotFound(Map("requestParam" -> "realm")))
-          season <- Flow.fromOpt(req.params.get("season"), RequiredParamsNotFound(Map("requestParam" -> "season")))
           result <- gameManager.listGameHistory(ListGameHistoryDtoIn(realm, season))
         } yield result
         flowToResponse(userAllFlow)
@@ -182,11 +184,9 @@ object SoosRoutes {
         } yield res
         flowToResponse(dtoOut)
 
-      case req @ GET -> Root / "listCalculated" =>
+      case GET -> Root / "listCalculated" :? UsersQueryParamMatcher(users) =>
         val userAllFlow = for {
-          users    <- Flow.fromOpt(req.params.get("users"), RequiredParamsNotFound(Map("requestParam" -> "users")))
-          listUsers = users.split(",").toList
-          result   <- gameManager.listCalculatedEloPoints(ListEloPointsDtoIn(Some(listUsers)))
+          result <- gameManager.listCalculatedEloPoints(ListEloPointsDtoIn(Some(users)))
         } yield result
         flowToResponse(userAllFlow)
     }
@@ -206,17 +206,14 @@ object SoosRoutes {
         } yield res
         flowToResponse(dtoOut)
 
-      case req @ GET -> Root / "findWithoutNotification" =>
+      case GET -> Root / "findWithoutNotification" :? RealmQueryParamMatcher(realm) =>
         val dtoOut = for {
-          realm  <- Flow.fromOpt(req.params.get("realm"), RequiredParamsNotFound(Map("requestParam" -> "realm")))
           result <- seasonManager.findSeasonWithoutNotification(FindSeasonWithoutNotificationDtoIn(realm))
         } yield result
         flowToResponse(dtoOut)
 
-      case req @ GET -> Root / "notify" =>
+      case GET -> Root / "notify" :? RealmQueryParamMatcher(realm) +& SeasonQueryParamMatcher(season) =>
         val dtoOut = for {
-          season <- Flow.fromOpt(req.params.get("season"), RequiredParamsNotFound(Map("requestParam" -> "season")))
-          realm  <- Flow.fromOpt(req.params.get("realm"), RequiredParamsNotFound(Map("requestParam" -> "realm")))
           result <- seasonManager.notifySeason(NotifySeasonDtoIn(season, realm))
         } yield result
         flowToResponse(dtoOut)
