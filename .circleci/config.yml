@@ -1,5 +1,60 @@
 version: 2
 jobs:
+  test-build-soos:
+    docker:
+      # specify the version you desire here
+      - image: circleci/openjdk:8-jdk
+      - image: circleci/buildpack-deps:stretch
+      - image: circleci/mysql:8.0.4
+        environment:
+          MYSQL_ROOT_PASSWORD: rootpassword
+          MYSQL_DATABASE: arbiter
+          MYSQL_USER: dev
+          MYSQL_PASSWORD: password
+    working_directory: ~/repo
+    environment:
+      # Customize the JVM maximum heap limit
+      SBT_VERSION: 1.3.10
+      SOOS_IMAGE_NAME: mairo/soos
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+    steps:
+      - checkout
+      - run:
+          name: Waiting for MySQL to be ready
+          command: |
+            for i in `seq 1 20`;
+            do
+              nc -z 127.0.0.1 3306 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for MySQL && exit 1
+      - run:
+          name: Prepare mysql for tests
+          command: cat /dev/null | sbt soos/flywayClean soos/flywayMigrate
+      - run:
+          name: Prepare jar
+          command: cat /dev/null | sbt soos/clean soos/assembly
+
+  test-build-mabel:
+    docker:
+      # specify the version you desire here
+      - image: circleci/openjdk:8-jdk
+      - image: circleci/buildpack-deps:stretch
+    working_directory: ~/repo
+    environment:
+      # Customize the JVM maximum heap limit
+      SBT_VERSION: 1.3.10
+      MABEL_IMAGE_NAME: mairo/mabel
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+    steps:
+      - checkout
+      - run:
+          name: Prepare jar
+          command: cat /dev/null | sbt mabel/clean mabel/assembly
+
   build-soos:
     docker:
       # specify the version you desire here
@@ -184,8 +239,24 @@ workflows:
   version: 2
   build-master:
     jobs:
+      - test-build-soos:
+          context: myctx
+          filters:
+            branches:
+              ignore:
+                - dev
+      - test-build-mabel:
+          context: myctx
+          filters:
+            branches:
+              ignore:
+                - dev
       - build-soos:
           context: myctx
+          filters:
+            branches:
+              only:
+                - dev
       - migrate-prod-mysq:
           context: myctx
           requires:
@@ -204,6 +275,10 @@ workflows:
                 - dev
       - build-mabel:
           context: myctx
+          filters:
+            branches:
+              only:
+                - dev
       - publish-mabel-image:
           context: myctx
           requires:
@@ -214,6 +289,10 @@ workflows:
                 - dev
       - build-dipper:
           context: myctx
+          filters:
+            branches:
+              only:
+                - dev
       - publish-dipper-image:
           context: myctx
           requires:
