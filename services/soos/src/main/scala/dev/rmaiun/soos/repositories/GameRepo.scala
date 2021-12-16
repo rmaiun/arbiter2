@@ -5,6 +5,7 @@ import cats.data.NonEmptyList
 import dev.rmaiun.soos.db.entities.{ EloPoints, GameHistory }
 import dev.rmaiun.soos.db.projections.{ EloPointExtended, EloPointsData, GameHistoryData }
 import dev.rmaiun.soos.db.queries.GameQueries
+import dev.rmaiun.soos.db.{ PageInfo, PageResult, PagedItems }
 import dev.rmaiun.soos.dtos.{ EloPointsCriteria, GameHistoryCriteria }
 import doobie.ConnectionIO
 
@@ -16,6 +17,8 @@ trait GameRepo[F[_]] {
   def listEloPointsByCriteria(criteria: EloPointsCriteria): ConnectionIO[List[EloPointExtended]]
   def listCalculatedPoints(surnames: Option[NonEmptyList[String]] = None): ConnectionIO[List[EloPointsData]]
   def listHistoryByCriteria(criteria: GameHistoryCriteria): ConnectionIO[List[GameHistoryData]]
+  def listEloPoints(pageInfo: PageInfo): ConnectionIO[PagedItems[EloPoints]]
+  def listAllGameHistory(realm: Long, season: Long): ConnectionIO[List[GameHistory]]
 }
 
 object GameRepo {
@@ -48,5 +51,14 @@ object GameRepo {
 
     override def listHistoryByCriteria(criteria: GameHistoryCriteria): ConnectionIO[List[GameHistoryData]] =
       GameQueries.listHistoryByCriteria(criteria).to[List]
+
+    override def listEloPoints(pageInfo: PageInfo): ConnectionIO[PagedItems[EloPoints]] =
+      for {
+        count <- GameQueries.countPointRows.unique
+        query <- GameQueries.listAllPoints(pageInfo).to[List]
+      } yield PagedItems(query, PageResult(pageInfo.page, pageInfo.qty, count))
+
+    override def listAllGameHistory(realm: Long, season: Long): ConnectionIO[List[GameHistory]] =
+      GameQueries.listsAllHistory(realm, season).to[List]
   }
 }

@@ -1,9 +1,10 @@
 package dev.rmaiun.soos.db.queries
 
 import cats.data.NonEmptyList
-import dev.rmaiun.soos.db.entities.{EloPoints, GameHistory}
-import dev.rmaiun.soos.db.projections.{EloPointExtended, EloPointsData, GameHistoryData}
-import dev.rmaiun.soos.dtos.{EloPointsCriteria, GameHistoryCriteria}
+import dev.rmaiun.soos.db.PageInfo
+import dev.rmaiun.soos.db.entities.{ EloPoints, GameHistory }
+import dev.rmaiun.soos.db.projections.{ EloPointExtended, EloPointsData, GameHistoryData }
+import dev.rmaiun.soos.dtos.{ EloPointsCriteria, GameHistoryCriteria }
 import doobie.Fragments
 import doobie.implicits._
 
@@ -33,6 +34,18 @@ object GameQueries extends CustomMeta {
       )
     withUser.query[EloPointExtended]
   }
+
+  def listAllPoints(pageInfo: PageInfo): doobie.Query0[EloPoints] = {
+    val skipElements = pageInfo.page * pageInfo.qty
+    val fragment     = fr"""
+                       | select ep.id, ep.user, ep.points, ep.created
+                       |  from elo_points as ep
+                       |  limit $skipElements, ${pageInfo.qty}
+                                  """.stripMargin
+    fragment.query[EloPoints]
+  }
+  def countPointRows: doobie.Query0[Int] =
+    sql"select count(id) from arbiter.elo_points".query[Int]
 
   def listCalculatedPoints(players: Option[NonEmptyList[String]]): doobie.Query0[EloPointsData] = {
     val baseWithRealmFragment = fr"""
@@ -68,6 +81,14 @@ object GameQueries extends CustomMeta {
         withSeason ++ fr"$shutoutStr"
       }
     withShutout.query[GameHistoryData]
+  }
+
+  def listsAllHistory(realm: Long, season: Long): doobie.Query0[GameHistory] = {
+    val fragment = fr"""
+                       | select gh.id, gh.realm, gh.season, gh.w1, gh.w2, gh.l1, gh.l2, gh.shutout, gh.created_at as createdAt
+                       | from game_history as gh
+                       | where gh.realm = $realm and gh.season = $season""".stripMargin
+    fragment.query[GameHistory]
   }
 
   def deletePointsByIdList(idList: List[Long]): doobie.Update0 =
