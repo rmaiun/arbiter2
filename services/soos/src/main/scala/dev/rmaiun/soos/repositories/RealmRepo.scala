@@ -1,7 +1,7 @@
 package dev.rmaiun.soos.repositories
 
 import cats.Monad
-import dev.rmaiun.soos.db.entities.Realm
+import dev.rmaiun.soos.db.entities.{ Realm, UserRealmRole }
 import dev.rmaiun.soos.db.projections.RealmData
 import dev.rmaiun.soos.db.queries.RealmQueries
 import doobie.ConnectionIO
@@ -14,6 +14,7 @@ trait RealmRepo[F[_]] {
   def listAll: ConnectionIO[List[Realm]]
   def listRealmsByUser(surname: String): ConnectionIO[List[RealmData]]
   def removeN(idList: List[Long] = Nil): ConnectionIO[Int]
+  def listAllUserRealmRoles: ConnectionIO[List[UserRealmRole]]
 }
 
 object RealmRepo {
@@ -40,5 +41,8 @@ object RealmRepo {
 
     override def listRealmsByUser(surname: String): ConnectionIO[List[RealmData]] =
       RealmQueries.listAllRealmsByUser(surname).to[List]
+
+    override def listAllUserRealmRoles: ConnectionIO[List[UserRealmRole]] =
+      RealmQueries.listAllUserRealmRoles.to[List]
   }
 }

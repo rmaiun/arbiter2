@@ -1,7 +1,7 @@
 package dev.rmaiun.soos.db.queries
 
 import cats.data.NonEmptyList
-import dev.rmaiun.soos.db.entities.Realm
+import dev.rmaiun.soos.db.entities.{ Realm, UserRealmRole }
 import dev.rmaiun.soos.db.projections.RealmData
 import doobie.Fragments
 import doobie.implicits._
@@ -44,6 +44,12 @@ object RealmQueries {
          | inner join role on urr.role = role.id
          | where user.surname = $surname
     """.stripMargin.query[RealmData]
+
+  def listAllUserRealmRoles: doobie.Query0[UserRealmRole] =
+    sql"""
+         | select  realm, user, role, bot_usage as botUsage
+         | from user_realm_role
+    """.stripMargin.query[UserRealmRole]
 
   def deleteByIdList(idList: List[Long]): doobie.Update0 =
     NonEmptyList.fromList(idList) match {
