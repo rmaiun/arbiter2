@@ -113,6 +113,7 @@ lazy val dependencies =
     val fs2IO          = "co.fs2"                %% "fs2-io"               % "2.4.2"
     val accordCore     = "com.wix"               %% "accord-core"          % "0.7.6"
     val dropboxSdk     = "com.dropbox.core"       % "dropbox-core-sdk"     % "5.1.0"
+    val commons        = "commons-io"             % "commons-io"           % "2.11.0"
     val fs2rabbit      = "dev.profunktor"        %% "fs2-rabbit"           % "3.0.1"
     val scalatest      = "org.scalatest"         %% "scalatest"            % ScalaTestVersion % Test
     val spec2Core      = "org.specs2"            %% "specs2-core"          % Specs2Version    % Test
@@ -169,6 +170,7 @@ lazy val soosDependencies = Seq(
   dependencies.doobieCore,
   dependencies.doobieHikari,
   dependencies.dropboxSdk,
+  dependencies.commons,
   dependencies.scalatest,
   dependencies.spec2Core
 )

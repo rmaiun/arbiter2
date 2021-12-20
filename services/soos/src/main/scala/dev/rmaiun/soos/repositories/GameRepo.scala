@@ -18,7 +18,7 @@ trait GameRepo[F[_]] {
   def listCalculatedPoints(surnames: Option[NonEmptyList[String]] = None): ConnectionIO[List[EloPointsData]]
   def listHistoryByCriteria(criteria: GameHistoryCriteria): ConnectionIO[List[GameHistoryData]]
   def listEloPoints(pageInfo: PageInfo): ConnectionIO[PagedItems[EloPoints]]
-  def listAllGameHistory(realm: Long, season: Long): ConnectionIO[List[GameHistory]]
+  def listAllGameHistory(pageInfo: PageInfo): ConnectionIO[PagedItems[GameHistory]]
 }
 
 object GameRepo {
@@ -58,7 +58,10 @@ object GameRepo {
         query <- GameQueries.listAllPoints(pageInfo).to[List]
       } yield PagedItems(query, PageResult(pageInfo.page, pageInfo.qty, count))
 
-    override def listAllGameHistory(realm: Long, season: Long): ConnectionIO[List[GameHistory]] =
-      GameQueries.listsAllHistory(realm, season).to[List]
+    override def listAllGameHistory(pageInfo: PageInfo): ConnectionIO[PagedItems[GameHistory]] =
+      for {
+        count <- GameQueries.countGameHistoryRows.unique
+        query <- GameQueries.listsAllGameHistory(pageInfo).to[List]
+      } yield PagedItems(query, PageResult(pageInfo.page, pageInfo.qty, count))
   }
 }
