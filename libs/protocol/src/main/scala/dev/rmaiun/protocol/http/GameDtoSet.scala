@@ -41,7 +41,7 @@ object GameDtoSet {
   case class AddGameHistoryDtoIn(historyElement: GameHistoryDtoIn, moderatorTid: Long)
   case class AddGameHistoryDtoOut(storedRound: GameHistoryDto)
 
-  case class AddEloPointsDtoIn(points: EloPointsDto, moderatorTid: Long, realm:String)
+  case class AddEloPointsDtoIn(points: EloPointsDto, moderatorTid: Long, realm: String)
   case class AddEloPointsDtoOut(id: Long)
 
   case class ListGameHistoryDtoIn(realm: String, season: String)

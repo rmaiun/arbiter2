@@ -1,8 +1,8 @@
 package dev.rmaiun.protocol.http.codec
 
-import dev.rmaiun.protocol.http.GameDtoSet.{AddEloPointsDtoIn, AddEloPointsDtoOut, ListEloPointsDtoIn, ListEloPointsDtoOut}
-import io.circe.{Decoder, Encoder}
-import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import dev.rmaiun.protocol.http.GameDtoSet._
+import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
+import io.circe.{ Decoder, Encoder }
 
 trait EloPointsDtoCodec extends SubDtoCodec {
   implicit val AddEloPointsDtoInEncoder: Encoder[AddEloPointsDtoIn] = deriveEncoder[AddEloPointsDtoIn]
@@ -10,7 +10,6 @@ trait EloPointsDtoCodec extends SubDtoCodec {
 
   implicit val AddEloPointsDtoOutEncoder: Encoder[AddEloPointsDtoOut] = deriveEncoder[AddEloPointsDtoOut]
   implicit val AddEloPointsDtoOutDecoder: Decoder[AddEloPointsDtoOut] = deriveDecoder[AddEloPointsDtoOut]
-
 
   implicit val ListEloPointsDtoInEncoder: Encoder[ListEloPointsDtoIn] = deriveEncoder[ListEloPointsDtoIn]
   implicit val ListEloPointsDtoInDecoder: Decoder[ListEloPointsDtoIn] = deriveDecoder[ListEloPointsDtoIn]
