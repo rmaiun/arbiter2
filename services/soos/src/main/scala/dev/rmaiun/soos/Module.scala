@@ -43,13 +43,15 @@ object Module {
     val seasonHttpApp      = SoosRoutes.seasonRoutes[F](seasonMng)
     val gameHistoryHttpApp = SoosRoutes.gameHistoryRoutes[F](gameMng)
     val eloPointsHttpApp   = SoosRoutes.eloPointsRoutes[F](gameMng)
+    val archiveHttpApp     = SoosRoutes.archiveRoutes[F]
     // routes
     val routes = Router[F](
       "/realms"          -> realmHttpApp,
       "/users"           -> userHttpApp,
       "/seasons"         -> seasonHttpApp,
       "/games/history"   -> gameHistoryHttpApp,
-      "/games/eloPoints" -> eloPointsHttpApp
+      "/games/eloPoints" -> eloPointsHttpApp,
+      "/archive"         -> archiveHttpApp
     )
     Arbiter2Middleware(routes, cfg.server.tokens.split(":").toList).orNotFound
   }

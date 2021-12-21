@@ -1,22 +1,31 @@
 package dev.rmaiun.soos.routes
 
 import cats.effect.Sync
-import cats.{Applicative, Monad}
+import cats.{ Applicative, Monad }
 import dev.rmaiun.errorhandling.errors.AppRuntimeException
 import dev.rmaiun.errorhandling.errors.codec._
-import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
-import dev.rmaiun.protocol.http.GameDtoSet.{AddEloPointsDtoIn, AddGameHistoryDtoIn, ListEloPointsDtoIn, ListGameHistoryDtoIn}
-import dev.rmaiun.protocol.http.RealmDtoSet.{GetRealmDtoIn, RegisterRealmDtoIn, UpdateRealmAlgorithmDtoIn}
-import dev.rmaiun.protocol.http.SeasonDtoSet.{CreateSeasonDtoIn, FindSeasonWithoutNotificationDtoIn, NotifySeasonDtoIn}
+import dev.rmaiun.flowtypes.{ FLog, Flow }
+import dev.rmaiun.protocol.http.GameDtoSet.{
+  AddEloPointsDtoIn,
+  AddGameHistoryDtoIn,
+  ListEloPointsDtoIn,
+  ListGameHistoryDtoIn
+}
+import dev.rmaiun.protocol.http.RealmDtoSet.{ GetRealmDtoIn, RegisterRealmDtoIn, UpdateRealmAlgorithmDtoIn }
+import dev.rmaiun.protocol.http.SeasonDtoSet.{
+  CreateSeasonDtoIn,
+  FindSeasonWithoutNotificationDtoIn,
+  NotifySeasonDtoIn
+}
 import dev.rmaiun.protocol.http.UserDtoSet._
-import dev.rmaiun.soos.managers.{GameManager, RealmManager, SeasonManager, UserManager}
+import dev.rmaiun.soos.managers.{ GameManager, RealmManager, SeasonManager, UserManager }
 import io.chrisdavenport.log4cats.Logger
-import io.circe.{Decoder, Encoder}
+import io.circe.{ Decoder, Encoder }
 import org.http4s._
-import org.http4s.circe.{jsonEncoderOf, jsonOf}
+import org.http4s.circe.{ jsonEncoderOf, jsonOf }
 import org.http4s.dsl.Http4sDsl
-import org.http4s.dsl.impl.{OptionalQueryParamDecoderMatcher, QueryParamDecoderMatcher}
+import org.http4s.dsl.impl.{ OptionalQueryParamDecoderMatcher, QueryParamDecoderMatcher }
 object SoosRoutes {
 
   implicit def errorEntityEncoder[F[_]: Applicative, T: Encoder]: EntityEncoder[F, T] = jsonEncoderOf[F, T]
@@ -217,6 +226,20 @@ object SoosRoutes {
           result <- seasonManager.notifySeason(NotifySeasonDtoIn(season, realm))
         } yield result
         flowToResponse(dtoOut)
+    }
+  }
+
+  def archiveRoutes[F[_]: Sync: Monad: Logger]: HttpRoutes[F] = {
+    val dsl = new Http4sDsl[F] {}
+    import dsl._
+
+    HttpRoutes.of[F] { case req @ GET -> Root / "redirect" =>
+      val dtoOut = for {
+        _ <- FLog.info(s"Received URI: ${req.uri.toString()}")
+//        _ <- FLog.info(s"Received Params: $xxx")
+//        _ <- FLog.info(s"Received Headers: $bbb")
+      } yield "OK"
+      flowToResponse(dtoOut)
     }
   }
 }

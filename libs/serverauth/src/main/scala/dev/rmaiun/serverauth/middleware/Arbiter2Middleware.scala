@@ -16,13 +16,16 @@ object Arbiter2Middleware {
     ME: MonadError[F, Throwable]
   ): HttpRoutes[F] = Kleisli { req: Request[F] =>
     val header = req.headers.get(Arbiter2AuthHeader).toRight(AuthError("Unsuccessful authorization"))
-    service(req)
     header.fold(
       err =>
-        OptionT.pure(
-          Response[F](status = Forbidden)
-            .withEntity(ErrorDtoOut("authException", err.msg, Some("datamanager")))
-        ),
+        if (req.uri.path.startsWithString("archive/redirect")) {
+          service(req)
+        } else {
+          OptionT.pure(
+            Response[F](status = Forbidden)
+              .withEntity(ErrorDtoOut("authException", err.msg, Some("datamanager")))
+          )
+        },
       header =>
         if (allowedTokens.contains(header.head.value)) {
           service(req)
@@ -34,5 +37,4 @@ object Arbiter2Middleware {
         }
     )
   }
-
 }
