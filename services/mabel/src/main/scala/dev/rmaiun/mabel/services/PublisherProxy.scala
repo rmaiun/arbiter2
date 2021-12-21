@@ -11,7 +11,7 @@ import io.chrisdavenport.log4cats.Logger
 
 case class PublisherProxy[F[_]: MonadThrowable: Logger](cfg: Config, queue: RateLimitQueue[F]) {
   def publishToBot(botResponse: BotResponse)(implicit customCheck: Boolean = true): Flow[F, Unit] =
-    if (cfg.app.notifications && customCheck) {
+    if (cfg.app.notifications && botResponse.chatId != -1 && customCheck) {
       val output = BotResponse.BotResponseEncoder(botResponse).toString()
       val msg    = AmqpMessage(output, AmqpProperties())
       for {
@@ -20,7 +20,7 @@ case class PublisherProxy[F[_]: MonadThrowable: Logger](cfg: Config, queue: Rate
       } yield ()
     } else {
       FLog.debug(
-        s"Message $botResponse wasn't sent to rate limited queue [notificationsEnabled:${cfg.app.notifications}, customCheck: $customCheck]"
+        s"Message $botResponse wasn't sent to rate limited queue [notificationsEnabled:${cfg.app.notifications}, customCheck: $customCheck, chatId: ${botResponse.chatId}]"
       ) *> Flow.unit
     }
 }

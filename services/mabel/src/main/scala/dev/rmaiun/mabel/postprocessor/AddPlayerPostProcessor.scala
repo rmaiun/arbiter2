@@ -20,7 +20,7 @@ case class AddPlayerPostProcessor[F[_]: MonadThrowable: Logger](
   override def postProcess(input: BotRequest): Flow[F, Unit] =
     for {
       cmd <- parseDto[AddPlayerCmd](input.data)
-      _   <- cmdPublisher.publishToBot(BotResponse(cmd.tid, IdGen.msgId, createOutput))
+      _   <- cmdPublisher.publishToBot(BotResponse(cmd.tid.getOrElse(-1), IdGen.msgId, createOutput))
       _   <- notifyAdmins(cmd)
     } yield ()
 

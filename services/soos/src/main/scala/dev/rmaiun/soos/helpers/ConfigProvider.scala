@@ -7,7 +7,7 @@ object ConfigProvider {
 
   case class DbConfig(host: String, port: Int, database: String, username: String, password: String)
 
-  case class ServerConfig(host:String,port: Int, tokens:String)
+  case class ServerConfig(host: String, port: Int, tokens: String)
 
   case class AppConfig(
     privileged: String,
@@ -17,11 +17,13 @@ object ConfigProvider {
     topPlayersLimit: Int,
     minWritePermission: Int,
     defaultRole: String,
-    defaultAlgorithm:String,
-    startPoints:Int
+    defaultAlgorithm: String,
+    startPoints: Int
   )
 
-  case class Config(db: DbConfig, server: ServerConfig, app: AppConfig)
+  case class ArchiveCfg(key1: String, key2: String)
+
+  case class Config(db: DbConfig, server: ServerConfig, app: AppConfig, archive: ArchiveCfg)
 
   def provideConfig: Config =
     ConfigSource.default.loadOrThrow[Config]

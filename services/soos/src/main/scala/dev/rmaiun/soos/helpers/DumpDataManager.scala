@@ -1,4 +1,4 @@
-package dev.rmaiun.soos.services
+package dev.rmaiun.soos.helpers
 
 import cats.data.NonEmptyList
 import cats.effect.Sync
@@ -9,8 +9,8 @@ import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.soos.db.PageInfo
 import dev.rmaiun.soos.db.entities._
+import dev.rmaiun.soos.helpers.DumpDataManager._
 import dev.rmaiun.soos.repositories._
-import dev.rmaiun.soos.services.DumpManager._
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
 import io.circe.Encoder
@@ -21,7 +21,7 @@ import java.io.ByteArrayOutputStream
 import java.util.zip.{ ZipEntry, ZipOutputStream }
 import scala.util.Try
 
-case class DumpManager[F[_]: Monad: Sync](
+case class DumpDataManager[F[_]: Monad: Sync](
   algorithmRepo: AlgorithmRepo[F],
   roleRepo: RoleRepo[F],
   realmRepo: RealmRepo[F],
@@ -36,17 +36,17 @@ case class DumpManager[F[_]: Monad: Sync](
     implicit val zos: ZipOutputStream = new ZipOutputStream(bos)
     for {
       algorithms <- algorithmRepo.listAll.transact(xa).attemptSql.adaptError
-      _          <- zipData("algorithms.json", algorithms)
+      _          <- zipData("algorithm.json", algorithms)
       roles      <- roleRepo.listAll.transact(xa).attemptSql.adaptError
-      _          <- zipData("roles.json", roles)
+      _          <- zipData("role.json", roles)
       realms     <- realmRepo.listAll.transact(xa).attemptSql.adaptError
-      _          <- zipData("realms.json", roles)
+      _          <- zipData("realm.json", roles)
       _          <- zipSeasons(realms)
       _          <- zipUsers(realms)
       eloPoints  <- gameRepo.listEloPoints(PageInfo(0, 1_000_000)).transact(xa).attemptSql.adaptError
       _          <- zipData("eloPoints.json", eloPoints.items)
       histories  <- gameRepo.listAllGameHistory(PageInfo(0, 1_000_000)).transact(xa).attemptSql.adaptError
-      _          <- zipData("gameHistories.json", histories.items)
+      _          <- zipData("gameHistory.json", histories.items)
       _          <- Flow.effect(Sync[F].delay(zos.closeEntry()))
     } yield bos.toByteArray
   }
@@ -82,7 +82,7 @@ case class DumpManager[F[_]: Monad: Sync](
       .map(_ => ())
 }
 
-object DumpManager {
+object DumpDataManager {
   lazy implicit val AlgorithmEncoder: Encoder[Algorithm]     = deriveEncoder[Algorithm]
   lazy implicit val RoleEncoder: Encoder[Role]               = deriveEncoder[Role]
   lazy implicit val RealmEncoder: Encoder[Realm]             = deriveEncoder[Realm]

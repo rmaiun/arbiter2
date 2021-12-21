@@ -30,7 +30,7 @@ case class AddPlayerProcessor[F[_]: Monad: Logger](arbiterClient: ArbiterClient[
     }
 
   private def registerPlayer(dto: AddPlayerCmd): Flow[F, RegisterUserDtoOut] = {
-    val userData = UserData(dto.surname, Some(dto.tid))
+    val userData = UserData(dto.surname, dto.tid)
     arbiterClient.addPlayer(RegisterUserDtoIn(userData, dto.moderator))
   }
 
