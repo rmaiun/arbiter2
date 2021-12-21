@@ -31,7 +31,7 @@ class AddPlayerPostProcessorSuite extends AnyFlatSpec with Matchers with EitherV
     when(arbiterClient.findRealmAdmins()).thenReturn(Flow.pure(dtoOut))
     val findUserDto = FindUserDtoOut(UserDto(1, "test", tid = Some(4)), Nil)
     when(arbiterClient.findPlayerBySurname(any())).thenReturn(Flow.pure(findUserDto))
-    val addPlayerCmd = AddPlayerCmd("x", 1, admin = false, 2)
+    val addPlayerCmd = AddPlayerCmd("x", Some(1), admin = false, 2)
     val input        = BotRequest(ADD_PLAYER_CMD, 2, 2, "user2", Some(AddPlayerCmd.AddPlayerCmdEncoder(addPlayerCmd)))
     val res          = postProcessor.postProcess(input).value.unsafeRunSync()
     verify(publisher, times(2)).publishToBot(any())(any())
