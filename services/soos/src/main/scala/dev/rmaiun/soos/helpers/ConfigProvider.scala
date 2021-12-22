@@ -21,7 +21,7 @@ object ConfigProvider {
     startPoints: Int
   )
 
-  case class ArchiveCfg(key1: String, key2: String, token:String)
+  case class ArchiveCfg(key: String, secret: String, token: String)
 
   case class Config(db: DbConfig, server: ServerConfig, app: AppConfig, archive: ArchiveCfg)
 

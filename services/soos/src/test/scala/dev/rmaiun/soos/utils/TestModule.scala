@@ -1,8 +1,8 @@
 package dev.rmaiun.soos.utils
 
 import cats.effect._
-import dev.rmaiun.soos.helpers.{ ConfigProvider, TransactorProvider }
-import dev.rmaiun.soos.managers.{ GameManager, RealmManager, SeasonManager, UserManager }
+import dev.rmaiun.soos.helpers.{ConfigProvider, DumpExporter, TransactorProvider, ZipDataProvider}
+import dev.rmaiun.soos.managers.{GameManager, RealmManager, SeasonManager, UserManager}
 import dev.rmaiun.soos.repositories._
 import dev.rmaiun.soos.services._
 import doobie.hikari.HikariTransactor
@@ -31,6 +31,10 @@ object TestModule extends Loggable {
   lazy val userService: UserService[IO]             = UserService.impl[IO](transactor, userRepo)
   lazy val userRightsService: UserRightsService[IO] = UserRightsService.impl[IO](userService, roleService)
   lazy val gameService: GameService[IO]             = GameService.impl[IO](gameRepo, transactor)
+  // helpers
+  lazy val zipDataProvider =
+    ZipDataProvider.impl(algorithmRepo, roleRepo, realmRepo, gameRepo, seasonRepo, userRepo, transactor)
+  lazy val dumpExporter = DumpExporter.impl(zipDataProvider, cfg)
   //managers
   lazy val realmMng: RealmManager[IO] = RealmManager.impl(realmService, algorithmService, userService)
   lazy val userMng: UserManager[IO] =

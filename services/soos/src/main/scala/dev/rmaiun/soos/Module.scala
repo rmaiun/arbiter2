@@ -1,10 +1,10 @@
 package dev.rmaiun.soos
 
 import cats.Monad
-import cats.effect.{ ConcurrentEffect, ContextShift, Timer }
+import cats.effect.{ConcurrentEffect, ContextShift, Timer}
 import dev.rmaiun.serverauth.middleware.Arbiter2Middleware
-import dev.rmaiun.soos.helpers.{ ConfigProvider, TransactorProvider }
-import dev.rmaiun.soos.managers.{ GameManager, RealmManager, SeasonManager, UserManager }
+import dev.rmaiun.soos.helpers.{ConfigProvider, DumpExporter, TransactorProvider, ZipDataProvider}
+import dev.rmaiun.soos.managers.{GameManager, RealmManager, SeasonManager, UserManager}
 import dev.rmaiun.soos.repositories._
 import dev.rmaiun.soos.routes.SoosRoutes
 import dev.rmaiun.soos.services._
@@ -14,8 +14,9 @@ import org.http4s.implicits.http4sKleisliResponseSyntaxOptionT
 import org.http4s.server.Router
 
 object Module {
+  case class Module[F[_]](httpApp: HttpApp[F], dumpExporter: DumpExporter[F])
   def initHttpApp[F[_]: ConcurrentEffect: Monad: Logger](
-  )(implicit cfg: ConfigProvider.Config, T: Timer[F], C: ContextShift[F]): HttpApp[F] = {
+  )(implicit cfg: ConfigProvider.Config, T: Timer[F], C: ContextShift[F]): Module[F] = {
     lazy val transactor = TransactorProvider.hikariTransactor(cfg)
 
     lazy val algorithmRepo: AlgorithmRepo[F] = AlgorithmRepo.impl
@@ -32,7 +33,11 @@ object Module {
     lazy val userService       = UserService.impl(transactor, userRepo)
     lazy val userRightsService = UserRightsService.impl(userService, roleService)
     lazy val gameService       = GameService.impl(gameRepo, transactor)
-    //managers
+    // helpers
+    lazy val zipDataProvider =
+      ZipDataProvider.impl(algorithmRepo, roleRepo, realmRepo, gameRepo, seasonRepo, userRepo, transactor)
+    lazy val dumpExporter = DumpExporter.impl(zipDataProvider, cfg)
+    // managers
     lazy val realmMng  = RealmManager.impl(realmService, algorithmService, userService)
     lazy val userMng   = UserManager.impl(userService, userRightsService, realmService, roleService, gameService)
     lazy val gameMng   = GameManager.impl(gameService, userService, realmService, seasonService, userRightsService)
@@ -53,6 +58,9 @@ object Module {
       "/games/eloPoints" -> eloPointsHttpApp,
       "/archive"         -> archiveHttpApp
     )
-    Arbiter2Middleware(routes, cfg.server.tokens.split(":").toList).orNotFound
+    Module(
+      Arbiter2Middleware(routes, cfg.server.tokens.split(":").toList).orNotFound,
+      dumpExporter
+    )
   }
 }

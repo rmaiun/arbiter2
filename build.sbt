@@ -109,12 +109,11 @@ lazy val dependencies =
     val mysql          = "mysql"                  % "mysql-connector-java" % "8.0.11"
     val doobieCore     = "org.tpolecat"          %% "doobie-core"          % "0.12.1"
     val doobieHikari   = "org.tpolecat"          %% "doobie-hikari"        % "0.12.1"
-    val fs2Core        = "co.fs2"                %% "fs2-core"             % "2.4.4"
-    val fs2IO          = "co.fs2"                %% "fs2-io"               % "2.4.2"
     val accordCore     = "com.wix"               %% "accord-core"          % "0.7.6"
     val dropboxSdk     = "com.dropbox.core"       % "dropbox-core-sdk"     % "5.1.0"
     val commons        = "commons-io"             % "commons-io"           % "2.11.0"
     val fs2rabbit      = "dev.profunktor"        %% "fs2-rabbit"           % "3.0.1"
+    val fs2cron        = "eu.timepit"            %% "fs2-cron-cron4s"      % "0.5.0"
     val scalatest      = "org.scalatest"         %% "scalatest"            % ScalaTestVersion % Test
     val spec2Core      = "org.specs2"            %% "specs2-core"          % Specs2Version    % Test
     val mockito        = "org.scalatestplus"     %% "mockito-3-4"          % "3.2.10.0"       % Test
@@ -171,6 +170,7 @@ lazy val soosDependencies = Seq(
   dependencies.doobieHikari,
   dependencies.dropboxSdk,
   dependencies.commons,
+  dependencies.fs2cron,
   dependencies.scalatest,
   dependencies.spec2Core
 )

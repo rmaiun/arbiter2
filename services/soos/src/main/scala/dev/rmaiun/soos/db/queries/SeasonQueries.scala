@@ -49,9 +49,9 @@ object SeasonQueries extends CustomMeta {
     """.stripMargin.update
 
   def listAll(seasons: Option[NonEmptyList[String]], realms: Option[NonEmptyList[String]]): doobie.Query0[Season] = {
-    val baseFr     = fr"select id, name, algorithm, realm, end_notification as endNotification from season"
+    val baseFr     = fr"select season.id, season.name, season.algorithm, season.realm, season.end_notification as endNotification from season"
     val whereFr    = fr"where"
-    val withRealms = realms.fold(baseFr)(_ => fr"inner join realm on season.realm = realm.id")
+    val withRealms = realms.fold(baseFr)(_ => baseFr ++ fr"inner join realm on season.realm = realm.id")
     val fullFr = if (seasons.isDefined && realms.isDefined) {
       withRealms ++ whereFr ++ Fragments.in(fr"realm.name", realms.get) ++ fr"and" ++ Fragments.in(
         fr"season.name",
@@ -59,7 +59,9 @@ object SeasonQueries extends CustomMeta {
       )
     } else if (seasons.isDefined) {
       withRealms ++ whereFr ++ Fragments.in(fr"season.name", seasons.get)
-    } else {
+    } else if (realms.isDefined){
+      withRealms ++ whereFr ++ Fragments.in(fr"realm.name", realms.get)
+    }else{
       withRealms
     }
     fullFr

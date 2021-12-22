@@ -5,20 +5,24 @@ import com.dropbox.core.DbxRequestConfig
 import com.dropbox.core.oauth.DbxCredential
 import com.dropbox.core.v2.DbxClientV2
 import com.dropbox.core.v2.files.WriteMode
-import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
+import dev.rmaiun.flowtypes.{ FLog, Flow }
 import dev.rmaiun.soos.helpers.ConfigProvider.Config
 import io.chrisdavenport.log4cats.Logger
 
 import java.io.ByteArrayInputStream
 
-case class DumpExporter[F[_]: MonadThrowable: Logger: Sync](dataManager: DumpDataManager[F], cfg: Config) {
+case class DumpExporter[F[_]: MonadThrowable: Logger: Sync](zipDataProvider: ZipDataProvider[F], cfg: Config) {
 
-  def exportDump(): Flow[F, Unit] =
-    for {
-      zipBytes <- dataManager.exportArchive
+  def exportDump(): Flow[F, Unit] = {
+    val exportEffect = for {
+      _        <- FLog.info("Dump export started")
+      zipBytes <- zipDataProvider.exportArchive
       _        <- transferDump(zipBytes)
+      _        <- FLog.info("Dump export successfully finished")
     } yield ()
+    exportEffect.leftFlatMap(err => FLog.error(err))
+  }
 
   private def transferDump(zipData: Array[Byte]): Flow[F, Unit] = {
     val delayed = Sync[F].delay {
@@ -29,8 +33,8 @@ case class DumpExporter[F[_]: MonadThrowable: Logger: Sync](dataManager: DumpDat
           "",
           1L,
           cfg.archive.token,
-          cfg.archive.key1,
-          cfg.archive.key2
+          cfg.archive.key,
+          cfg.archive.secret
         )
       )
       client
@@ -41,4 +45,10 @@ case class DumpExporter[F[_]: MonadThrowable: Logger: Sync](dataManager: DumpDat
     }
     Flow.effect(delayed).map(_ => ())
   }
+}
+object DumpExporter {
+  def apply[F[_]](implicit ev: DumpExporter[F]): DumpExporter[F] = ev
+
+  def impl[F[_]: MonadThrowable: Logger: Sync](zipDataProvider: ZipDataProvider[F], cfg: Config): DumpExporter[F] =
+    new DumpExporter[F](zipDataProvider, cfg)
 }

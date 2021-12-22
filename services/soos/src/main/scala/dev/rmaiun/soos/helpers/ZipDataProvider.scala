@@ -3,13 +3,13 @@ package dev.rmaiun.soos.helpers
 import cats.Monad
 import cats.data.NonEmptyList
 import cats.effect.Sync
-import cats.syntax.foldable._
+import cats.syntax.traverse._
 import dev.rmaiun.errorhandling.ThrowableOps._
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.soos.db.PageInfo
 import dev.rmaiun.soos.db.entities._
-import dev.rmaiun.soos.helpers.DumpDataManager._
+import dev.rmaiun.soos.helpers.ZipDataProvider._
 import dev.rmaiun.soos.repositories._
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
@@ -20,7 +20,7 @@ import io.circe.syntax._
 import java.io.ByteArrayOutputStream
 import java.util.zip.{ZipEntry, ZipOutputStream}
 
-case class DumpDataManager[F[_]: Monad: Sync](
+case class ZipDataProvider[F[_]: Monad: Sync](
   algorithmRepo: AlgorithmRepo[F],
   roleRepo: RoleRepo[F],
   realmRepo: RealmRepo[F],
@@ -46,16 +46,16 @@ case class DumpDataManager[F[_]: Monad: Sync](
       _          <- zipData("eloPoints.json", eloPoints.items)
       histories  <- gameRepo.listAllGameHistory(PageInfo(0, 1_000_000)).transact(xa).attemptSql.adaptError
       _          <- zipData("gameHistory.json", histories.items)
-      _          <- Flow.effect(Sync[F].delay(zos.closeEntry()))
+      _          <- Flow.effect(Sync[F].delay(zos.close()))
     } yield bos.toByteArray
   }
 
   private def zipUsers(realms: List[Realm])(implicit zos: ZipOutputStream): Flow[F, Unit] =
     realms
       .map(r => userRepo.listAll(r.name).transact(xa).attemptSql.adaptError)
-      .zipWithIndex
-      .map(data => data._1.flatMap(users => zipData(s"users_${data._2}.json", users)))
-      .sequence_
+      .sequence
+      .map(_.flatten)
+      .flatMap(userList => zipData(s"users.json", userList))
 
   private def zipSeasons(realms: List[Realm])(implicit zos: ZipOutputStream): Flow[F, Unit] = {
     val findSeasons =
@@ -81,7 +81,7 @@ case class DumpDataManager[F[_]: Monad: Sync](
   }
 }
 
-object DumpDataManager {
+object ZipDataProvider {
   lazy implicit val AlgorithmEncoder: Encoder[Algorithm]     = deriveEncoder[Algorithm]
   lazy implicit val RoleEncoder: Encoder[Role]               = deriveEncoder[Role]
   lazy implicit val RealmEncoder: Encoder[Realm]             = deriveEncoder[Realm]
@@ -89,4 +89,17 @@ object DumpDataManager {
   lazy implicit val UsersEncoder: Encoder[User]              = deriveEncoder[User]
   lazy implicit val GameHistoryEncoder: Encoder[GameHistory] = deriveEncoder[GameHistory]
   lazy implicit val EloPointsEncoder: Encoder[EloPoints]     = deriveEncoder[EloPoints]
+
+  def apply[F[_]](implicit ev: ZipDataProvider[F]): ZipDataProvider[F] = ev
+
+  def impl[F[_]: Monad: Sync](
+    algorithmRepo: AlgorithmRepo[F],
+    roleRepo: RoleRepo[F],
+    realmRepo: RealmRepo[F],
+    gameRepo: GameRepo[F],
+    seasonRepo: SeasonRepo[F],
+    userRepo: UserRepo[F],
+    xa: HikariTransactor[F]
+  ): ZipDataProvider[F] =
+    new ZipDataProvider[F](algorithmRepo, roleRepo, realmRepo, gameRepo, seasonRepo, userRepo, xa)
 }
