@@ -1,9 +1,9 @@
 package dev.rmaiun.soos.helpers
 
+import cats.Monad
 import cats.data.NonEmptyList
 import cats.effect.Sync
 import cats.syntax.foldable._
-import cats.{ Applicative, Monad }
 import dev.rmaiun.errorhandling.ThrowableOps._
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
@@ -18,8 +18,7 @@ import io.circe.generic.semiauto.deriveEncoder
 import io.circe.syntax._
 
 import java.io.ByteArrayOutputStream
-import java.util.zip.{ ZipEntry, ZipOutputStream }
-import scala.util.Try
+import java.util.zip.{ZipEntry, ZipOutputStream}
 
 case class DumpDataManager[F[_]: Monad: Sync](
   algorithmRepo: AlgorithmRepo[F],
@@ -70,16 +69,16 @@ case class DumpDataManager[F[_]: Monad: Sync](
   private def zipData[T](name: String, data: List[T])(implicit
     zos: ZipOutputStream,
     encoder: Encoder[T]
-  ): Flow[F, Unit] =
-    Flow
-      .fromEither(Try {
-        val e     = new ZipEntry(name)
-        val bytes = data.asJson.noSpaces.getBytes
-        zos.putNextEntry(e)
-        zos.write(bytes)
-        zos.closeEntry()
-      }.toEither)(implicitly[Applicative[F]])
-      .map(_ => ())
+  ): Flow[F, Unit] = {
+    val syncEffect = Sync[F].delay {
+      val e     = new ZipEntry(name)
+      val bytes = data.asJson.noSpaces.getBytes
+      zos.putNextEntry(e)
+      zos.write(bytes)
+      zos.closeEntry()
+    }
+    Flow.effect(syncEffect)
+  }
 }
 
 object DumpDataManager {
