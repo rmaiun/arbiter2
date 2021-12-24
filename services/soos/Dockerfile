@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk-alpine
+FROM openjdk:11.0-jdk-slim
 MAINTAINER @RMaiun
 VOLUME /tmp
 COPY target/scala-2.13/*.jar soos.jar
