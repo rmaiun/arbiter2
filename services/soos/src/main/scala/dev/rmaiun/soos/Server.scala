@@ -29,9 +29,9 @@ object Server {
     M: Monad[F]
   ): Stream[F, Unit] = {
     val cronScheduler: Scheduler[F, CronExpr] = Cron4sScheduler.systemDefault[F]
-    val evenSeconds                           = Cron.unsafeParse("0 0 20 ? * *")
+    val cronTick                           = Cron.unsafeParse("0 0 20 ? * *")
     new ScheduledStreams(cronScheduler)
-      .awakeEvery(evenSeconds)
+      .awakeEvery(cronTick)
       .evalTap(_ => exporter.exportDump().value)
   }
 
