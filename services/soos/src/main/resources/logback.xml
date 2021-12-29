@@ -7,7 +7,7 @@
          support ANSI color codes by default. -->
     <withJansi>false</withJansi>
     <encoder>
-      <pattern>[%thread] %highlight(%-5level) %cyan(%logger{15}) - %msg %n</pattern>
+      <pattern>%d{HH:mm:ss.SSS} [%thread] %highlight(%-5level) %cyan(%logger{15}) - %msg %n</pattern>
     </encoder>
   </appender>
   <root level="INFO">
