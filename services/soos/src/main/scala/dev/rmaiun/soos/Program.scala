@@ -1,10 +1,10 @@
 package dev.rmaiun.soos
 
 import cats.Monad
-import cats.effect.{ConcurrentEffect, ContextShift, Timer}
+import cats.effect.{ ConcurrentEffect, ContextShift, Timer }
 import dev.rmaiun.serverauth.middleware.Arbiter2Middleware
-import dev.rmaiun.soos.helpers.{ConfigProvider, DumpExporter, TransactorProvider, ZipDataProvider}
-import dev.rmaiun.soos.managers.{GameManager, RealmManager, SeasonManager, UserManager}
+import dev.rmaiun.soos.helpers.{ ConfigProvider, DumpExporter, TransactorProvider, ZipDataProvider }
+import dev.rmaiun.soos.managers.{ GameManager, RealmManager, SeasonManager, UserManager }
 import dev.rmaiun.soos.repositories._
 import dev.rmaiun.soos.routes.SoosRoutes
 import dev.rmaiun.soos.services._
@@ -13,10 +13,10 @@ import org.http4s.HttpApp
 import org.http4s.implicits.http4sKleisliResponseSyntaxOptionT
 import org.http4s.server.Router
 
-object Module {
-  case class Module[F[_]](httpApp: HttpApp[F], dumpExporter: DumpExporter[F])
+case class Program[F[_]](httpApp: HttpApp[F], dumpExporter: DumpExporter[F])
+object Program {
   def initHttpApp[F[_]: ConcurrentEffect: Monad: Logger](
-  )(implicit cfg: ConfigProvider.Config, T: Timer[F], C: ContextShift[F]): Module[F] = {
+  )(implicit cfg: ConfigProvider.Config, T: Timer[F], C: ContextShift[F]): Program[F] = {
     lazy val transactor = TransactorProvider.hikariTransactor(cfg)
 
     lazy val algorithmRepo: AlgorithmRepo[F] = AlgorithmRepo.impl
@@ -58,7 +58,7 @@ object Module {
       "/games/eloPoints" -> eloPointsHttpApp,
       "/archive"         -> archiveHttpApp
     )
-    Module(
+    Program(
       Arbiter2Middleware(routes, cfg.server.tokens.split(":").toList).orNotFound,
       dumpExporter
     )

@@ -16,21 +16,21 @@ import org.http4s.client.Client
 import org.http4s.server.Router
 
 import scala.collection.immutable.Queue
-case class Module[F[_]](
+case class Program[F[_]](
   httpApp: HttpApp[F],
   persistHandler: CommandHandler[F],
   queryHandler: CommandHandler[F],
   rlPublisher: RateLimitedPublisher[F],
   queryPublisher: SeasonResultsTrigger[F]
 )
-object Module {
+object Program {
   type RateLimitQueue[F[_]] = Ref[F, Queue[AmqpMessage[String]]]
 
   def initHttpApp[F[_]: ConcurrentEffect: Monad: Logger](
     client: Client[F],
     amqpStructures: AmqpStructures[F],
     messagesRef: RateLimitQueue[F]
-  )(implicit cfg: Config, T: Timer[F], C: ContextShift[F]): Module[F] = {
+  )(implicit cfg: Config, T: Timer[F], C: ContextShift[F]): Program[F] = {
 
     lazy val arbiterClient        = ArbiterClient.impl(client)
     lazy val eloPointsCalculator  = EloPointsCalculator.impl(arbiterClient)
@@ -65,6 +65,6 @@ object Module {
     // query publisher
     lazy val seasonResultsTrigger = SeasonResultsTrigger.impl(arbiterClient, amqpStructures.botInPublisher)
     // module
-    Module(httpApp, persistenceCmdHandler, queryCmdHandler, rateLimitedPublisher, seasonResultsTrigger)
+    Program(httpApp, persistenceCmdHandler, queryCmdHandler, rateLimitedPublisher, seasonResultsTrigger)
   }
 }

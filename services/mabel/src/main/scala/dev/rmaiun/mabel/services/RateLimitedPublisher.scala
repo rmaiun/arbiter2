@@ -4,7 +4,7 @@ import cats.syntax.foldable._
 import dev.profunktor.fs2rabbit.model.AmqpMessage
 import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
 import dev.rmaiun.flowtypes.{ FLog, Flow }
-import dev.rmaiun.mabel.Module.RateLimitQueue
+import dev.rmaiun.mabel.Program.RateLimitQueue
 import dev.rmaiun.mabel.dtos.AmqpStructures.AmqpPublisher
 import io.chrisdavenport.log4cats.Logger
 

@@ -39,7 +39,7 @@ object Server {
     for {
       //general
       client <- BlazeClientBuilder[F](global).withMaxWaitQueueLimit(1000).stream
-      module  = Module.initHttpApp()
+      module  = Program.initHttpApp()
       // With Middlewares in place
       finalHttpApp = Logger.httpApp(logHeaders = true, logBody = false)(module.httpApp)
       exitCode <- BlazeServerBuilder[F](clientEC)
