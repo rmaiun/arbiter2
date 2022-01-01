@@ -52,7 +52,7 @@ class SeasonResultPostProcessor[F[_]: Monad: Logger](
       case SeasonReady(season) =>
         for {
           messages <- prepareStatsData(season)
-          _        <- FLog.info(s"Prepared ${messages.size} with season results")
+          _        <- FLog.info(s"Prepared ${messages.size} messages with season results")
           _        <- sendMessages(messages)
           _        <- FLog.info("Messages were successfully sent")
           season   <- arbiterClient.notifySeason(season)

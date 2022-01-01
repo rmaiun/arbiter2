@@ -1,7 +1,7 @@
 package dev.rmaiun.mabel.processors
 
 import cats.effect.IO
-import dev.rmaiun.common.DateFormatter
+import dev.rmaiun.common.{ DateFormatter, SeasonHelper }
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.mabel.commands.LastGamesCmd
 import dev.rmaiun.mabel.dtos.BotRequest
@@ -33,13 +33,13 @@ class ListGamesProcessorSuite
     val r     = res.fold(_ => fail(), x => x)
     r.value.error should be(false)
     r.value.botResponse.result should include("Last 10 games")
-    r.value.botResponse.result should include("No games found for season S4|2021")
+    r.value.botResponse.result should include(s"No games found for season ${SeasonHelper.currentSeason}")
   }
 
   it should "should work correctly for [0 < games < 10]" in {
     when(arbiterClient.listGameHistory(any(), any()))
       .thenReturn(Flow.pure(ListGameHistoryDtoOut(prepareGameHistoryList(4))))
-    val dto   = LastGamesCmd(Some("S4|2021"))
+    val dto   = LastGamesCmd(Some(SeasonHelper.currentSeason))
     val input = BotRequest("lastGames", 1234, 4444, "testuser", Some(LastGamesCmd.LastGamesCmdEncoder(dto)))
     val res   = processor.process(input).value.unsafeRunSync()
     val r     = res.fold(_ => fail(), x => x)
@@ -68,7 +68,16 @@ class ListGamesProcessorSuite
     val now = DateFormatter.now
     (0 until qty)
       .map(a =>
-        StoredGameHistoryDto("testRealm", "S1|2020", s"a$a", "b", "c", "d", shutout = false, now.plusSeconds(a))
+        StoredGameHistoryDto(
+          "testRealm",
+          SeasonHelper.currentSeason,
+          s"a$a",
+          "b",
+          "c",
+          "d",
+          shutout = false,
+          now.plusSeconds(a)
+        )
       )
       .toList
   }
