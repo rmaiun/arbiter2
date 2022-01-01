@@ -99,9 +99,9 @@ class SeasonResultPostProcessor[F[_]: Monad: Logger](
 
   private def ratingMessage(ps: PlayerStats, pos: Int): String =
     s"""Your achievements:
-       |Position in rating - #$pos
-       |Win Rate - ${ps.score}%
-       |Played games - ${ps.games}
+       |Position in rating: #${pos + 1}
+       |Win Rate: ${ps.score}%
+       |Played games: ${ps.games}
        |👍👍👍""".stripMargin
 
   private def nonRatingMessage(us: UnrankedStats): String =
@@ -117,7 +117,7 @@ class SeasonResultPostProcessor[F[_]: Monad: Logger](
     val playersInSeason = stats.playersRating.length + stats.unrankedStats.length
     s"""Congrats!
        |Season ${stats.season} is successfully finished.
-       |Our winner - ${stats.playersRating.headOption.fold("n/a")(pr => pr.surname.capitalize)}
+       |Our winner: ${stats.playersRating.headOption.fold("n/a")(pr => pr.surname.capitalize)}
        |$playersInSeason players played ${stats.gamesPlayed} games in total.""".stripMargin
   }
 
