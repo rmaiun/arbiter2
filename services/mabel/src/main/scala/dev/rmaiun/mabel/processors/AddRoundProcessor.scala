@@ -10,7 +10,7 @@ import dev.rmaiun.mabel.dtos.CmdType._
 import dev.rmaiun.mabel.dtos.EloRatingDto.{ CalculatedPoints, EloPlayers, UserCalculatedPoints }
 import dev.rmaiun.mabel.dtos.{ BotRequest, Definition, ProcessorResponse }
 import dev.rmaiun.mabel.services.{ ArbiterClient, EloPointsCalculator }
-import dev.rmaiun.mabel.utils.Constants.{ PREFIX, SUFFIX }
+import dev.rmaiun.mabel.utils.Constants._
 import dev.rmaiun.mabel.utils.{ Constants, IdGen }
 import dev.rmaiun.protocol.http.GameDtoSet._
 import dev.rmaiun.protocol.http.UserDtoSet.FindUserDtoOut
@@ -40,7 +40,7 @@ case class AddRoundProcessor[F[_]: Monad: Logger](
     }
 
   private def formatMessage(id: Long, realm: String): String =
-    s"$PREFIX New game was stored with id $id for realm $realm $SUFFIX"
+    s"New game was stored with id $id for realm $realm".toBotMsg
 
   private def storeHistory(dto: AddRoundCmd): Flow[F, AddGameHistoryDtoOut] = {
     val ghDto = GameHistoryDtoIn(

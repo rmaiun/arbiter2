@@ -10,4 +10,5 @@ object Errors extends ErrorInfo {
   case class ArbiterClientError(msg: String) extends RuntimeException(msg)
 
   case class UserIsNotAuthorized(cause: Throwable) extends RuntimeException("User is not authorized", cause)
+  case class NotEnoughRights(msg: String)          extends RuntimeException(msg)
 }

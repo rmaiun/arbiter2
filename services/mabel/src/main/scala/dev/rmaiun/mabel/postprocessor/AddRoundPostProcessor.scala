@@ -6,7 +6,7 @@ import dev.rmaiun.mabel.commands.AddRoundCmd
 import dev.rmaiun.mabel.dtos.CmdType.ADD_ROUND_CMD
 import dev.rmaiun.mabel.dtos.{ BotRequest, BotResponse, Definition }
 import dev.rmaiun.mabel.services.{ ArbiterClient, PublisherProxy }
-import dev.rmaiun.mabel.utils.Constants.{ PREFIX, SUFFIX }
+import dev.rmaiun.mabel.utils.Constants._
 import dev.rmaiun.mabel.utils.IdGen
 import dev.rmaiun.protocol.http.UserDtoSet.UserRoleData
 import io.chrisdavenport.log4cats.Logger
@@ -47,9 +47,9 @@ case class AddRoundPostProcessor[F[_]: MonadThrowable: Logger](
       s"""Round 
          |${cmd.w1.capitalize}/${cmd.w2.capitalize} vs ${cmd.l1.capitalize}/${cmd.l2.capitalize} $shutout
          |was stored
-         """.stripMargin
+         """.stripMargin.toBotMsg
     admins
-      .map(d => BotResponse(d.tid.getOrElse(0), IdGen.msgId, PREFIX + msg + SUFFIX))
+      .map(d => BotResponse(d.tid.getOrElse(0), IdGen.msgId, msg))
       .map(response => cmdPublisher.publishToBot(response))
       .sequence_
   }
@@ -63,7 +63,7 @@ case class AddRoundPostProcessor[F[_]: MonadThrowable: Logger](
 
   private def createOutput(opponents: String, win: Boolean): String = {
     val action = if (win) "win" else "lose"
-    s"$PREFIX Your $action against $opponents was successfully stored $SUFFIX"
+    s"Your $action against $opponents was successfully stored".toBotMsg
   }
 }
 object AddRoundPostProcessor {

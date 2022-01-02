@@ -27,7 +27,7 @@ class ShortSeasonStatsProcessor[F[_]: Monad](ac: ArbiterClient[F]) extends Proce
 
   private def message(data: SeasonShortStats): String =
     if (data.gamesPlayed == 0) {
-      s"$PREFIX No games found for season ${data.season} $SUFFIX"
+      s"No games found for season ${data.season}".toBotMsg
     } else {
       val ratings = if (data.playersRating.isEmpty) {
         "Nobody played more than 20 games"
@@ -43,21 +43,20 @@ class ShortSeasonStatsProcessor[F[_]: Monad](ac: ArbiterClient[F]) extends Proce
         .map(s => s"${s.player.capitalize}: ${s.games} in row")
         .getOrElse(DEFAULT_RESULT)
       val separator = "-" * 30
-      PREFIX ++ s"""Season: ${data.season}
-                   |Games played: ${data.gamesPlayed}
-                   |Season ends in: ${data.daysToSeasonEnd} days
-                   |$separator
-                   |Rating:
-                   |$ratings
-                   |${formatUnrankedPlayers(separator, data)}
-                   |$separator
-                   |Best streak:
-                   |$bestStreak
-                   |$separator
-                   |Worst streak
-                   |$worstStreak
-                   |$SUFFIX
-                   |""".stripMargin
+      s"""Season: ${data.season}
+         |Games played: ${data.gamesPlayed}
+         |Season ends in: ${data.daysToSeasonEnd} days
+         |$separator
+         |Rating:
+         |$ratings
+         |${formatUnrankedPlayers(separator, data)}
+         |$separator
+         |Best streak:
+         |$bestStreak
+         |$separator
+         |Worst streak
+         |$worstStreak
+         |""".stripMargin.toBotMsg
     }
 
   private def formatUnrankedPlayers(separator: String, data: SeasonShortStats): String =

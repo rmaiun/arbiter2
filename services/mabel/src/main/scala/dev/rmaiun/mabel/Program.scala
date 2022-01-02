@@ -5,7 +5,12 @@ import cats.effect.concurrent.Ref
 import cats.effect.{ ConcurrentEffect, ContextShift, Timer }
 import dev.profunktor.fs2rabbit.model.AmqpMessage
 import dev.rmaiun.mabel.dtos.{ AmqpStructures, CmdType }
-import dev.rmaiun.mabel.postprocessor.{ AddPlayerPostProcessor, AddRoundPostProcessor, SeasonResultPostProcessor }
+import dev.rmaiun.mabel.postprocessor.{
+  AddPlayerPostProcessor,
+  AddRoundPostProcessor,
+  BroadcastMessagePostProcessor,
+  SeasonResultPostProcessor
+}
 import dev.rmaiun.mabel.processors._
 import dev.rmaiun.mabel.routes.SysRoutes
 import dev.rmaiun.mabel.services.ConfigProvider.Config
@@ -44,13 +49,15 @@ object Program {
       ShortSeasonStatsProcessor.impl(arbiterClient),
       EloRatingProcessor.impl(arbiterClient),
       LastGamesProcessor.impl(arbiterClient),
+      BroadcastMessageProcessor.impl(arbiterClient),
       ForwardProcessor.impl
     )
     // post processors
     lazy val postProcessors = List(
       AddPlayerPostProcessor.impl(arbiterClient, publisherProxy),
       AddRoundPostProcessor.impl(arbiterClient, publisherProxy),
-      SeasonResultPostProcessor.impl(arbiterClient, publisherProxy, cfg.app)
+      SeasonResultPostProcessor.impl(arbiterClient, publisherProxy, cfg.app),
+      BroadcastMessagePostProcessor.impl(arbiterClient, publisherProxy)
     )
     lazy val persistenceCmdHandler =
       CommandHandler.impl(CmdType.Persistence)(arbiterClient, processors, postProcessors, publisherProxy)

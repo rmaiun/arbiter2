@@ -5,9 +5,9 @@ import dev.rmaiun.common.SeasonHelper
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.commands.LastGamesCmd
 import dev.rmaiun.mabel.dtos.CmdType.LAST_GAMES_CMD
-import dev.rmaiun.mabel.dtos.{ BotRequest, BotResponse, Definition, ProcessorResponse }
+import dev.rmaiun.mabel.dtos._
 import dev.rmaiun.mabel.services.ArbiterClient
-import dev.rmaiun.mabel.utils.Constants.{ LINE_SEPARATOR, PREFIX, SUFFIX }
+import dev.rmaiun.mabel.utils.Constants.{ LINE_SEPARATOR, _ }
 import dev.rmaiun.mabel.utils.{ Constants, IdGen }
 import dev.rmaiun.protocol.http.GameDtoSet.StoredGameHistoryDto
 import io.chrisdavenport.log4cats.Logger
@@ -46,11 +46,9 @@ case class LastGamesProcessor[F[_]: Monad: Logger](arbiterClient: ArbiterClient[
           .mkString(LINE_SEPARATOR)
     }
     val separator = "-" * 30
-    PREFIX +
-      s"""Last 10 games
-         |$separator
-         |$result
-         |$SUFFIX""".stripMargin
+    s"""Last 10 games
+       |$separator
+       |$result""".stripMargin.toBotMsg
   }
 
   private def formatRound(dto: StoredGameHistoryDto): String = {

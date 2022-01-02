@@ -1,4 +1,4 @@
-const axios = require('axios').default
+// const axios = require('axios').default
 const { RabbitClient } = require('./rabbit-client')
 
 const startData = `
@@ -127,6 +127,15 @@ class CmdHandlers {
     await this._rc.publishPersist(this._dtoIn('addPlayer', ctx, data))
   }
 
+  async broadcastMessage (ctx, testMode) {
+    const text = ctx.message.text.replace('/bc ', '').replace('/bct ', '')
+    const data = {
+      text,
+      testMode,
+      moderatorTid: ctx.message.from.id
+    }
+    await this._rc.publishPersist(this._dtoIn('broadcastMessage', ctx, data))
+  }
   // async _loadFile (uri, method) {
   //   const response = await axios({
   //     url: uri,

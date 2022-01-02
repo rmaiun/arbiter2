@@ -1,6 +1,5 @@
 'use strict'
 const amqp = require('amqplib')
-const inputChannel = 'input_q'
 const outputChannel = 'output_q'
 
 class RabbitClient {

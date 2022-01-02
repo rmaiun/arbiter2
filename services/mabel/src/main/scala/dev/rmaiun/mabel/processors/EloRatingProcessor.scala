@@ -2,9 +2,9 @@ package dev.rmaiun.mabel.processors
 import cats.Monad
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.dtos.CmdType._
-import dev.rmaiun.mabel.dtos.{BotRequest, Definition, ProcessorResponse}
+import dev.rmaiun.mabel.dtos.{ BotRequest, Definition, ProcessorResponse }
 import dev.rmaiun.mabel.services.ArbiterClient
-import dev.rmaiun.mabel.utils.Constants.{LINE_SEPARATOR, PREFIX, SUFFIX}
+import dev.rmaiun.mabel.utils.Constants.{ LINE_SEPARATOR, _ }
 import dev.rmaiun.mabel.utils.IdGen
 import dev.rmaiun.protocol.http.GameDtoSet.ListEloPointsDtoOut
 import io.chrisdavenport.log4cats.Logger
@@ -23,12 +23,13 @@ case class EloRatingProcessor[F[_]: Monad](ac: ArbiterClient[F]) extends Process
         .filter(_.gamesPlayed >= 30)
         .sortBy(-_.value)
         .zipWithIndex
-        .map(e => s"${e._2 + 1}. ${e._1.user.capitalize} ${e._1.value}")
-        .mkString(LINE_SEPARATOR)
-      val msg = PREFIX + s"""Global Rating:
-                            |$separator
-                            |$playersRating
-                            |$SUFFIX""".stripMargin
+        .map(e => s"${e._2 + 1}. ${e._1.user.capitalize} ${e._1.value}") match {
+        case Nil         => "Rating is not formed yet"
+        case players @ _ => players.mkString(LINE_SEPARATOR)
+      }
+      val msg = s"""Global Rating:
+                   |$separator
+                   |$playersRating""".stripMargin.toBotMsg
       Some(ProcessorResponse.ok(input.chatId, IdGen.msgId, msg))
     }
 

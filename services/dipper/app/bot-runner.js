@@ -21,7 +21,8 @@ class BotRunner {
 
     this._bot.command('/add', (ctx) => CmdHandlers.addRoundCmdHandler(ctx))
     this._bot.command('/register', (ctx) => CmdHandlers.addPlayerCmdHandler(ctx))
-    this._bot.command('/dump', (ctx) => CmdHandlers.loadDumpCmdHandler(ctx))
+    this._bot.command('/bc', (ctx) => CmdHandlers.broadcastMessage(ctx, false))
+    this._bot.command('/bct', (ctx) => CmdHandlers.broadcastMessage(ctx, true))
 
     this._bot.hears('Last Games \uD83D\uDCCB', (ctx) => CmdHandlers.lastGamesCmdHandler(ctx, false))
     this._bot.hears('Season Stats \uD83D\uDCC8', (ctx) => CmdHandlers.statsCmdHandler(ctx, false))
@@ -31,6 +32,7 @@ class BotRunner {
 
     // this._bot.command('/xlsxReport', (ctx) => CmdHandlers.xlsxReportCmdHandler(ctx))
     // this._bot.command('/linkTid', (ctx) => CmdHandlers.linkTidCmdHandler(ctx, false))
+    // this._bot.command('/bc', (ctx) => CmdHandlers.loadDumpCmdHandler(ctx))
 
     await this._rc.initConsumer(this._bot)
     return this._bot
