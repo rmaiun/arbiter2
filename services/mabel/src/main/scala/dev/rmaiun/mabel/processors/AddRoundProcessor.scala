@@ -1,24 +1,26 @@
 package dev.rmaiun.mabel.processors
 
 import cats.Monad
-import dev.rmaiun.common.{ DateFormatter, SeasonHelper }
+import dev.rmaiun.common.{DateFormatter, SeasonHelper}
 import dev.rmaiun.flowtypes.FLog
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.commands.AddRoundCmd
 import dev.rmaiun.mabel.commands.AddRoundCmd._
 import dev.rmaiun.mabel.dtos.CmdType._
-import dev.rmaiun.mabel.dtos.EloRatingDto.{ CalculatedPoints, EloPlayers, UserCalculatedPoints }
-import dev.rmaiun.mabel.dtos.{ BotRequest, Definition, ProcessorResponse }
-import dev.rmaiun.mabel.services.{ ArbiterClient, EloPointsCalculator }
+import dev.rmaiun.mabel.dtos.EloRatingDto.{CalculatedPoints, EloPlayers, UserCalculatedPoints}
+import dev.rmaiun.mabel.dtos.{BotRequest, Definition, ProcessorResponse}
+import dev.rmaiun.mabel.services.ReportCache.{EloRatingReport, SeasonReport}
+import dev.rmaiun.mabel.services.{ArbiterClient, EloPointsCalculator, ReportCache}
 import dev.rmaiun.mabel.utils.Constants._
-import dev.rmaiun.mabel.utils.{ Constants, IdGen }
+import dev.rmaiun.mabel.utils.{Constants, IdGen}
 import dev.rmaiun.protocol.http.GameDtoSet._
 import dev.rmaiun.protocol.http.UserDtoSet.FindUserDtoOut
 import io.chrisdavenport.log4cats.Logger
 
 case class AddRoundProcessor[F[_]: Monad: Logger](
   arbiterClient: ArbiterClient[F],
-  eloPointsCalculator: EloPointsCalculator[F]
+  eloPointsCalculator: EloPointsCalculator[F],
+  cache: ReportCache[F]
 ) extends Processor[F] {
 
   override def definition: Definition = Definition.persistence(ADD_ROUND_CMD)
@@ -32,8 +34,10 @@ case class AddRoundProcessor[F[_]: Monad: Logger](
       l2            <- loadPlayer(dto.l2)
       userPoints    <- calculateEloPoints(w1, w2, l1, l2)
       pointsIdList  <- storeEloPoints(userPoints, dto.moderator)
+      _             <- cache.evict(EloRatingReport)
       _             <- FLog.info(s"Elo points were successfully stored with id: ${pointsIdList.mkString("[", ",", "]")}")
       storedHistory <- storeHistory(dto)
+      _             <- cache.evict(SeasonReport)
     } yield {
       val msg = formatMessage(storedHistory.storedRound.id, storedHistory.storedRound.realm)
       Some(ProcessorResponse.ok(input.chatId, IdGen.msgId, msg))
@@ -85,6 +89,10 @@ case class AddRoundProcessor[F[_]: Monad: Logger](
 
 object AddRoundProcessor {
   def apply[F[_]](implicit ev: AddRoundProcessor[F]): AddRoundProcessor[F] = ev
-  def impl[F[_]: Monad: Logger](ac: ArbiterClient[F], epc: EloPointsCalculator[F]): AddRoundProcessor[F] =
-    new AddRoundProcessor[F](ac, epc)
+  def impl[F[_]: Monad: Logger](
+    ac: ArbiterClient[F],
+    epc: EloPointsCalculator[F],
+    cache: ReportCache[F]
+  ): AddRoundProcessor[F] =
+    new AddRoundProcessor[F](ac, epc, cache)
 }

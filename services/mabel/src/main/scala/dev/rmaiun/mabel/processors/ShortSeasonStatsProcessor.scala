@@ -6,17 +6,17 @@ import dev.rmaiun.mabel.commands.SeasonStatsCmd
 import dev.rmaiun.mabel.dtos.CmdType.SHORT_STATS_CMD
 import dev.rmaiun.mabel.dtos.stats.SeasonShortStats
 import dev.rmaiun.mabel.dtos.{ BotRequest, Definition, ProcessorResponse }
-import dev.rmaiun.mabel.services.{ ArbiterClient, StatsCalculator }
+import dev.rmaiun.mabel.services.ReportCache.SeasonReport
+import dev.rmaiun.mabel.services.{ ArbiterClient, ReportCache, StatsCalculator }
 import dev.rmaiun.mabel.utils.Constants._
 import dev.rmaiun.mabel.utils.IdGen
 import io.chrisdavenport.log4cats.Logger
 
-class ShortSeasonStatsProcessor[F[_]: Monad](ac: ArbiterClient[F]) extends Processor[F] {
-
+class ShortSeasonStatsProcessor[F[_]: Monad](ac: ArbiterClient[F], cache: ReportCache[F]) extends Processor[F] {
   override def definition: Definition = Definition.query(SHORT_STATS_CMD)
 
-  override def process(input: BotRequest): Flow[F, Option[ProcessorResponse]] =
-    for {
+  override def process(input: BotRequest): Flow[F, Option[ProcessorResponse]] = {
+    val action: Flow[F, Option[ProcessorResponse]] = for {
       dto         <- parseDto[SeasonStatsCmd](input.data)
       historyList <- ac.listGameHistory(defaultRealm, dto.season)
     } yield {
@@ -24,6 +24,8 @@ class ShortSeasonStatsProcessor[F[_]: Monad](ac: ArbiterClient[F]) extends Proce
       val msg   = message(stats)
       Some(ProcessorResponse.ok(input.chatId, IdGen.msgId, msg))
     }
+    cache.find(SeasonReport)(action.flatMap(pr => cache.put(SeasonReport, pr)))
+  }
 
   private def message(data: SeasonShortStats): String =
     if (data.gamesPlayed == 0) {
@@ -75,6 +77,6 @@ class ShortSeasonStatsProcessor[F[_]: Monad](ac: ArbiterClient[F]) extends Proce
 
 object ShortSeasonStatsProcessor {
   def apply[F[_]](implicit ev: ShortSeasonStatsProcessor[F]): ShortSeasonStatsProcessor[F] = ev
-  def impl[F[_]: Monad: Logger](ac: ArbiterClient[F]): ShortSeasonStatsProcessor[F] =
-    new ShortSeasonStatsProcessor[F](ac)
+  def impl[F[_]: Monad: Logger](ac: ArbiterClient[F], cache: ReportCache[F]): ShortSeasonStatsProcessor[F] =
+    new ShortSeasonStatsProcessor[F](ac, cache)
 }

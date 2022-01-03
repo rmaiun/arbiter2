@@ -3,18 +3,22 @@ import cats.Monad
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.dtos.CmdType._
 import dev.rmaiun.mabel.dtos.{ BotRequest, Definition, ProcessorResponse }
-import dev.rmaiun.mabel.services.ArbiterClient
+import dev.rmaiun.mabel.services.ReportCache.EloRatingReport
+import dev.rmaiun.mabel.services.{ ArbiterClient, ReportCache }
 import dev.rmaiun.mabel.utils.Constants.{ LINE_SEPARATOR, _ }
 import dev.rmaiun.mabel.utils.IdGen
 import dev.rmaiun.protocol.http.GameDtoSet.ListEloPointsDtoOut
 import io.chrisdavenport.log4cats.Logger
 
-case class EloRatingProcessor[F[_]: Monad](ac: ArbiterClient[F]) extends Processor[F] {
+case class EloRatingProcessor[F[_]: Monad](ac: ArbiterClient[F], cache: ReportCache[F]) extends Processor[F] {
 
   override def definition: Definition = Definition.query(ELO_RATING_CMD)
 
   override def process(input: BotRequest): Flow[F, Option[ProcessorResponse]] =
-    for {
+    cache.find(EloRatingReport)(processInternal(input))
+
+  private def processInternal(input: BotRequest): Flow[F, Option[ProcessorResponse]] = {
+    val action: Flow[F, Option[ProcessorResponse]] = for {
       users  <- loadActiveUsers
       points <- loadEloPoints(users)
     } yield {
@@ -32,6 +36,8 @@ case class EloRatingProcessor[F[_]: Monad](ac: ArbiterClient[F]) extends Process
                    |$playersRating""".stripMargin.toBotMsg
       Some(ProcessorResponse.ok(input.chatId, IdGen.msgId, msg))
     }
+    action.flatMap(pr => cache.put(EloRatingReport, pr))
+  }
 
   private def loadActiveUsers: Flow[F, List[String]] =
     ac.findAllPlayers.map(_.items.map(i => i.surname.toLowerCase))
@@ -42,6 +48,6 @@ case class EloRatingProcessor[F[_]: Monad](ac: ArbiterClient[F]) extends Process
 
 object EloRatingProcessor {
   def apply[F[_]](implicit ev: EloRatingProcessor[F]): EloRatingProcessor[F] = ev
-  def impl[F[_]: Monad: Logger](ac: ArbiterClient[F]): EloRatingProcessor[F] =
-    new EloRatingProcessor[F](ac)
+  def impl[F[_]: Monad: Logger](ac: ArbiterClient[F], cache: ReportCache[F]): EloRatingProcessor[F] =
+    new EloRatingProcessor[F](ac, cache)
 }

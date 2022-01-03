@@ -114,9 +114,11 @@ lazy val dependencies =
     val commons        = "commons-io"             % "commons-io"           % "2.11.0"
     val fs2rabbit      = "dev.profunktor"        %% "fs2-rabbit"           % "3.0.1"
     val fs2cron        = "eu.timepit"            %% "fs2-cron-cron4s"      % "0.5.0"
-    val scalatest      = "org.scalatest"         %% "scalatest"            % ScalaTestVersion % Test
-    val spec2Core      = "org.specs2"            %% "specs2-core"          % Specs2Version    % Test
-    val mockito        = "org.scalatestplus"     %% "mockito-3-4"          % "3.2.10.0"       % Test
+    val scaffeine      = "com.github.blemale"    %% "scaffeine"            % "5.1.2"
+
+    val scalatest = "org.scalatest"     %% "scalatest"   % ScalaTestVersion % Test
+    val spec2Core = "org.specs2"        %% "specs2-core" % Specs2Version    % Test
+    val mockito   = "org.scalatestplus" %% "mockito-3-4" % "3.2.10.0"       % Test
 
   }
 
@@ -190,6 +192,7 @@ lazy val mabelDependencies = Seq(
   dependencies.doobieCore,
   dependencies.doobieHikari,
   dependencies.fs2rabbit,
+  dependencies.scaffeine,
   dependencies.scalatest,
   dependencies.spec2Core,
   dependencies.mockito
