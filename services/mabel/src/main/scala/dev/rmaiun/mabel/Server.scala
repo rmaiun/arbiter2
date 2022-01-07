@@ -3,7 +3,7 @@ package dev.rmaiun.mabel
 import cats.Monad
 import cats.data.Kleisli
 import cats.effect.concurrent.Ref
-import cats.effect.{Blocker, ConcurrentEffect, ContextShift, Sync, Timer}
+import cats.effect.{ Blocker, ConcurrentEffect, ContextShift, Sync, Timer }
 import dev.profunktor.fs2rabbit.config.Fs2RabbitConfig
 import dev.profunktor.fs2rabbit.config.declaration._
 import dev.profunktor.fs2rabbit.interpreter.RabbitClient
@@ -25,7 +25,7 @@ import java.util.concurrent.Executors
 import scala.collection.immutable.Queue
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutorService}
+import scala.concurrent.{ ExecutionContext, ExecutionContextExecutorService }
 
 object Server {
   implicit def unsafeLogger[F[_]: Sync: Monad]: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]

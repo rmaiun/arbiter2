@@ -68,7 +68,6 @@ object UserRepo {
     ): ConnectionIO[Option[User]] =
       UserQueries.getActiveByNickname(nickname, active).option
 
-
     override def findByTid(tid: Long): ConnectionIO[Option[User]] =
       UserQueries.getByTid(tid).option
 

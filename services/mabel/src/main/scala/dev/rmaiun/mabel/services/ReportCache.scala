@@ -3,7 +3,7 @@ package dev.rmaiun.mabel.services
 import cats.effect.Sync
 import cats.syntax.apply._
 import dev.rmaiun.flowtypes.Flow.Flow
-import dev.rmaiun.flowtypes.{FLog, Flow}
+import dev.rmaiun.flowtypes.{ FLog, Flow }
 import dev.rmaiun.mabel.Program.InternalCache
 import dev.rmaiun.mabel.dtos.ProcessorResponse
 import dev.rmaiun.mabel.services.ReportCache.ReportKey

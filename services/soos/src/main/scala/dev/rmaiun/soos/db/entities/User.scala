@@ -1,6 +1,6 @@
 package dev.rmaiun.soos.db.entities
 
-import java.time.{ZoneOffset, ZonedDateTime}
+import java.time.{ ZoneOffset, ZonedDateTime }
 
 case class User(
   id: Long,

@@ -15,6 +15,6 @@ object SeasonDtoSet {
   )
   case class CreateSeasonDtoOut(id: Long, name: String)
 
-  case class NotifySeasonDtoIn(season: String, realm:String)
+  case class NotifySeasonDtoIn(season: String, realm: String)
   case class NotifySeasonDtoOut(season: String, notified: ZonedDateTime)
 }

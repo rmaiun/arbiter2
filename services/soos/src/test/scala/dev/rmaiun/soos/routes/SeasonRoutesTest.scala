@@ -2,13 +2,13 @@ package dev.rmaiun.soos.routes
 
 import cats.effect.IO
 import dev.rmaiun.flowtypes.Flow.Flow
-import dev.rmaiun.protocol.http.SeasonDtoSet.{NotifySeasonDtoIn, NotifySeasonDtoOut}
+import dev.rmaiun.protocol.http.SeasonDtoSet.{ NotifySeasonDtoIn, NotifySeasonDtoOut }
 import dev.rmaiun.protocol.http.codec.FullCodec._
-import dev.rmaiun.soos.db.entities.{Realm, Season}
-import dev.rmaiun.soos.utils.{Loggable, TestModule}
-import io.circe.{Decoder, Encoder}
+import dev.rmaiun.soos.db.entities.{ Realm, Season }
+import dev.rmaiun.soos.utils.{ Loggable, TestModule }
+import io.circe.{ Decoder, Encoder }
 import org.http4s.Method.GET
-import org.http4s.circe.{jsonEncoderOf, jsonOf}
+import org.http4s.circe.{ jsonEncoderOf, jsonOf }
 import org.http4s.implicits.http4sLiteralsSyntax
 import org.http4s._
 import org.scalatest.BeforeAndAfterEach
@@ -26,7 +26,7 @@ case class SeasonRoutesTest() extends AnyFlatSpec with Matchers with BeforeAndAf
 
   "season/notify" should "successfully handle request" in {
     val response = service.run(
-      Request(method = GET, uri = uri"/notify".withQueryParam("season","S1|1999").withQueryParam("realm", "test2"))
+      Request(method = GET, uri = uri"/notify".withQueryParam("season", "S1|1999").withQueryParam("realm", "test2"))
     )
     val data = response.map(r => r.as[NotifySeasonDtoOut]).unsafeRunSync.unsafeRunSync()
     data.season should be("S1|1999")

@@ -10,12 +10,12 @@ import dev.rmaiun.mabel.services.ConfigProvider.Config
 import dev.rmaiun.mabel.utils.Constants
 import dev.rmaiun.protocol.http.GameDtoSet._
 import dev.rmaiun.protocol.http.RealmDtoSet._
-import dev.rmaiun.protocol.http.SeasonDtoSet.{FindSeasonWithoutNotificationDtoOut, NotifySeasonDtoOut}
+import dev.rmaiun.protocol.http.SeasonDtoSet.{ FindSeasonWithoutNotificationDtoOut, NotifySeasonDtoOut }
 import dev.rmaiun.protocol.http.UserDtoSet._
 import dev.rmaiun.protocol.http.codec.FullCodec._
 import dev.rmaiun.serverauth.middleware.Arbiter2Middleware
-import io.circe.{Decoder, Encoder}
-import org.http4s.Method.{GET, POST}
+import io.circe.{ Decoder, Encoder }
+import org.http4s.Method.{ GET, POST }
 import org.http4s.Status.BadRequest
 import org.http4s._
 import org.http4s.circe._

@@ -8,7 +8,7 @@ class AppRuntimeException(
   val cause: Option[Throwable] = None
 ) extends RuntimeException {
 
-  def this(cause: Throwable)  = {
+  def this(cause: Throwable) = {
     this("externallyCaused", cause.getMessage, cause = Some(cause))
   }
 }

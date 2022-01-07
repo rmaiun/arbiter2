@@ -1,7 +1,5 @@
 name := "arbiter2"
-
 version := "0.1"
-
 scalaVersion := "2.13.6"
 
 lazy val common = (project in file("libs/common"))
@@ -83,15 +81,13 @@ lazy val mabel = (project in file("services/mabel"))
 
 lazy val dependencies =
   new {
-    val Http4sVersion          = "0.22.5"
-    val CirceVersion           = "0.13.0"
-    val LogbackVersion         = "1.2.3"
-    val MunitVersion           = "0.7.20"
-    val MunitCatsEffectVersion = "0.13.0"
-    val CatsCoreVersion        = "2.1.0"
-    val CatsEffectVersion      = "2.3.1"
-    val Specs2Version          = "4.10.0"
-    val ScalaTestVersion       = "3.2.2"
+    val Http4sVersion     = "0.22.5"
+    val CirceVersion      = "0.13.0"
+    val LogbackVersion    = "1.2.3"
+    val CatsCoreVersion   = "2.1.0"
+    val CatsEffectVersion = "2.3.1"
+    val Specs2Version     = "4.10.0"
+    val ScalaTestVersion  = "3.2.2"
 
     val catsCore       = "org.typelevel"         %% "cats-core"            % CatsCoreVersion
     val catsEffect     = "org.typelevel"         %% "cats-effect"          % CatsEffectVersion
@@ -104,7 +100,6 @@ lazy val dependencies =
     val circeOptics    = "io.circe"              %% "circe-optics"         % CirceVersion
     val logbackClassic = "ch.qos.logback"         % "logback-classic"      % LogbackVersion
     val log4cats       = "io.chrisdavenport"     %% "log4cats-slf4j"       % "1.1.1"
-    val svmSubs        = "org.scalameta"         %% "svm-subs"             % "20.2.0"
     val pureConfig     = "com.github.pureconfig" %% "pureconfig"           % "0.14.0"
     val mysql          = "mysql"                  % "mysql-connector-java" % "8.0.11"
     val doobieCore     = "org.tpolecat"          %% "doobie-core"          % "0.12.1"

@@ -18,7 +18,7 @@ import io.circe.generic.semiauto.deriveEncoder
 import io.circe.syntax._
 
 import java.io.ByteArrayOutputStream
-import java.util.zip.{ZipEntry, ZipOutputStream}
+import java.util.zip.{ ZipEntry, ZipOutputStream }
 
 case class ZipDataProvider[F[_]: Monad: Sync](
   algorithmRepo: AlgorithmRepo[F],

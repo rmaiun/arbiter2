@@ -13,7 +13,7 @@ case class AddRoundCmd(
   shutout: Boolean,
   moderator: Long,
   created: Option[ZonedDateTime] = None,
-  season: Option[String] =  None
+  season: Option[String] = None
 )
 
 object AddRoundCmd {

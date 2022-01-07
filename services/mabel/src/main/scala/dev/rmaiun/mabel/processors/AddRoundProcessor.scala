@@ -1,18 +1,18 @@
 package dev.rmaiun.mabel.processors
 
 import cats.Monad
-import dev.rmaiun.common.{DateFormatter, SeasonHelper}
+import dev.rmaiun.common.{ DateFormatter, SeasonHelper }
 import dev.rmaiun.flowtypes.FLog
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.commands.AddRoundCmd
 import dev.rmaiun.mabel.commands.AddRoundCmd._
 import dev.rmaiun.mabel.dtos.CmdType._
-import dev.rmaiun.mabel.dtos.EloRatingDto.{CalculatedPoints, EloPlayers, UserCalculatedPoints}
-import dev.rmaiun.mabel.dtos.{BotRequest, Definition, ProcessorResponse}
-import dev.rmaiun.mabel.services.ReportCache.{EloRatingReport, SeasonReport}
-import dev.rmaiun.mabel.services.{ArbiterClient, EloPointsCalculator, ReportCache}
+import dev.rmaiun.mabel.dtos.EloRatingDto.{ CalculatedPoints, EloPlayers, UserCalculatedPoints }
+import dev.rmaiun.mabel.dtos.{ BotRequest, Definition, ProcessorResponse }
+import dev.rmaiun.mabel.services.ReportCache.{ EloRatingReport, SeasonReport }
+import dev.rmaiun.mabel.services.{ ArbiterClient, EloPointsCalculator, ReportCache }
 import dev.rmaiun.mabel.utils.Constants._
-import dev.rmaiun.mabel.utils.{Constants, IdGen}
+import dev.rmaiun.mabel.utils.{ Constants, IdGen }
 import dev.rmaiun.protocol.http.GameDtoSet._
 import dev.rmaiun.protocol.http.UserDtoSet.FindUserDtoOut
 import io.chrisdavenport.log4cats.Logger

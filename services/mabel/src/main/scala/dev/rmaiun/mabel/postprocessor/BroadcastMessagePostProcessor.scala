@@ -5,8 +5,8 @@ import cats.syntax.foldable._
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.commands.BroadcastMessageCmd
 import dev.rmaiun.mabel.dtos.CmdType.BROADCAST_MSG_CMD
-import dev.rmaiun.mabel.dtos.{BotRequest, BotResponse, Definition}
-import dev.rmaiun.mabel.services.{ArbiterClient, PublisherProxy}
+import dev.rmaiun.mabel.dtos.{ BotRequest, BotResponse, Definition }
+import dev.rmaiun.mabel.services.{ ArbiterClient, PublisherProxy }
 import dev.rmaiun.mabel.utils.Constants._
 import dev.rmaiun.mabel.utils.IdGen
 import dev.rmaiun.protocol.http.UserDtoSet.UserDto

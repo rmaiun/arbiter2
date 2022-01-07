@@ -5,7 +5,7 @@ import cats.effect.Sync
 import dev.rmaiun.errorhandling.ThrowableOps._
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
-import dev.rmaiun.soos.db.entities.{User, UserRealmRole}
+import dev.rmaiun.soos.db.entities.{ User, UserRealmRole }
 import dev.rmaiun.soos.errors.UserErrors.UserNotFoundException
 import dev.rmaiun.soos.repositories.UserRepo
 import doobie.hikari.HikariTransactor
@@ -60,7 +60,7 @@ object UserService {
       userRepo.update(u).transact(xa).attemptSql.adaptError
 
     def assignToRealm(realmId: Long, userId: Long, roleId: Long, botUsage: Boolean = false): Flow[F, Int] =
-      userRepo.assignUserToRealm(UserRealmRole(realmId, userId, roleId,botUsage)).transact(xa).attemptSql.adaptError
+      userRepo.assignUserToRealm(UserRealmRole(realmId, userId, roleId, botUsage)).transact(xa).attemptSql.adaptError
 
     def checkAllPresent(realm: String, users: List[String]): Flow[F, Unit] =
       list(realm).flatMap { fromDb =>

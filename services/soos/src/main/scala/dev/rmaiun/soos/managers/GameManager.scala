@@ -5,7 +5,7 @@ import cats.effect.Sync
 import dev.rmaiun.common.DateFormatter
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.protocol.http.GameDtoSet._
-import dev.rmaiun.soos.db.entities.{EloPoints, GameHistory}
+import dev.rmaiun.soos.db.entities.{ EloPoints, GameHistory }
 import dev.rmaiun.soos.dtos.GameHistoryCriteria
 import dev.rmaiun.soos.services._
 import dev.rmaiun.soos.validations.GameValidationSet._
@@ -32,7 +32,7 @@ object GameManager {
         _      <- Validator.validateDto[F, AddGameHistoryDtoIn](dtoIn)
         users   = List(dtoIn.historyElement.w1, dtoIn.historyElement.w2, dtoIn.historyElement.l1, dtoIn.historyElement.l2)
         _      <- seasonService.checkAllUsersAreDifferent(users)
-        _      <- userRightsService.checkUserWritePermissions(dtoIn.historyElement.realm,dtoIn.moderatorTid)
+        _      <- userRightsService.checkUserWritePermissions(dtoIn.historyElement.realm, dtoIn.moderatorTid)
         realm  <- realmService.getByName(dtoIn.historyElement.realm)
         season <- seasonService.findSeason(dtoIn.historyElement.season, realm)
         w1     <- userService.findByInputType(Some(dtoIn.historyElement.w1.toLowerCase))

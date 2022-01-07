@@ -12,5 +12,5 @@ object CmdType {
   val ELO_RATING_CMD     = "eloRating"
   val LAST_GAMES_CMD     = "lastGames"
   val SEASON_RESULTS_CMD = "seasonResults"
-  val BROADCAST_MSG_CMD = "broadcastMessage"
+  val BROADCAST_MSG_CMD  = "broadcastMessage"
 }

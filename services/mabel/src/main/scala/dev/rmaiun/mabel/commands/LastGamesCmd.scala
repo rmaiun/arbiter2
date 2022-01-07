@@ -1,7 +1,7 @@
 package dev.rmaiun.mabel.commands
 
-import io.circe.{Decoder, Encoder}
-import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import io.circe.{ Decoder, Encoder }
+import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
 
 case class LastGamesCmd(season: Option[String] = None)
 object LastGamesCmd {

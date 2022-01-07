@@ -42,5 +42,5 @@ trait CustomValidationRules {
     failure = _ -> s"must be in range [$from, $to]"
   )
 
-  def realm: Validator[String] = sizeBetween(5,20)
+  def realm: Validator[String] = sizeBetween(5, 20)
 }
