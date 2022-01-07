@@ -1,20 +1,24 @@
 package dev.rmaiun.mabel.services
 
+import cats.effect.Sync
 import cats.syntax.foldable._
 import dev.profunktor.fs2rabbit.model.AmqpMessage
-import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
-import dev.rmaiun.flowtypes.{ FLog, Flow }
+import dev.rmaiun.flowtypes.Flow.{Flow, MonadThrowable}
+import dev.rmaiun.flowtypes.{FLog, Flow}
 import dev.rmaiun.mabel.Program.RateLimitQueue
 import dev.rmaiun.mabel.dtos.AmqpStructures.AmqpPublisher
-import io.chrisdavenport.log4cats.Logger
+import io.chrisdavenport.log4cats.SelfAwareStructuredLogger
+import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 
 import scala.annotation.tailrec
 import scala.collection.immutable.Queue
 
-case class RateLimitedPublisher[F[_]: MonadThrowable: Logger](
+case class RateLimitedPublisher[F[_]: MonadThrowable: Sync](
   rateLimitQueue: RateLimitQueue[F],
   publisher: AmqpPublisher[F]
 ) {
+  implicit val logger: SelfAwareStructuredLogger[F] = Slf4jLogger.getLoggerFromClass[F](getClass)
+
   def safePublish(): Flow[F, Unit] =
     for {
       accessed <- Flow.effect(rateLimitQueue.access)
@@ -51,7 +55,7 @@ case class RateLimitedPublisher[F[_]: MonadThrowable: Logger](
 
 object RateLimitedPublisher {
   def apply[F[_]](implicit ev: RateLimitedPublisher[F]): RateLimitedPublisher[F] = ev
-  def impl[F[_]: MonadThrowable: Logger](
+  def impl[F[_]: MonadThrowable: Sync](
     queue: RateLimitQueue[F],
     publisher: AmqpPublisher[F]
   ): RateLimitedPublisher[F] =

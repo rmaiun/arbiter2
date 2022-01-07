@@ -1,12 +1,11 @@
 package dev.rmaiun.soos.managers
 import cats.Monad
 import cats.effect.Sync
+import dev.rmaiun.flowtypes.Flow.Flow
+import dev.rmaiun.protocol.http.RealmDtoSet._
 import dev.rmaiun.soos.db.entities.Realm
 import dev.rmaiun.soos.helpers.DtoMapper.realmToDto
-import dev.rmaiun.soos.services.{AlgorithmService, RealmService, UserService}
-import dev.rmaiun.flowtypes.Flow.Flow
-import dev.rmaiun.protocol.http.RealmDtoSet.{GetRealmDtoIn, GetRealmDtoOut, RegisterRealmDtoIn, RegisterRealmDtoOut, UpdateRealmAlgorithmDtoIn, UpdateRealmAlgorithmDtoOut}
-import io.chrisdavenport.log4cats.Logger
+import dev.rmaiun.soos.services.{ AlgorithmService, RealmService, UserService }
 
 trait RealmManager[F[_]] {
   def registerRealm(dtoIn: RegisterRealmDtoIn): Flow[F, RegisterRealmDtoOut]
@@ -16,15 +15,16 @@ trait RealmManager[F[_]] {
 
 object RealmManager {
   def apply[F[_]](implicit ev: RealmManager[F]): RealmManager[F] = ev
-  def impl[F[_]: Monad: Logger: Sync](
+  def impl[F[_]: Monad: Sync](
     realmService: RealmService[F],
-    algorithmService: AlgorithmService[F], userService: UserService[F]
+    algorithmService: AlgorithmService[F],
+    userService: UserService[F]
   ): RealmManager[F] = new RealmManager[F] {
     override def registerRealm(dtoIn: RegisterRealmDtoIn): Flow[F, RegisterRealmDtoOut] =
       for {
         algorithm <- algorithmService.getAlgorithmByName(dtoIn.algorithm)
         stored    <- realmService.create(Realm(0, dtoIn.realmName, dtoIn.teamSize, algorithm.id))
-        _ <- userService.assignToRealm(stored.id, 1, 1)
+        _         <- userService.assignToRealm(stored.id, 1, 1)
       } yield RegisterRealmDtoOut(realmToDto(stored, Some(algorithm.value)))
 
     override def updateRealmAlgorithm(dtoIn: UpdateRealmAlgorithmDtoIn): Flow[F, UpdateRealmAlgorithmDtoOut] =

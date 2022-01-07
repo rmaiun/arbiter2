@@ -10,7 +10,6 @@ import dev.rmaiun.soos.errors.UserErrors.UserNotFoundException
 import dev.rmaiun.soos.repositories.UserRepo
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
-import io.chrisdavenport.log4cats.Logger
 
 trait UserService[F[_]] {
   def assignToRealm(realmId: Long, userId: Long, roleId: Long, botUsage: Boolean = false): Flow[F, Int]
@@ -24,7 +23,7 @@ trait UserService[F[_]] {
 
 object UserService {
   def apply[F[_]](implicit ev: UserService[F]): UserService[F] = ev
-  def impl[F[_]: Monad: Logger: Sync](
+  def impl[F[_]: Monad: Sync](
     xa: HikariTransactor[F],
     userRepo: UserRepo[F]
   ): UserService[F] = new UserService[F] {

@@ -8,11 +8,13 @@ import com.dropbox.core.v2.files.WriteMode
 import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
 import dev.rmaiun.flowtypes.{ FLog, Flow }
 import dev.rmaiun.soos.helpers.ConfigProvider.Config
-import io.chrisdavenport.log4cats.Logger
+import io.chrisdavenport.log4cats.SelfAwareStructuredLogger
+import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 
 import java.io.ByteArrayInputStream
 
-case class DumpExporter[F[_]: MonadThrowable: Logger: Sync](zipDataProvider: ZipDataProvider[F], cfg: Config) {
+case class DumpExporter[F[_]: MonadThrowable: Sync](zipDataProvider: ZipDataProvider[F], cfg: Config) {
+  implicit val logger: SelfAwareStructuredLogger[F] = Slf4jLogger.getLoggerFromClass[F](getClass)
 
   def exportDump(): Flow[F, Unit] = {
     val exportEffect = for {
@@ -49,6 +51,6 @@ case class DumpExporter[F[_]: MonadThrowable: Logger: Sync](zipDataProvider: Zip
 object DumpExporter {
   def apply[F[_]](implicit ev: DumpExporter[F]): DumpExporter[F] = ev
 
-  def impl[F[_]: MonadThrowable: Logger: Sync](zipDataProvider: ZipDataProvider[F], cfg: Config): DumpExporter[F] =
+  def impl[F[_]: MonadThrowable: Sync](zipDataProvider: ZipDataProvider[F], cfg: Config): DumpExporter[F] =
     new DumpExporter[F](zipDataProvider, cfg)
 }

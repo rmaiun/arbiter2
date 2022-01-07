@@ -10,19 +10,18 @@ import dev.rmaiun.mabel.services.ConfigProvider.Config
 import dev.rmaiun.mabel.utils.Constants
 import dev.rmaiun.protocol.http.GameDtoSet._
 import dev.rmaiun.protocol.http.RealmDtoSet._
-import dev.rmaiun.protocol.http.SeasonDtoSet.{ FindSeasonWithoutNotificationDtoOut, NotifySeasonDtoOut }
+import dev.rmaiun.protocol.http.SeasonDtoSet.{FindSeasonWithoutNotificationDtoOut, NotifySeasonDtoOut}
 import dev.rmaiun.protocol.http.UserDtoSet._
 import dev.rmaiun.protocol.http.codec.FullCodec._
 import dev.rmaiun.serverauth.middleware.Arbiter2Middleware
-import io.chrisdavenport.log4cats.Logger
-import io.circe.{ Decoder, Encoder }
-import org.http4s.Method.{ GET, POST }
+import io.circe.{Decoder, Encoder}
+import org.http4s.Method.{GET, POST}
 import org.http4s.Status.BadRequest
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.client.Client
 
-case class ArbiterClient[F[_]: Sync: Monad: Logger](client: Client[F])(implicit cfg: Config) {
+case class ArbiterClient[F[_]: Sync: Monad](client: Client[F])(implicit cfg: Config) {
   import ArbiterClient._
   implicit def circeJsonDecoder[A: Decoder]: EntityDecoder[F, A] = jsonOf[F, A]
   implicit def circeJsonEncoder[A: Encoder]: EntityEncoder[F, A] = jsonEncoderOf[F, A]
@@ -140,7 +139,7 @@ case class ArbiterClient[F[_]: Sync: Monad: Logger](client: Client[F])(implicit 
 
 object ArbiterClient {
   def apply[F[_]](implicit ev: ArbiterClient[F]): ArbiterClient[F] = ev
-  def impl[F[_]: Monad: Logger: Sync](c: Client[F])(implicit cfg: Config): ArbiterClient[F] =
+  def impl[F[_]: Monad: Sync](c: Client[F])(implicit cfg: Config): ArbiterClient[F] =
     new ArbiterClient[F](c)
 
   implicit class RichRequest[F[_]](r: Request[F]) {

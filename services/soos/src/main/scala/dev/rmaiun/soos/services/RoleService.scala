@@ -11,7 +11,6 @@ import dev.rmaiun.soos.errors.RoleErrors.RoleNotFoundRuntimeException
 import dev.rmaiun.soos.repositories.RoleRepo
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
-import io.chrisdavenport.log4cats.Logger
 
 trait RoleService[F[_]] {
   def saveRole(value: String, permission: Int): Flow[F, Role]
@@ -25,7 +24,7 @@ trait RoleService[F[_]] {
 object RoleService {
   def apply[F[_]](implicit ev: RoleService[F]): RoleService[F] = ev
 
-  def impl[F[_]: Monad: Logger: Sync](xa: HikariTransactor[F], roleRepo: RoleRepo[F]): RoleService[F] =
+  def impl[F[_]: Monad: Sync](xa: HikariTransactor[F], roleRepo: RoleRepo[F]): RoleService[F] =
     new RoleService[F] {
       override def saveRole(value: String, permission: Int): Flow[F, Role] =
         roleRepo.create(Role(0, value, permission)).transact(xa).attemptSql.adaptError

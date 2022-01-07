@@ -10,7 +10,6 @@ import dev.rmaiun.mabel.services.ReportCache.SeasonReport
 import dev.rmaiun.mabel.services.{ ArbiterClient, ReportCache, StatsCalculator }
 import dev.rmaiun.mabel.utils.Constants._
 import dev.rmaiun.mabel.utils.IdGen
-import io.chrisdavenport.log4cats.Logger
 
 class ShortSeasonStatsProcessor[F[_]: Monad](ac: ArbiterClient[F], cache: ReportCache[F]) extends Processor[F] {
   override def definition: Definition = Definition.query(SHORT_STATS_CMD)
@@ -77,6 +76,6 @@ class ShortSeasonStatsProcessor[F[_]: Monad](ac: ArbiterClient[F], cache: Report
 
 object ShortSeasonStatsProcessor {
   def apply[F[_]](implicit ev: ShortSeasonStatsProcessor[F]): ShortSeasonStatsProcessor[F] = ev
-  def impl[F[_]: Monad: Logger](ac: ArbiterClient[F], cache: ReportCache[F]): ShortSeasonStatsProcessor[F] =
+  def impl[F[_]: Monad](ac: ArbiterClient[F], cache: ReportCache[F]): ShortSeasonStatsProcessor[F] =
     new ShortSeasonStatsProcessor[F](ac, cache)
 }

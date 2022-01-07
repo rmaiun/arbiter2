@@ -1,12 +1,11 @@
 package dev.rmaiun.soos.services
 
 import cats.Monad
+import dev.rmaiun.flowtypes.Flow
+import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.soos.db.entities.Role
 import dev.rmaiun.soos.errors.UserErrors.{ NoWritePermissionForUserFoundException, UserNotAuthorizedException }
 import dev.rmaiun.soos.helpers.ConfigProvider.Config
-import dev.rmaiun.flowtypes.Flow
-import dev.rmaiun.flowtypes.Flow.Flow
-import io.chrisdavenport.log4cats.Logger
 
 trait UserRightsService[F[_]] {
   def checkUserWritePermissions(realm: String, userSurname: String): Flow[F, Unit]
@@ -17,7 +16,7 @@ trait UserRightsService[F[_]] {
 
 object UserRightsService {
   def apply[F[_]](implicit ev: UserRightsService[F]): UserRightsService[F] = ev
-  def impl[F[_]: Monad: Logger](
+  def impl[F[_]: Monad](
     userService: UserService[F],
     roleService: RoleService[F]
   )(implicit cfg: Config): UserRightsService[F] = new UserRightsService[F] {

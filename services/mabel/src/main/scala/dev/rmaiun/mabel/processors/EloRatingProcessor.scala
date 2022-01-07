@@ -8,7 +8,6 @@ import dev.rmaiun.mabel.services.{ ArbiterClient, ReportCache }
 import dev.rmaiun.mabel.utils.Constants.{ LINE_SEPARATOR, _ }
 import dev.rmaiun.mabel.utils.IdGen
 import dev.rmaiun.protocol.http.GameDtoSet.ListEloPointsDtoOut
-import io.chrisdavenport.log4cats.Logger
 
 case class EloRatingProcessor[F[_]: Monad](ac: ArbiterClient[F], cache: ReportCache[F]) extends Processor[F] {
 
@@ -48,6 +47,6 @@ case class EloRatingProcessor[F[_]: Monad](ac: ArbiterClient[F], cache: ReportCa
 
 object EloRatingProcessor {
   def apply[F[_]](implicit ev: EloRatingProcessor[F]): EloRatingProcessor[F] = ev
-  def impl[F[_]: Monad: Logger](ac: ArbiterClient[F], cache: ReportCache[F]): EloRatingProcessor[F] =
+  def impl[F[_]: Monad](ac: ArbiterClient[F], cache: ReportCache[F]): EloRatingProcessor[F] =
     new EloRatingProcessor[F](ac, cache)
 }

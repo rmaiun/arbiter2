@@ -10,9 +10,8 @@ import dev.rmaiun.mabel.services.ArbiterClient
 import dev.rmaiun.mabel.utils.Constants.{ LINE_SEPARATOR, _ }
 import dev.rmaiun.mabel.utils.{ Constants, IdGen }
 import dev.rmaiun.protocol.http.GameDtoSet.StoredGameHistoryDto
-import io.chrisdavenport.log4cats.Logger
 
-case class LastGamesProcessor[F[_]: Monad: Logger](arbiterClient: ArbiterClient[F]) extends Processor[F] {
+case class LastGamesProcessor[F[_]: Monad](arbiterClient: ArbiterClient[F]) extends Processor[F] {
 
   override def definition: Definition = Definition.query(LAST_GAMES_CMD)
 
@@ -61,6 +60,6 @@ case class LastGamesProcessor[F[_]: Monad: Logger](arbiterClient: ArbiterClient[
 
 object LastGamesProcessor {
   def apply[F[_]](implicit ev: LastGamesProcessor[F]): LastGamesProcessor[F] = ev
-  def impl[F[_]: Monad: Logger](ac: ArbiterClient[F]): LastGamesProcessor[F] =
+  def impl[F[_]: Monad](ac: ArbiterClient[F]): LastGamesProcessor[F] =
     new LastGamesProcessor[F](ac)
 }

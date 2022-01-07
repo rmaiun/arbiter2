@@ -1,5 +1,6 @@
 package dev.rmaiun.mabel.postprocessor
 
+import cats.effect.Sync
 import cats.syntax.foldable._
 import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
 import dev.rmaiun.mabel.commands.AddPlayerCmd
@@ -9,12 +10,15 @@ import dev.rmaiun.mabel.services.{ ArbiterClient, PublisherProxy }
 import dev.rmaiun.mabel.utils.Constants._
 import dev.rmaiun.mabel.utils.IdGen
 import dev.rmaiun.protocol.http.UserDtoSet.UserRoleData
-import io.chrisdavenport.log4cats.Logger
+import io.chrisdavenport.log4cats.SelfAwareStructuredLogger
+import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 
-case class AddPlayerPostProcessor[F[_]: MonadThrowable: Logger](
+case class AddPlayerPostProcessor[F[_]: MonadThrowable: Sync](
   arbiterClient: ArbiterClient[F],
   cmdPublisher: PublisherProxy[F]
 ) extends PostProcessor[F] {
+  implicit val logger: SelfAwareStructuredLogger[F] = Slf4jLogger.getLoggerFromClass[F](getClass)
+
   override def definition: Definition = Definition.internal(ADD_PLAYER_CMD)
 
   override def postProcess(input: BotRequest): Flow[F, Unit] =
@@ -45,7 +49,7 @@ case class AddPlayerPostProcessor[F[_]: MonadThrowable: Logger](
 
 object AddPlayerPostProcessor {
   def apply[F[_]](implicit ev: AddPlayerPostProcessor[F]): AddPlayerPostProcessor[F] = ev
-  def impl[F[_]: MonadThrowable: Logger](
+  def impl[F[_]: MonadThrowable: Sync](
     ac: ArbiterClient[F],
     cmdPublisher: PublisherProxy[F]
   ): AddPlayerPostProcessor[F] =

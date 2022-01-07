@@ -1,15 +1,19 @@
 package dev.rmaiun.mabel.services
 
+import cats.effect.Sync
 import cats.syntax.apply._
-import dev.profunktor.fs2rabbit.model.{ AmqpMessage, AmqpProperties }
-import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
-import dev.rmaiun.flowtypes.{ FLog, Flow }
+import dev.profunktor.fs2rabbit.model.{AmqpMessage, AmqpProperties}
+import dev.rmaiun.flowtypes.Flow.{Flow, MonadThrowable}
+import dev.rmaiun.flowtypes.{FLog, Flow}
 import dev.rmaiun.mabel.Program.RateLimitQueue
 import dev.rmaiun.mabel.dtos.BotResponse
 import dev.rmaiun.mabel.services.ConfigProvider.Config
-import io.chrisdavenport.log4cats.Logger
+import io.chrisdavenport.log4cats.SelfAwareStructuredLogger
+import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 
-case class PublisherProxy[F[_]: MonadThrowable: Logger](cfg: Config, queue: RateLimitQueue[F]) {
+case class PublisherProxy[F[_]: MonadThrowable: Sync](cfg: Config, queue: RateLimitQueue[F]) {
+  implicit val logger: SelfAwareStructuredLogger[F] = Slf4jLogger.getLoggerFromClass[F](getClass)
+
   def publishToBot(botResponse: BotResponse)(implicit customCheck: Boolean = true): Flow[F, Unit] =
     if (cfg.app.notifications && botResponse.chatId != -1 && customCheck) {
       val output = BotResponse.BotResponseEncoder(botResponse).toString()
@@ -26,6 +30,6 @@ case class PublisherProxy[F[_]: MonadThrowable: Logger](cfg: Config, queue: Rate
 }
 object PublisherProxy {
   def apply[F[_]](implicit ev: PublisherProxy[F]): PublisherProxy[F] = ev
-  def impl[F[_]: MonadThrowable: Logger](cfg: Config, queue: RateLimitQueue[F]): PublisherProxy[F] =
+  def impl[F[_]: MonadThrowable: Sync](cfg: Config, queue: RateLimitQueue[F]): PublisherProxy[F] =
     new PublisherProxy[F](cfg, queue)
 }
