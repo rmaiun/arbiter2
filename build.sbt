@@ -211,3 +211,11 @@ lazy val settings = Seq(
   addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % "0.3.1"),
   testFrameworks += new TestFramework("munit.Framework")
 )
+lazy val formatAll = taskKey[Unit]("Run scala formatter for all projects")
+
+formatAll := {
+  (mabel / Compile / scalafmt).value
+  (mabel / Test / scalafmt).value
+  (soos / Compile / scalafmt).value
+  (soos / Test / scalafmt).value
+}
