@@ -15,7 +15,6 @@ import dev.rmaiun.mabel.postprocessor.{
 import dev.rmaiun.mabel.processors._
 import dev.rmaiun.mabel.routes.SysRoutes
 import dev.rmaiun.mabel.services.ConfigProvider.Config
-import dev.rmaiun.mabel.services.ReportCache.ReportKey
 import dev.rmaiun.mabel.services._
 import io.chrisdavenport.log4cats.Logger
 import org.http4s.HttpApp
@@ -33,7 +32,7 @@ case class Program[F[_]](
 )
 object Program {
   type RateLimitQueue[F[_]] = Ref[F, Queue[AmqpMessage[String]]]
-  type InternalCache        = Cache[ReportKey, ProcessorResponse]
+  type InternalCache        = Cache[String, ProcessorResponse]
 
   def initHttpApp[F[_]: ConcurrentEffect: Monad: Logger](
     client: Client[F],
@@ -45,7 +44,7 @@ object Program {
       .recordStats()
       .expireAfterWrite(1 hour)
       .maximumSize(500)
-      .build[ReportKey, ProcessorResponse]()
+      .build[String, ProcessorResponse]()
     lazy val reportCache          = ReportCache.impl(cache)
     lazy val arbiterClient        = ArbiterClient.impl(client)
     lazy val eloPointsCalculator  = EloPointsCalculator.impl(arbiterClient)
