@@ -21,6 +21,7 @@ class RabbitClient {
 
   async publish (data) {
     const prodChannel = await this._getProdChannel()
+    console.log(`received cmd ${data.cmd} from chatId ${data.chatId} tid ${data.tid} at ${new Date().toTimeString()}`)
     // await prodChannel.assertExchange("bot_exchange", "Topic")
     return prodChannel.publish('bot_exchange', 'bot_in_rk', Buffer.from(JSON.stringify(data)), null)
   }
@@ -40,17 +41,11 @@ class RabbitClient {
         const data = JSON.parse(msg.content)
         try {
           console.log(`Sending message to telegram chatId: ${data.chatId}, msgId: ${data.msgId}`)
-          await bot.telegram.sendMessage(data.chatId, data.result,
-            {
-              parse_mode: 'Markdown',
-              reply_markup: JSON.stringify({
-                keyboard: [
-                  [{ text: 'Season Stats \uD83D\uDCC8' }, { text: 'Elo Rating \uD83D\uDDFF' }],
-                  [{ text: 'Last Games \uD83D\uDCCB' }]
-                ],
-                resize_keyboard: true
-              })
+          await bot.telegram.sendMessage(data.chatId, data.result, {
+            parse_mode: 'Markdown', reply_markup: JSON.stringify({
+              keyboard: [[{ text: 'Season Stats \uD83D\uDCC8' }, { text: 'Elo Rating \uD83D\uDDFF' }], [{ text: 'Last Games \uD83D\uDCCB' }]], resize_keyboard: true
             })
+          })
           consChannel.ack(msg)
         } catch (e) {
           console.error(e)

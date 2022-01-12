@@ -49,7 +49,6 @@ class CmdHandlers {
   }
 
   async statsCmdHandler (ctx, isCmd = true) {
-    console.log(`received ${new Date().toTimeString()}`)
     let season
     if (isCmd) {
       const args = this._parseArgs(ctx.message.text)

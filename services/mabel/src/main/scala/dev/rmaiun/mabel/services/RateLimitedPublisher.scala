@@ -4,8 +4,8 @@ import cats.effect.Sync
 import cats.syntax.apply._
 import cats.syntax.foldable._
 import dev.profunktor.fs2rabbit.model.AmqpMessage
-import dev.rmaiun.flowtypes.Flow.{Flow, MonadThrowable}
-import dev.rmaiun.flowtypes.{FLog, Flow}
+import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
+import dev.rmaiun.flowtypes.{ FLog, Flow }
 import dev.rmaiun.mabel.Program.RateLimitQueue
 import dev.rmaiun.mabel.dtos.AmqpStructures.AmqpPublisher
 import io.chrisdavenport.log4cats.SelfAwareStructuredLogger
@@ -33,7 +33,7 @@ case class RateLimitedPublisher[F[_]: MonadThrowable: Sync](
     msgList match {
       case Nil => Flow.unit
       case _ =>
-        msgList.map(m => FLog.info(s"Sending message to BOT: ${m.payload}") *> Flow.effect(publisher(m))).sequence_
+        msgList.map(m => FLog.debug(s"Sending message to BOT: ${m.payload}") *> Flow.effect(publisher(m))).sequence_
     }
 
   private def dequeueMessages(
