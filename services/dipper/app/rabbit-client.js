@@ -39,6 +39,7 @@ class RabbitClient {
       if (msg !== null) {
         const data = JSON.parse(msg.content)
         try {
+          console.log(`Sending message to telegram chatId: ${data.chatId}, msgId: ${data.msgId}`)
           await bot.telegram.sendMessage(data.chatId, data.result,
             {
               parse_mode: 'Markdown',
