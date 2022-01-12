@@ -6,7 +6,6 @@ import dev.rmaiun.mabel.commands.SeasonStatsCmd
 import dev.rmaiun.mabel.dtos.CmdType.SHORT_STATS_CMD
 import dev.rmaiun.mabel.dtos.stats.SeasonShortStats
 import dev.rmaiun.mabel.dtos.{ BotRequest, Definition, ProcessorResponse }
-import dev.rmaiun.mabel.services.ReportCache.SeasonReport
 import dev.rmaiun.mabel.services.{ ArbiterClient, ReportCache, StatsCalculator }
 import dev.rmaiun.mabel.utils.Constants._
 import dev.rmaiun.mabel.utils.IdGen
@@ -14,8 +13,8 @@ import dev.rmaiun.mabel.utils.IdGen
 class ShortSeasonStatsProcessor[F[_]: Monad](ac: ArbiterClient[F], cache: ReportCache[F]) extends Processor[F] {
   override def definition: Definition = Definition.query(SHORT_STATS_CMD)
 
-  override def process(input: BotRequest): Flow[F, Option[ProcessorResponse]] = {
-    val action: Flow[F, Option[ProcessorResponse]] = for {
+  override def process(input: BotRequest): Flow[F, Option[ProcessorResponse]] =
+    for {
       dto         <- parseDto[SeasonStatsCmd](input.data)
       historyList <- ac.listGameHistory(defaultRealm, dto.season)
     } yield {
@@ -23,8 +22,7 @@ class ShortSeasonStatsProcessor[F[_]: Monad](ac: ArbiterClient[F], cache: Report
       val msg   = message(stats)
       Some(ProcessorResponse.ok(input.chatId, IdGen.msgId, msg))
     }
-    cache.find(SeasonReport)(action.flatMap(pr => cache.put(SeasonReport, pr)))
-  }
+  //    cache.find(SeasonReport)(action.flatMap(pr => cache.put(SeasonReport, pr)))
 
   private def message(data: SeasonShortStats): String =
     if (data.gamesPlayed == 0) {
