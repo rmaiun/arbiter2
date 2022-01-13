@@ -3,7 +3,7 @@ package dev.rmaiun.mabel
 import cats.Monad
 import cats.effect.concurrent.Ref
 import cats.effect.{ ConcurrentEffect, ContextShift, Timer }
-import com.github.blemale.scaffeine.{ Cache, Scaffeine }
+import com.google.common.cache.CacheBuilder
 import dev.profunktor.fs2rabbit.model.AmqpMessage
 import dev.rmaiun.mabel.dtos.{ AmqpStructures, CmdType, ProcessorResponse }
 import dev.rmaiun.mabel.postprocessor.{
@@ -20,9 +20,10 @@ import io.chrisdavenport.log4cats.Logger
 import org.http4s.HttpApp
 import org.http4s.client.Client
 import org.http4s.server.Router
+import scalacache.Entry
+import scalacache.guava.GuavaCache
 
 import scala.collection.immutable.Queue
-import scala.concurrent.duration.DurationInt
 case class Program[F[_]](
   httpApp: HttpApp[F],
   persistHandler: CommandHandler[F],
@@ -32,7 +33,7 @@ case class Program[F[_]](
 )
 object Program {
   type RateLimitQueue[F[_]] = Ref[F, Queue[AmqpMessage[String]]]
-  type InternalCache        = Cache[String, ProcessorResponse]
+  type InternalCache        = GuavaCache[ProcessorResponse]
 
   def initHttpApp[F[_]: ConcurrentEffect: Monad: Logger](
     client: Client[F],
@@ -40,16 +41,16 @@ object Program {
     messagesRef: RateLimitQueue[F]
   )(implicit cfg: Config, T: Timer[F], C: ContextShift[F]): Program[F] = {
 
-    lazy val cache: InternalCache = Scaffeine()
-      .recordStats()
-      .expireAfterWrite(1 hour)
-      .maximumSize(500)
-      .build[String, ProcessorResponse]()
-    lazy val reportCache          = ReportCache.impl(cache)
-    lazy val arbiterClient        = ArbiterClient.impl(client)
-    lazy val eloPointsCalculator  = EloPointsCalculator.impl(arbiterClient)
-    lazy val publisherProxy       = PublisherProxy.impl(cfg, messagesRef)
-    lazy val rateLimitedPublisher = RateLimitedPublisher.impl(messagesRef, amqpStructures.botOutPublisher)
+    lazy val underlyingGuavaCache = CacheBuilder
+      .newBuilder()
+      .maximumSize(10000L)
+      .build[String, Entry[ProcessorResponse]]
+    val cache: GuavaCache[ProcessorResponse] = GuavaCache(underlyingGuavaCache)
+    lazy val reportCache                     = ReportCache.impl(cache)
+    lazy val arbiterClient                   = ArbiterClient.impl(client)
+    lazy val eloPointsCalculator             = EloPointsCalculator.impl(arbiterClient)
+    lazy val publisherProxy                  = PublisherProxy.impl(cfg, messagesRef)
+    lazy val rateLimitedPublisher            = RateLimitedPublisher.impl(messagesRef, amqpStructures.botOutPublisher)
 
     // processors
     lazy val processors = List(

@@ -33,8 +33,9 @@ case class ReportCache[F[_]: Sync](cache: InternalCache) {
       case None => Flow.pure(v)
     }
 
-  def get(k: ReportKey): Flow[F, Option[ProcessorResponse]] =
-    Flow.effect(Sync[F].delay(cache.getIfPresent(k.show)))
+  def get(k: ReportKey): Flow[F, Option[ProcessorResponse]] = {
+    cache.doGet()
+  }
 
   def evict(k: ReportKey): Flow[F, Unit] =
     FLog.info(s"Evicting cache for key ${k.toString}") *>
