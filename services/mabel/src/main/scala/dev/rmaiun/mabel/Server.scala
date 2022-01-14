@@ -18,7 +18,6 @@ import io.chrisdavenport.log4cats.SelfAwareStructuredLogger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.blaze.server.BlazeServerBuilder
-import org.http4s.server.middleware.Logger
 
 import java.nio.charset.Charset
 import java.util.concurrent.Executors
@@ -26,7 +25,6 @@ import scala.collection.immutable.Queue
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ ExecutionContext, ExecutionContextExecutorService }
-
 object Server {
   implicit def unsafeLogger[F[_]: Sync: Monad]: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]
 
@@ -109,7 +107,7 @@ object Server {
       module   = Program.initHttpApp(client, structs, ref)
 
       // With Middlewares in place
-      finalHttpApp = Logger.httpApp(logHeaders = true, logBody = true)(module.httpApp)
+      finalHttpApp = org.http4s.server.middleware.Logger.httpApp(logHeaders = true, logBody = true)(module.httpApp)
       exitCode <-
         BlazeServerBuilder[F](clientEC)
           .bindHttp(cfg.server.port, cfg.server.host)

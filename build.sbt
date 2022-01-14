@@ -89,28 +89,29 @@ lazy val dependencies =
     val Specs2Version     = "4.10.0"
     val ScalaTestVersion  = "3.2.2"
 
-    val catsCore        = "org.typelevel"         %% "cats-core"            % CatsCoreVersion
-    val catsEffect      = "org.typelevel"         %% "cats-effect"          % CatsEffectVersion
-    val blazeServer     = "org.http4s"            %% "http4s-blaze-server"  % Http4sVersion
-    val blazeClient     = "org.http4s"            %% "http4s-blaze-client"  % Http4sVersion
-    val http4sCirce     = "org.http4s"            %% "http4s-circe"         % Http4sVersion
-    val httpDsl         = "org.http4s"            %% "http4s-dsl"           % Http4sVersion
-    val circeGeneric    = "io.circe"              %% "circe-generic"        % CirceVersion
-    val circeParser     = "io.circe"              %% "circe-parser"         % CirceVersion
-    val circeOptics     = "io.circe"              %% "circe-optics"         % CirceVersion
-    val logbackClassic  = "ch.qos.logback"         % "logback-classic"      % LogbackVersion
-    val log4cats        = "io.chrisdavenport"     %% "log4cats-slf4j"       % "1.1.1"
-    val pureConfig      = "com.github.pureconfig" %% "pureconfig"           % "0.14.0"
-    val mysql           = "mysql"                  % "mysql-connector-java" % "8.0.11"
-    val doobieCore      = "org.tpolecat"          %% "doobie-core"          % "0.12.1"
-    val doobieHikari    = "org.tpolecat"          %% "doobie-hikari"        % "0.12.1"
-    val accordCore      = "com.wix"               %% "accord-core"          % "0.7.6"
-    val dropboxSdk      = "com.dropbox.core"       % "dropbox-core-sdk"     % "5.1.0"
-    val commons         = "commons-io"             % "commons-io"           % "2.11.0"
-    val fs2rabbit       = "dev.profunktor"        %% "fs2-rabbit"           % "3.0.1"
-    val fs2cron         = "eu.timepit"            %% "fs2-cron-cron4s"      % "0.5.0"
-    val scalaCacheCore  = "com.github.cb372"      %% "scalacache-core"      % "0.28.0"
-    val scalaCacheGuava = "com.github.cb372"      %% "scalacache-guava"     % "0.28.0"
+    val catsCore             = "org.typelevel"         %% "cats-core"              % CatsCoreVersion
+    val catsEffect           = "org.typelevel"         %% "cats-effect"            % CatsEffectVersion
+    val blazeServer          = "org.http4s"            %% "http4s-blaze-server"    % Http4sVersion
+    val blazeClient          = "org.http4s"            %% "http4s-blaze-client"    % Http4sVersion
+    val http4sCirce          = "org.http4s"            %% "http4s-circe"           % Http4sVersion
+    val httpDsl              = "org.http4s"            %% "http4s-dsl"             % Http4sVersion
+    val circeGeneric         = "io.circe"              %% "circe-generic"          % CirceVersion
+    val circeParser          = "io.circe"              %% "circe-parser"           % CirceVersion
+    val circeOptics          = "io.circe"              %% "circe-optics"           % CirceVersion
+    val logbackClassic       = "ch.qos.logback"         % "logback-classic"        % LogbackVersion
+    val log4cats             = "io.chrisdavenport"     %% "log4cats-slf4j"         % "1.1.1"
+    val pureConfig           = "com.github.pureconfig" %% "pureconfig"             % "0.14.0"
+    val mysql                = "mysql"                  % "mysql-connector-java"   % "8.0.11"
+    val doobieCore           = "org.tpolecat"          %% "doobie-core"            % "0.12.1"
+    val doobieHikari         = "org.tpolecat"          %% "doobie-hikari"          % "0.12.1"
+    val accordCore           = "com.wix"               %% "accord-core"            % "0.7.6"
+    val dropboxSdk           = "com.dropbox.core"       % "dropbox-core-sdk"       % "5.1.0"
+    val commons              = "commons-io"             % "commons-io"             % "2.11.0"
+    val fs2rabbit            = "dev.profunktor"        %% "fs2-rabbit"             % "3.0.1"
+    val fs2cron              = "eu.timepit"            %% "fs2-cron-cron4s"        % "0.5.0"
+    val scalaCacheCore       = "com.github.cb372"      %% "scalacache-core"        % "0.28.0"
+    val scalaCacheGuava      = "com.github.cb372"      %% "scalacache-guava"       % "0.28.0"
+    val scalaCacheCatsEffect = "com.github.cb372"      %% "scalacache-cats-effect" % "0.28.0"
 
     val scalatest = "org.scalatest"     %% "scalatest"   % ScalaTestVersion % Test
     val spec2Core = "org.specs2"        %% "specs2-core" % Specs2Version    % Test
@@ -190,6 +191,7 @@ lazy val mabelDependencies = Seq(
   dependencies.fs2rabbit,
   dependencies.scalaCacheCore,
   dependencies.scalaCacheGuava,
+  dependencies.scalaCacheCatsEffect,
   dependencies.scalatest,
   dependencies.spec2Core,
   dependencies.mockito
