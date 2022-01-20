@@ -4,7 +4,7 @@ import pureconfig.ConfigSource
 import pureconfig.generic.auto._
 
 object ConfigProvider {
-
+  val expectedCfg = "ARBITER_CFG"
   case class DbConfig(host: String, port: Int, database: String, username: String, password: String)
 
   case class ServerConfig(host: String, port: Int, tokens: String)
@@ -25,6 +25,11 @@ object ConfigProvider {
 
   case class Config(db: DbConfig, server: ServerConfig, app: AppConfig, archive: ArchiveCfg)
 
-  def provideConfig: Config =
-    ConfigSource.default.loadOrThrow[Config]
+  def provideConfig(args: List[String] = Nil): Config =
+    if (args.isEmpty || !args.exists(_.startsWith(expectedCfg))) {
+      ConfigSource.default.loadOrThrow[Config]
+    } else {
+      val cfg = args.find(_.startsWith(expectedCfg)).fold("")(arg => arg.replace(s"$expectedCfg=", ""))
+      ConfigSource.string(cfg).withFallback(ConfigSource.default).loadOrThrow[Config]
+    }
 }

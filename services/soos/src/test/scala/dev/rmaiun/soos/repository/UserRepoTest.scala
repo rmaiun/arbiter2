@@ -18,7 +18,7 @@ class UserRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach wit
 
   implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContexts.synchronous)
 
-  private val config: Config = ConfigProvider.provideConfig
+  private val config: Config = ConfigProvider.provideConfig()
   private val transactor: HikariTransactor[IO] =
     TransactorProvider.hikariTransactor[IO](config, allowPublicKeyRetrieval = true)
   private val realmRepo: RealmRepo[IO] = RealmRepo.impl[IO]

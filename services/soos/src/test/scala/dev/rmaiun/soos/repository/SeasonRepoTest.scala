@@ -19,7 +19,7 @@ class SeasonRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach w
 
   implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContexts.synchronous)
 
-  private val config: Config = ConfigProvider.provideConfig
+  private val config: Config = ConfigProvider.provideConfig()
   private val transactor: HikariTransactor[IO] =
     TransactorProvider.hikariTransactor[IO](config, allowPublicKeyRetrieval = true)
   private val seasonRepo: SeasonRepo[IO] = SeasonRepo.impl[IO]

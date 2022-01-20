@@ -21,7 +21,6 @@ object Server {
   implicit def unsafeLogger[F[_]: Sync]: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]
 
   val clientEC: ExecutionContextExecutorService = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool())
-  implicit val cfg: ConfigProvider.Config       = ConfigProvider.provideConfig
 
   def dumpCronEvaluation[F[_]: ConcurrentEffect](exporter: DumpExporter[F])(implicit
     T: Timer[F],
@@ -35,7 +34,10 @@ object Server {
       .evalTap(_ => exporter.exportDump().value)
   }
 
-  def stream[F[_]: ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F], M: Monad[F]): Stream[F, Nothing] = {
+  def stream[F[_]: ConcurrentEffect](
+    args: List[String]
+  )(implicit T: Timer[F], C: ContextShift[F], M: Monad[F]): Stream[F, Nothing] = {
+    implicit val cfg: ConfigProvider.Config = ConfigProvider.provideConfig(args)
     for {
       //general
       client <- BlazeClientBuilder[F](global).withMaxWaitQueueLimit(1000).stream

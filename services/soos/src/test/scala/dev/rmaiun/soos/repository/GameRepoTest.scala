@@ -21,7 +21,7 @@ import org.scalatest.{ BeforeAndAfterEach, OptionValues }
 class GameRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach with OptionValues {
   implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContexts.synchronous)
 
-  private val config: Config = ConfigProvider.provideConfig
+  private val config: Config = ConfigProvider.provideConfig()
   private val transactor: HikariTransactor[IO] =
     TransactorProvider.hikariTransactor[IO](config, allowPublicKeyRetrieval = true)
   private val algRepo    = AlgorithmRepo.impl[IO]

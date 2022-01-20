@@ -4,6 +4,7 @@ import pureconfig.ConfigSource
 import pureconfig.generic.auto._
 
 object ConfigProvider {
+  val expectedCfg = "ARBITER_CFG"
 
   case class BrokerCfg(host: String, virtualHost: String, port: Int, username: String, password: String, timeout: Int)
   case class IntegrationCfg(soos: ServiceCfg)
@@ -17,6 +18,11 @@ object ConfigProvider {
     server: ServerCfg
   )
 
-  def provideConfig: Config =
-    ConfigSource.default.loadOrThrow[Config]
+  def provideConfig(args: List[String] = Nil): Config =
+    if (args.isEmpty || !args.exists(_.startsWith(expectedCfg))) {
+      ConfigSource.default.loadOrThrow[Config]
+    } else {
+      val cfg = args.find(_.startsWith(expectedCfg)).fold("")(arg => arg.replace(s"$expectedCfg=", ""))
+      ConfigSource.string(cfg).withFallback(ConfigSource.default).loadOrThrow[Config]
+    }
 }

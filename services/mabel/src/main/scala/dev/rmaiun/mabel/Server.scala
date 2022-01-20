@@ -95,8 +95,10 @@ object Server {
     } yield AmqpStructures(inPub, outPub, y, x)
   }
 
-  def stream[F[_]: ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F], M: Monad[F]): Stream[F, Nothing] = {
-    implicit val cfg: Config = ConfigProvider.provideConfig
+  def stream[F[_]: ConcurrentEffect](
+    args: List[String]
+  )(implicit T: Timer[F], C: ContextShift[F], M: Monad[F]): Stream[F, Nothing] = {
+    implicit val cfg: Config = ConfigProvider.provideConfig(args)
     for {
       _       <- Stream.eval(FLog.info(cfg.toString).value)
       client  <- BlazeClientBuilder[F](global).withMaxWaitQueueLimit(1000).stream

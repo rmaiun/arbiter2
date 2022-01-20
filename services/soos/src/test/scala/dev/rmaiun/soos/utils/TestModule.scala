@@ -13,7 +13,7 @@ object TestModule extends Loggable {
   implicit val cs: ContextShift[IO] = IO.contextShift(
     ExecutionContext.fromExecutor(Executors.newSingleThreadExecutor())
   )
-  implicit val cfg: ConfigProvider.Config   = ConfigProvider.provideConfig
+  implicit val cfg: ConfigProvider.Config   = ConfigProvider.provideConfig()
   lazy val transactor: HikariTransactor[IO] = TransactorProvider.hikariTransactor[IO](cfg)
 
   lazy val algorithmRepo: AlgorithmRepo[IO] = AlgorithmRepo.impl[IO]
