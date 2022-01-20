@@ -34,10 +34,10 @@ case class AddRoundProcessor[F[_]: Monad: Logger](
       l2            <- loadPlayer(dto.l2)
       userPoints    <- calculateEloPoints(w1, w2, l1, l2)
       pointsIdList  <- storeEloPoints(userPoints, dto.moderator)
-      _             <- cache.evict(EloRatingReport)
+//      _             <- cache.evict(EloRatingReport)
       _             <- FLog.info(s"Elo points were successfully stored with id: ${pointsIdList.mkString("[", ",", "]")}")
       storedHistory <- storeHistory(dto)
-      _             <- cache.evict(SeasonReport)
+//      _             <- cache.evict(SeasonReport)
     } yield {
       val msg = formatMessage(storedHistory.storedRound.id, storedHistory.storedRound.realm)
       Some(ProcessorResponse.ok(input.chatId, IdGen.msgId, msg))

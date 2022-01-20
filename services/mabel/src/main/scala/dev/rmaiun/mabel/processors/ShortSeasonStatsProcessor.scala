@@ -15,7 +15,7 @@ class ShortSeasonStatsProcessor[F[_]: Monad](ac: ArbiterClient[F], cache: Report
   override def definition: Definition = Definition.query(SHORT_STATS_CMD)
 
   override def process(input: BotRequest): Flow[F, Option[ProcessorResponse]] = {
-    val action = for {
+    for {
       dto         <- parseDto[SeasonStatsCmd](input.data)
       historyList <- ac.listGameHistory(defaultRealm, dto.season)
     } yield {
@@ -23,7 +23,7 @@ class ShortSeasonStatsProcessor[F[_]: Monad](ac: ArbiterClient[F], cache: Report
       val msg   = message(stats)
       Some(ProcessorResponse.ok(input.chatId, IdGen.msgId, msg))
     }
-    cache.find(SeasonReport)(action.flatMap(pr => cache.put(SeasonReport, pr)))
+//    cache.find(SeasonReport)(action.flatMap(pr => cache.put(SeasonReport, pr)))
   }
 
   private def message(data: SeasonShortStats): String =
