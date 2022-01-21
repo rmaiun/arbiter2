@@ -1,23 +1,26 @@
 package dev.rmaiun.mabel.processors
 import cats.Monad
+import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.dtos.CmdType._
 import dev.rmaiun.mabel.dtos.{ BotRequest, Definition, ProcessorResponse }
+import dev.rmaiun.mabel.services.ReportCache.EloRatingReport
 import dev.rmaiun.mabel.services.{ ArbiterClient, ReportCache }
 import dev.rmaiun.mabel.utils.Constants.{ LINE_SEPARATOR, _ }
 import dev.rmaiun.mabel.utils.IdGen
 import dev.rmaiun.protocol.http.GameDtoSet.ListEloPointsDtoOut
-
 case class EloRatingProcessor[F[_]: Monad](ac: ArbiterClient[F], cache: ReportCache[F]) extends Processor[F] {
 
   override def definition: Definition = Definition.query(ELO_RATING_CMD)
 
   override def process(input: BotRequest): Flow[F, Option[ProcessorResponse]] =
-//    cache.find(EloRatingReport)(processInternal(input))
-    processInternal(input)
+    cache.get(EloRatingReport).flatMap {
+      case Some(v) => Flow.pure(Some(ProcessorResponse.ok(input.chatId, IdGen.msgId, v)))
+      case None    => processInternal(input)
+    }
 
-  private def processInternal(input: BotRequest): Flow[F, Option[ProcessorResponse]] =
-    for {
+  private def processInternal(input: BotRequest): Flow[F, Option[ProcessorResponse]] = {
+    val action = for {
       users  <- loadActiveUsers
       points <- loadEloPoints(users)
     } yield {
@@ -35,7 +38,12 @@ case class EloRatingProcessor[F[_]: Monad](ac: ArbiterClient[F], cache: ReportCa
                    |$playersRating""".stripMargin.toBotMsg
       Some(ProcessorResponse.ok(input.chatId, IdGen.msgId, msg))
     }
-//    action.flatMap(pr => cache.put(EloRatingReport, pr))
+
+    for {
+      pr <- action
+      _  <- cache.put(EloRatingReport, pr.map(_.botResponse.result))
+    } yield pr
+  }
 
   private def loadActiveUsers: Flow[F, List[String]] =
     ac.findAllPlayers.map(_.items.map(i => i.surname.toLowerCase))

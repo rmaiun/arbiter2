@@ -5,7 +5,7 @@ import cats.effect.concurrent.Ref
 import cats.effect.{ ConcurrentEffect, ContextShift, Timer }
 import com.google.common.cache.CacheBuilder
 import dev.profunktor.fs2rabbit.model.AmqpMessage
-import dev.rmaiun.mabel.dtos.{ AmqpStructures, CmdType, ProcessorResponse }
+import dev.rmaiun.mabel.dtos.{ AmqpStructures, CmdType }
 import dev.rmaiun.mabel.postprocessor.{
   AddPlayerPostProcessor,
   AddRoundPostProcessor,
@@ -33,7 +33,7 @@ case class Program[F[_]](
 )
 object Program {
   type RateLimitQueue[F[_]] = Ref[F, Queue[AmqpMessage[String]]]
-  type InternalCache        = GuavaCache[ProcessorResponse]
+  type InternalCache        = GuavaCache[String]
 
   def initHttpApp[F[_]: ConcurrentEffect: Monad: Logger](
     client: Client[F],
@@ -44,13 +44,13 @@ object Program {
     lazy val underlyingGuavaCache = CacheBuilder
       .newBuilder()
       .maximumSize(10000L)
-      .build[String, Entry[ProcessorResponse]]
-    val cache: GuavaCache[ProcessorResponse] = GuavaCache(underlyingGuavaCache)
-    lazy val reportCache                     = ReportCache.impl(cache)
-    lazy val arbiterClient                   = ArbiterClient.impl(client)
-    lazy val eloPointsCalculator             = EloPointsCalculator.impl(arbiterClient)
-    lazy val publisherProxy                  = PublisherProxy.impl(cfg, messagesRef)
-    lazy val rateLimitedPublisher            = RateLimitedPublisher.impl(messagesRef, amqpStructures.botOutPublisher)
+      .build[String, Entry[String]]
+    val cache: GuavaCache[String] = GuavaCache(underlyingGuavaCache)
+    lazy val reportCache          = ReportCache.impl(cache)
+    lazy val arbiterClient        = ArbiterClient.impl(client)
+    lazy val eloPointsCalculator  = EloPointsCalculator.impl(arbiterClient)
+    lazy val publisherProxy       = PublisherProxy.impl(cfg, messagesRef)
+    lazy val rateLimitedPublisher = RateLimitedPublisher.impl(messagesRef, amqpStructures.botOutPublisher)
 
     // processors
     lazy val processors = List(
