@@ -2,41 +2,41 @@ package dev.rmaiun.mabel
 
 import cats.Monad
 import cats.data.Kleisli
-import cats.effect.concurrent.Ref
-import cats.effect.{ Blocker, ConcurrentEffect, ContextShift, Sync, Timer }
+import cats.effect.kernel.Ref
+import cats.effect.std.Dispatcher
+import cats.effect.{Async, Clock, Sync}
 import dev.profunktor.fs2rabbit.config.Fs2RabbitConfig
 import dev.profunktor.fs2rabbit.config.declaration._
 import dev.profunktor.fs2rabbit.interpreter.RabbitClient
 import dev.profunktor.fs2rabbit.model.ExchangeType.Direct
 import dev.profunktor.fs2rabbit.model._
 import dev.rmaiun.flowtypes.FLog
+import dev.rmaiun.flowtypes.Flow.MonadThrowable
 import dev.rmaiun.mabel.dtos.AmqpStructures
 import dev.rmaiun.mabel.services.ConfigProvider
 import dev.rmaiun.mabel.services.ConfigProvider.Config
 import fs2.Stream
-import io.chrisdavenport.log4cats.SelfAwareStructuredLogger
-import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.blaze.server.BlazeServerBuilder
+import org.typelevel.log4cats.SelfAwareStructuredLogger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 import java.nio.charset.Charset
 import java.util.concurrent.Executors
 import scala.collection.immutable.Queue
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{ ExecutionContext, ExecutionContextExecutorService }
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutorService}
 object Server {
   implicit def unsafeLogger[F[_]: Sync: Monad]: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]
 
   val clientEC: ExecutionContextExecutorService = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool())
-  val blocker: Blocker =
-    Blocker.liftExecutionContext(ExecutionContext.fromExecutorService(Executors.newCachedThreadPool()))
 
   def config(cfg: Config): Fs2RabbitConfig = Fs2RabbitConfig(
     virtualHost = cfg.broker.virtualHost,
     host = cfg.broker.host,
     port = cfg.broker.port,
-    connectionTimeout = cfg.broker.timeout,
+    connectionTimeout = cfg.broker.timeout.seconds,
     username = Some(cfg.broker.username),
     password = Some(cfg.broker.password),
     ssl = false,
@@ -54,7 +54,7 @@ object Server {
   private val inPersistRK       = RoutingKey("bot_in_p_rk")
   private val outRK             = RoutingKey("bot_out_rk")
 
-  private def initRabbitRoutes[F[_]: ConcurrentEffect: ContextShift: Monad](rc: RabbitClient[F]): F[Unit] = {
+  private def initRabbitRoutes[F[_]: MonadThrowable](rc: RabbitClient[F]): F[Unit] = {
     import cats.implicits._
     val channel = rc.createConnectionChannel
     channel.use { implicit ch =>
@@ -71,7 +71,7 @@ object Server {
     }
   }
 
-  def createRabbitConnection[F[_]: ConcurrentEffect: ContextShift: Monad](
+  def createRabbitConnection[F[_]: MonadThrowable](
     rc: RabbitClient[F]
   )(implicit F: Monad[F]): Stream[F, AmqpStructures[F]] = {
     implicit val stringMessageEncoder: Kleisli[F, AmqpMessage[String], AmqpMessage[Array[Byte]]] =
@@ -95,16 +95,17 @@ object Server {
     } yield AmqpStructures(inPub, outPub, y, x)
   }
 
-  def stream[F[_]: ConcurrentEffect](implicit T: Timer[F], C: ContextShift[F], M: Monad[F]): Stream[F, Nothing] = {
+  def stream[F[_]](implicit T: Clock[F], M: Monad[F], A: Async[F]): Stream[F, Nothing] = {
     implicit val cfg: Config = ConfigProvider.provideConfig
     for {
-      _       <- Stream.eval(FLog.info(cfg.toString).value)
-      client  <- BlazeClientBuilder[F](global).withMaxWaitQueueLimit(1000).stream
-      ref     <- Stream.eval(Ref[F].of(Queue[AmqpMessage[String]]()))
-      rc      <- Stream.eval(RabbitClient[F](config(cfg), blocker))
-      _       <- Stream.eval(initRabbitRoutes(rc))
-      structs <- createRabbitConnection(rc)
-      module   = Program.initHttpApp(client, structs, ref)
+      dispatcher <- Stream.resource(Dispatcher[F])
+      _          <- Stream.eval(FLog.info(cfg.toString).value)
+      client     <- BlazeClientBuilder[F].withMaxWaitQueueLimit(1000).stream
+      ref        <- Stream.eval(Ref[F].of(Queue[AmqpMessage[String]]()))
+      rc         <- Stream.eval(RabbitClient[F](config(cfg), dispatcher))
+      _          <- Stream.eval(initRabbitRoutes(rc))
+      structs    <- createRabbitConnection(rc)
+      module      = Program.initHttpApp(client, structs, ref)
 
       // With Middlewares in place
       finalHttpApp = org.http4s.server.middleware.Logger.httpApp(logHeaders = true, logBody = true)(module.httpApp)

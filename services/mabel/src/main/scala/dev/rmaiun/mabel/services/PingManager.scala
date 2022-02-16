@@ -1,26 +1,25 @@
 package dev.rmaiun.mabel.services
 
 import cats.Monad
-import cats.effect.{ Sync, Timer }
+import cats.effect.Sync
+import cats.effect.kernel.Clock
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.flowtypes.{ FLog, Flow }
-import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
-import io.chrisdavenport.log4cats.{ Logger, SelfAwareStructuredLogger }
+import org.typelevel.log4cats.SelfAwareStructuredLogger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-import java.util.concurrent.TimeUnit
-
-case class PingManager[F[_]: Timer: Monad: Sync]() {
+case class PingManager[F[_]: Clock: Sync]() {
   implicit val logger: SelfAwareStructuredLogger[F] = Slf4jLogger.getLoggerFromClass[F](getClass)
 
   def ping(): Flow[F, String] =
     for {
-      c <- Flow.pure(Timer[F].clock.realTime(TimeUnit.MILLISECONDS))
+      c <- Flow.pure(Clock[F].realTime)
       _ <- FLog.info(s"current time $c")
     } yield c.toString
 }
 
 object PingManager {
   def apply[F[_]](implicit ev: PingManager[F]): PingManager[F] = ev
-  def impl[F[_]: Timer: Monad: Sync]: PingManager[F] =
+  def impl[F[_]: Clock: Sync]: PingManager[F] =
     new PingManager[F]()
 }

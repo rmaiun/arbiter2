@@ -2,7 +2,7 @@ package dev.rmaiun.mabel.postprocessor
 
 import cats.effect.Sync
 import cats.syntax.foldable._
-import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
+import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.commands.AddPlayerCmd
 import dev.rmaiun.mabel.dtos.CmdType.ADD_PLAYER_CMD
 import dev.rmaiun.mabel.dtos.{ BotRequest, BotResponse, Definition }
@@ -10,10 +10,10 @@ import dev.rmaiun.mabel.services.{ ArbiterClient, PublisherProxy }
 import dev.rmaiun.mabel.utils.Constants._
 import dev.rmaiun.mabel.utils.IdGen
 import dev.rmaiun.protocol.http.UserDtoSet.UserRoleData
-import io.chrisdavenport.log4cats.SelfAwareStructuredLogger
-import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
+import org.typelevel.log4cats.SelfAwareStructuredLogger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-case class AddPlayerPostProcessor[F[_]: MonadThrowable: Sync](
+case class AddPlayerPostProcessor[F[_]: Sync](
   arbiterClient: ArbiterClient[F],
   cmdPublisher: PublisherProxy[F]
 ) extends PostProcessor[F] {
@@ -49,7 +49,7 @@ case class AddPlayerPostProcessor[F[_]: MonadThrowable: Sync](
 
 object AddPlayerPostProcessor {
   def apply[F[_]](implicit ev: AddPlayerPostProcessor[F]): AddPlayerPostProcessor[F] = ev
-  def impl[F[_]: MonadThrowable: Sync](
+  def impl[F[_]: Sync](
     ac: ArbiterClient[F],
     cmdPublisher: PublisherProxy[F]
   ): AddPlayerPostProcessor[F] =

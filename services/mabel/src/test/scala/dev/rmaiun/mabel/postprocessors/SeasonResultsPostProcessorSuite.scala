@@ -17,6 +17,7 @@ import org.mockito.Mockito._
 import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import cats.effect.unsafe.implicits.global
 
 class SeasonResultsPostProcessorSuite extends AnyFlatSpec with Matchers with EitherValues with Loggable {
   "SeasonResultsPostProcessor" should "send right number of messages for unrated players" in {

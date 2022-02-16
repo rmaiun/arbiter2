@@ -13,6 +13,7 @@ import org.mockito.Mockito._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{ BeforeAndAfterEach, EitherValues }
+import cats.effect.unsafe.implicits.global
 
 class BroadcastMessageProcessorSuite
     extends AnyFlatSpec

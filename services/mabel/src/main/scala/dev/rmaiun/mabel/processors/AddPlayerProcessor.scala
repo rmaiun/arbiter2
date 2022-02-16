@@ -10,12 +10,12 @@ import dev.rmaiun.mabel.dtos.CmdType.ADD_PLAYER_CMD
 import dev.rmaiun.mabel.dtos._
 import dev.rmaiun.mabel.services.ArbiterClient
 import dev.rmaiun.mabel.utils.Constants._
-import dev.rmaiun.mabel.utils.{ Constants, IdGen }
+import dev.rmaiun.mabel.utils.{Constants, IdGen}
 import dev.rmaiun.protocol.http.UserDtoSet._
-import io.chrisdavenport.log4cats.SelfAwareStructuredLogger
-import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
+import org.typelevel.log4cats.SelfAwareStructuredLogger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-case class AddPlayerProcessor[F[_]: Monad: Sync](arbiterClient: ArbiterClient[F]) extends Processor[F] {
+case class AddPlayerProcessor[F[_]: Sync](arbiterClient: ArbiterClient[F]) extends Processor[F] {
   implicit val logger: SelfAwareStructuredLogger[F] = Slf4jLogger.getLoggerFromClass[F](getClass)
 
   override def definition: Definition = Definition.persistence(ADD_PLAYER_CMD)
@@ -47,6 +47,6 @@ case class AddPlayerProcessor[F[_]: Monad: Sync](arbiterClient: ArbiterClient[F]
 
 object AddPlayerProcessor {
   def apply[F[_]](implicit ev: AddPlayerProcessor[F]): AddPlayerProcessor[F] = ev
-  def impl[F[_]: Monad: Sync](ac: ArbiterClient[F]): AddPlayerProcessor[F] =
+  def impl[F[_]: Sync](ac: ArbiterClient[F]): AddPlayerProcessor[F] =
     new AddPlayerProcessor[F](ac)
 }

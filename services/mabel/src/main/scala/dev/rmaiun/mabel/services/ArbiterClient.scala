@@ -1,7 +1,8 @@
 package dev.rmaiun.mabel.services
 
-import cats.Monad
-import cats.effect.Sync
+import cats.data.EitherT
+import cats.effect.Async
+import cats.{Functor, Monad}
 import dev.rmaiun.errorhandling.errors.codec.ErrorDtoOut
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
@@ -10,18 +11,18 @@ import dev.rmaiun.mabel.services.ConfigProvider.Config
 import dev.rmaiun.mabel.utils.Constants
 import dev.rmaiun.protocol.http.GameDtoSet._
 import dev.rmaiun.protocol.http.RealmDtoSet._
-import dev.rmaiun.protocol.http.SeasonDtoSet.{ FindSeasonWithoutNotificationDtoOut, NotifySeasonDtoOut }
+import dev.rmaiun.protocol.http.SeasonDtoSet.{FindSeasonWithoutNotificationDtoOut, NotifySeasonDtoOut}
 import dev.rmaiun.protocol.http.UserDtoSet._
 import dev.rmaiun.protocol.http.codec.FullCodec._
 import dev.rmaiun.serverauth.middleware.Arbiter2Middleware
-import io.circe.{ Decoder, Encoder }
-import org.http4s.Method.{ GET, POST }
+import io.circe.{Decoder, Encoder}
+import org.http4s.Method.{GET, POST}
 import org.http4s.Status.BadRequest
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.client.Client
 
-case class ArbiterClient[F[_]: Sync: Monad](client: Client[F])(implicit cfg: Config) {
+case class ArbiterClient[F[_]: Async](client: Client[F])(implicit cfg: Config) {
   import ArbiterClient._
   implicit def circeJsonDecoder[A: Decoder]: EntityDecoder[F, A] = jsonOf[F, A]
   implicit def circeJsonEncoder[A: Encoder]: EntityEncoder[F, A] = jsonEncoderOf[F, A]
@@ -29,16 +30,15 @@ case class ArbiterClient[F[_]: Sync: Monad](client: Client[F])(implicit cfg: Con
     .fromString(cfg.integration.soos.path)
     .getOrElse(Uri.unsafeFromString(cfg.integration.soos.stub))
   val onError: Response[F] => F[Throwable] = resp => {
-    import cats.syntax.functor._
     import io.circe.parser._
     resp.status match {
       case BadRequest =>
-        val res = for {
+        val res: EitherT[F, Throwable, ArbiterClientError] = for {
           body     <- Flow.effect(resp.bodyText.compile.string)
           errorDto <- Flow.fromEither(decode[ErrorDtoOut](body))
           error     = ArbiterClientError(errorDto.message)
         } yield error
-        res.value.map(_.fold(err => ArbiterClientError(err.getMessage), ok => ok))
+        Functor[F].map(res.value)(_.fold(err => ArbiterClientError(err.getMessage), ok => ok))
       case _ =>
         Monad[F].pure(ArbiterClientError("Unexpected error occurred"))
     }
@@ -139,7 +139,7 @@ case class ArbiterClient[F[_]: Sync: Monad](client: Client[F])(implicit cfg: Con
 
 object ArbiterClient {
   def apply[F[_]](implicit ev: ArbiterClient[F]): ArbiterClient[F] = ev
-  def impl[F[_]: Monad: Sync](c: Client[F])(implicit cfg: Config): ArbiterClient[F] =
+  def impl[F[_]: Async](c: Client[F])(implicit cfg: Config): ArbiterClient[F] =
     new ArbiterClient[F](c)
 
   implicit class RichRequest[F[_]](r: Request[F]) {

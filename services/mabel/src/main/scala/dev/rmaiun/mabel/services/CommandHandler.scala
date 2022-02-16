@@ -5,22 +5,22 @@ import cats.effect.Sync
 import cats.syntax.apply._
 import cats.syntax.foldable._
 import dev.profunktor.fs2rabbit.model.AmqpEnvelope
-import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
-import dev.rmaiun.flowtypes.{ FLog, Flow }
-import dev.rmaiun.mabel.dtos.{ BotRequest, CmdType, ProcessorResponse }
-import dev.rmaiun.mabel.errors.Errors.{ NoProcessorFound, UserIsNotAuthorized }
+import dev.rmaiun.flowtypes.Flow.{Flow, MonadThrowable}
+import dev.rmaiun.flowtypes.{FLog, Flow}
+import dev.rmaiun.mabel.dtos.{BotRequest, CmdType, ProcessorResponse}
+import dev.rmaiun.mabel.errors.Errors.{NoProcessorFound, UserIsNotAuthorized}
 import dev.rmaiun.mabel.postprocessor.PostProcessor
 import dev.rmaiun.mabel.processors.Processor
-import dev.rmaiun.mabel.utils.Constants.{ PREFIX, SUFFIX }
+import dev.rmaiun.mabel.utils.Constants.{PREFIX, SUFFIX}
 import dev.rmaiun.mabel.utils.IdGen
-import io.chrisdavenport.log4cats.SelfAwareStructuredLogger
-import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import io.circe.parser._
 import org.http4s.client.ConnectionFailure
+import org.typelevel.log4cats.SelfAwareStructuredLogger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 import java.lang.System.currentTimeMillis
 
-case class CommandHandler[F[_]: MonadThrowable: Sync](commandType: CmdType)(
+case class CommandHandler[F[_]: Sync](commandType: CmdType)(
   arbiterClient: ArbiterClient[F],
   processors: List[Processor[F]],
   postProcessors: List[PostProcessor[F]],
@@ -108,7 +108,7 @@ case class CommandHandler[F[_]: MonadThrowable: Sync](commandType: CmdType)(
 
 object CommandHandler {
   def apply[F[_]](implicit ev: CommandHandler[F]): CommandHandler[F] = ev
-  def impl[F[_]: MonadThrowable: Sync](cmdType: CmdType)(
+  def impl[F[_]: Sync](cmdType: CmdType)(
     arbiterClient: ArbiterClient[F],
     processors: List[Processor[F]],
     postProcessors: List[PostProcessor[F]],

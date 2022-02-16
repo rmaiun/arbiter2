@@ -8,10 +8,10 @@ import dev.rmaiun.flowtypes.{ FLog, Flow }
 import dev.rmaiun.mabel.Program.RateLimitQueue
 import dev.rmaiun.mabel.dtos.BotResponse
 import dev.rmaiun.mabel.services.ConfigProvider.Config
-import io.chrisdavenport.log4cats.SelfAwareStructuredLogger
-import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
+import org.typelevel.log4cats.SelfAwareStructuredLogger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-case class PublisherProxy[F[_]: MonadThrowable: Sync](cfg: Config, queue: RateLimitQueue[F]) {
+case class PublisherProxy[F[_]: Sync](cfg: Config, queue: RateLimitQueue[F]) {
   implicit val logger: SelfAwareStructuredLogger[F] = Slf4jLogger.getLoggerFromClass[F](getClass)
 
   def publishToBot(botResponse: BotResponse)(implicit customCheck: Boolean = true): Flow[F, Unit] =
@@ -30,6 +30,6 @@ case class PublisherProxy[F[_]: MonadThrowable: Sync](cfg: Config, queue: RateLi
 }
 object PublisherProxy {
   def apply[F[_]](implicit ev: PublisherProxy[F]): PublisherProxy[F] = ev
-  def impl[F[_]: MonadThrowable: Sync](cfg: Config, queue: RateLimitQueue[F]): PublisherProxy[F] =
+  def impl[F[_]: Sync](cfg: Config, queue: RateLimitQueue[F]): PublisherProxy[F] =
     new PublisherProxy[F](cfg, queue)
 }

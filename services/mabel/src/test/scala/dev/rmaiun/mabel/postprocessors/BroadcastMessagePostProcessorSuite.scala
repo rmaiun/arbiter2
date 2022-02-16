@@ -14,6 +14,7 @@ import org.mockito.Mockito._
 import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import cats.effect.unsafe.implicits.global
 
 class BroadcastMessagePostProcessorSuite extends AnyFlatSpec with Matchers with EitherValues with Loggable {
   "BroadcastMessagePostProcessor" should "send back message in testMode" in {

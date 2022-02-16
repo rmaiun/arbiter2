@@ -1,29 +1,21 @@
 package dev.rmaiun.mabel
 
-import cats.Monad
-import cats.effect.concurrent.Ref
-import cats.effect.{ ConcurrentEffect, ContextShift, Timer }
-import com.google.common.cache.CacheBuilder
+import cats.effect.{Async, Clock, Ref}
+import com.github.blemale.scaffeine.{Cache, Scaffeine}
 import dev.profunktor.fs2rabbit.model.AmqpMessage
-import dev.rmaiun.mabel.dtos.{ AmqpStructures, CmdType }
-import dev.rmaiun.mabel.postprocessor.{
-  AddPlayerPostProcessor,
-  AddRoundPostProcessor,
-  BroadcastMessagePostProcessor,
-  SeasonResultPostProcessor
-}
+import dev.rmaiun.mabel.dtos.{AmqpStructures, CmdType}
+import dev.rmaiun.mabel.postprocessor.{AddPlayerPostProcessor, AddRoundPostProcessor, BroadcastMessagePostProcessor, SeasonResultPostProcessor}
 import dev.rmaiun.mabel.processors._
 import dev.rmaiun.mabel.routes.SysRoutes
 import dev.rmaiun.mabel.services.ConfigProvider.Config
 import dev.rmaiun.mabel.services._
-import io.chrisdavenport.log4cats.Logger
 import org.http4s.HttpApp
 import org.http4s.client.Client
 import org.http4s.server.Router
-import scalacache.Entry
-import scalacache.guava.GuavaCache
+import org.typelevel.log4cats.Logger
 
 import scala.collection.immutable.Queue
+import scala.concurrent.duration._
 case class Program[F[_]](
   httpApp: HttpApp[F],
   persistHandler: CommandHandler[F],
@@ -33,19 +25,20 @@ case class Program[F[_]](
 )
 object Program {
   type RateLimitQueue[F[_]] = Ref[F, Queue[AmqpMessage[String]]]
-  type InternalCache        = GuavaCache[String]
+  type InternalCache        = Cache[String, String]
 
-  def initHttpApp[F[_]: ConcurrentEffect: Monad: Logger](
+  def initHttpApp[F[_]: Async: Logger](
     client: Client[F],
     amqpStructures: AmqpStructures[F],
     messagesRef: RateLimitQueue[F]
-  )(implicit cfg: Config, T: Timer[F], C: ContextShift[F]): Program[F] = {
+  )(implicit cfg: Config, T: Clock[F]): Program[F] = {
 
-    lazy val underlyingGuavaCache = CacheBuilder
-      .newBuilder()
-      .maximumSize(10000L)
-      .build[String, Entry[String]]
-    val cache: GuavaCache[String] = GuavaCache(underlyingGuavaCache)
+    lazy val cache: Cache[String, String] = Scaffeine()
+      .recordStats()
+      .expireAfterWrite(4.hour)
+      .maximumSize(500)
+      .build[String, String]()
+
     lazy val reportCache          = ReportCache.impl(cache)
     lazy val arbiterClient        = ArbiterClient.impl(client)
     lazy val eloPointsCalculator  = EloPointsCalculator.impl(arbiterClient)

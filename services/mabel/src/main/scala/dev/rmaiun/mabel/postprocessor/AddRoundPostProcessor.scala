@@ -9,9 +9,8 @@ import dev.rmaiun.mabel.services.{ ArbiterClient, PublisherProxy }
 import dev.rmaiun.mabel.utils.Constants._
 import dev.rmaiun.mabel.utils.IdGen
 import dev.rmaiun.protocol.http.UserDtoSet.UserRoleData
-import io.chrisdavenport.log4cats.Logger
 
-case class AddRoundPostProcessor[F[_]: MonadThrowable: Logger](
+case class AddRoundPostProcessor[F[_]: MonadThrowable](
   arbiterClient: ArbiterClient[F],
   cmdPublisher: PublisherProxy[F]
 ) extends PostProcessor[F] {
@@ -68,7 +67,7 @@ case class AddRoundPostProcessor[F[_]: MonadThrowable: Logger](
 }
 object AddRoundPostProcessor {
   def apply[F[_]](implicit ev: AddRoundPostProcessor[F]): AddRoundPostProcessor[F] = ev
-  def impl[F[_]: MonadThrowable: Logger](
+  def impl[F[_]: MonadThrowable](
     ac: ArbiterClient[F],
     cmdPublisher: PublisherProxy[F]
   ): AddRoundPostProcessor[F] =

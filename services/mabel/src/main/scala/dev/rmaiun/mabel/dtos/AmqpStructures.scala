@@ -1,10 +1,10 @@
 package dev.rmaiun.mabel.dtos
-import cats.effect.Concurrent
 import dev.profunktor.fs2rabbit.model.{ AmqpEnvelope, AmqpMessage }
+import dev.rmaiun.flowtypes.Flow.MonadThrowable
 import dev.rmaiun.mabel.dtos.AmqpStructures.{ AmqpConsumer, AmqpPublisher }
 import fs2.Stream
 
-case class AmqpStructures[F[_]: Concurrent](
+case class AmqpStructures[F[_]: MonadThrowable](
   botInPublisher: AmqpPublisher[F],
   botOutPublisher: AmqpPublisher[F],
   botInPersistConsumer: AmqpConsumer[F],

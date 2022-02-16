@@ -1,27 +1,30 @@
 package dev.rmaiun.mabel.processors
 
 import cats.Monad
-import dev.rmaiun.common.{ DateFormatter, SeasonHelper }
+import cats.effect.Sync
+import dev.rmaiun.common.{DateFormatter, SeasonHelper}
 import dev.rmaiun.flowtypes.FLog
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.commands.AddRoundCmd
 import dev.rmaiun.mabel.commands.AddRoundCmd._
 import dev.rmaiun.mabel.dtos.CmdType._
-import dev.rmaiun.mabel.dtos.EloRatingDto.{ CalculatedPoints, EloPlayers, UserCalculatedPoints }
-import dev.rmaiun.mabel.dtos.{ BotRequest, Definition, ProcessorResponse }
-import dev.rmaiun.mabel.services.ReportCache.{ EloRatingReport, SeasonReport }
-import dev.rmaiun.mabel.services.{ ArbiterClient, EloPointsCalculator, ReportCache }
+import dev.rmaiun.mabel.dtos.EloRatingDto.{CalculatedPoints, EloPlayers, UserCalculatedPoints}
+import dev.rmaiun.mabel.dtos.{BotRequest, Definition, ProcessorResponse}
+import dev.rmaiun.mabel.services.ReportCache.{EloRatingReport, SeasonReport}
+import dev.rmaiun.mabel.services.{ArbiterClient, EloPointsCalculator, ReportCache}
 import dev.rmaiun.mabel.utils.Constants._
-import dev.rmaiun.mabel.utils.{ Constants, IdGen }
+import dev.rmaiun.mabel.utils.{Constants, IdGen}
 import dev.rmaiun.protocol.http.GameDtoSet._
 import dev.rmaiun.protocol.http.UserDtoSet.FindUserDtoOut
-import io.chrisdavenport.log4cats.Logger
+import org.typelevel.log4cats.SelfAwareStructuredLogger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-case class AddRoundProcessor[F[_]: Monad: Logger](
+case class AddRoundProcessor[F[_]: Sync](
   arbiterClient: ArbiterClient[F],
   eloPointsCalculator: EloPointsCalculator[F],
   cache: ReportCache[F]
 ) extends Processor[F] {
+  implicit val logger: SelfAwareStructuredLogger[F] = Slf4jLogger.getLoggerFromClass[F](getClass)
 
   override def definition: Definition = Definition.persistence(ADD_ROUND_CMD)
 
@@ -89,7 +92,7 @@ case class AddRoundProcessor[F[_]: Monad: Logger](
 
 object AddRoundProcessor {
   def apply[F[_]](implicit ev: AddRoundProcessor[F]): AddRoundProcessor[F] = ev
-  def impl[F[_]: Monad: Logger](
+  def impl[F[_]: Sync](
     ac: ArbiterClient[F],
     epc: EloPointsCalculator[F],
     cache: ReportCache[F]

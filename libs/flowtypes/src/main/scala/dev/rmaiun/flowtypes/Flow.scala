@@ -1,13 +1,14 @@
 package dev.rmaiun.flowtypes
 
 import cats.data.EitherT
+import cats.effect.MonadCancel
 import cats.implicits._
-import cats.{ Applicative, Functor, Monad, MonadError }
+import cats.{Applicative, Functor, Monad}
 
 object Flow {
   type ErrorOr[T]           = Either[Throwable, T]
   type Flow[F[_], T]        = EitherT[F, Throwable, T]
-  type MonadThrowable[F[_]] = MonadError[F, Throwable]
+  type MonadThrowable[F[_]] = MonadCancel[F, Throwable]
 
   def right[F[_]: Applicative, R](data: R): F[ErrorOr[R]] =
     Applicative[F].pure(data.asRight[Throwable])

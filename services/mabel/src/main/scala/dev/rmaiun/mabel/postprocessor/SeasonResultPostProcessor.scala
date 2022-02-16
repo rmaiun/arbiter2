@@ -3,20 +3,20 @@ package dev.rmaiun.mabel.postprocessor
 import cats.Monad
 import cats.syntax.apply._
 import cats.syntax.foldable._
-import dev.rmaiun.common.{ DateFormatter, SeasonHelper }
+import dev.rmaiun.common.{DateFormatter, SeasonHelper}
 import dev.rmaiun.flowtypes.Flow.Flow
-import dev.rmaiun.flowtypes.{ FLog, Flow }
+import dev.rmaiun.flowtypes.{FLog, Flow}
 import dev.rmaiun.mabel.dtos.CmdType.SEASON_RESULTS_CMD
 import dev.rmaiun.mabel.dtos._
-import dev.rmaiun.mabel.dtos.stats.{ PlayerStats, SeasonShortStats, UnrankedStats }
+import dev.rmaiun.mabel.dtos.stats.{PlayerStats, SeasonShortStats, UnrankedStats}
 import dev.rmaiun.mabel.services.ConfigProvider.AppCfg
-import dev.rmaiun.mabel.services.{ ArbiterClient, PublisherProxy, StatsCalculator }
+import dev.rmaiun.mabel.services.{ArbiterClient, PublisherProxy, StatsCalculator}
 import dev.rmaiun.mabel.utils.Constants._
 import dev.rmaiun.mabel.utils.IdGen
 import dev.rmaiun.protocol.http.GameDtoSet.StoredGameHistoryDto
 import dev.rmaiun.protocol.http.SeasonDtoSet.FindSeasonWithoutNotificationDtoOut
 import dev.rmaiun.protocol.http.UserDtoSet.UserDto
-import io.chrisdavenport.log4cats.Logger
+import org.typelevel.log4cats.Logger
 
 import java.time.ZonedDateTime
 

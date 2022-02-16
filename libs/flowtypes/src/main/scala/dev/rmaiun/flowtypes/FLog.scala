@@ -4,7 +4,7 @@ import cats.Functor
 import cats.data.EitherT
 import cats.implicits.catsSyntaxEitherId
 import dev.rmaiun.flowtypes.Flow.Flow
-import io.chrisdavenport.log4cats.Logger
+import org.typelevel.log4cats.Logger
 
 object FLog {
   def info[F[_]: Logger: Functor](msg: String): Flow[F, Unit] =
