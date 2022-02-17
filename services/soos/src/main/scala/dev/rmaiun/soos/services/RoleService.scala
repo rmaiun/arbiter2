@@ -4,7 +4,7 @@ import cats.Monad
 import cats.effect.Sync
 import dev.rmaiun.errorhandling.ThrowableOps._
 import dev.rmaiun.flowtypes.Flow
-import dev.rmaiun.flowtypes.Flow.Flow
+import dev.rmaiun.flowtypes.Flow.{Flow, MonadThrowable}
 import dev.rmaiun.soos.db.entities.Role
 import dev.rmaiun.soos.db.projections.UserRole
 import dev.rmaiun.soos.errors.RoleErrors.RoleNotFoundRuntimeException
@@ -24,7 +24,7 @@ trait RoleService[F[_]] {
 object RoleService {
   def apply[F[_]](implicit ev: RoleService[F]): RoleService[F] = ev
 
-  def impl[F[_]: Monad: Sync](xa: HikariTransactor[F], roleRepo: RoleRepo[F]): RoleService[F] =
+  def impl[F[_]: MonadThrowable](xa: HikariTransactor[F], roleRepo: RoleRepo[F]): RoleService[F] =
     new RoleService[F] {
       override def saveRole(value: String, permission: Int): Flow[F, Role] =
         roleRepo.create(Role(0, value, permission)).transact(xa).attemptSql.adaptError

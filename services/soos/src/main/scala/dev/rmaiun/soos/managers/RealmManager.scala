@@ -15,7 +15,7 @@ trait RealmManager[F[_]] {
 
 object RealmManager {
   def apply[F[_]](implicit ev: RealmManager[F]): RealmManager[F] = ev
-  def impl[F[_]: Monad: Sync](
+  def impl[F[_]: Monad](
     realmService: RealmService[F],
     algorithmService: AlgorithmService[F],
     userService: UserService[F]

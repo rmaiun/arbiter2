@@ -2,7 +2,7 @@ package dev.rmaiun.soos.helpers
 
 import java.util.concurrent.Executors
 
-import cats.effect.{ Async, Blocker, ContextShift }
+import cats.effect.Async
 import com.zaxxer.hikari.{ HikariConfig, HikariDataSource }
 import dev.rmaiun.soos.helpers.ConfigProvider.Config
 import doobie.hikari.HikariTransactor
@@ -11,7 +11,7 @@ import scala.concurrent.ExecutionContext
 
 object TransactorProvider {
 
-  def hikariTransactor[F[_]: Async: ContextShift](
+  def hikariTransactor[F[_]: Async](
     c: Config,
     useSSL: Boolean = false,
     allowPublicKeyRetrieval: Boolean = false
@@ -28,6 +28,6 @@ object TransactorProvider {
     config.setPassword(c.db.password)
     config.setMaximumPoolSize(5)
     config.setDriverClassName("com.mysql.cj.jdbc.Driver")
-    HikariTransactor.apply[F](new HikariDataSource(config), ec, Blocker.liftExecutionContext(bec))
+    HikariTransactor.apply[F](new HikariDataSource(config), ec)
   }
 }

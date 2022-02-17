@@ -2,22 +2,27 @@ package dev.rmaiun.soos.routes
 
 import cats.effect.IO
 import dev.rmaiun.flowtypes.Flow.Flow
-import dev.rmaiun.protocol.http.SeasonDtoSet.{ NotifySeasonDtoIn, NotifySeasonDtoOut }
+import dev.rmaiun.protocol.http.SeasonDtoSet.NotifySeasonDtoOut
 import dev.rmaiun.protocol.http.codec.FullCodec._
 import dev.rmaiun.soos.db.entities.{ Realm, Season }
-import dev.rmaiun.soos.utils.{ Loggable, TestModule }
+import dev.rmaiun.soos.utils.{ IoTestRuntime, Loggable, TestModule }
 import io.circe.{ Decoder, Encoder }
 import org.http4s.Method.GET
+import org.http4s._
 import org.http4s.circe.{ jsonEncoderOf, jsonOf }
 import org.http4s.implicits.http4sLiteralsSyntax
-import org.http4s._
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 import java.time.ZonedDateTime
 
-case class SeasonRoutesTest() extends AnyFlatSpec with Matchers with BeforeAndAfterEach with Loggable {
+case class SeasonRoutesTest()
+    extends AnyFlatSpec
+    with Matchers
+    with BeforeAndAfterEach
+    with Loggable
+    with IoTestRuntime {
   implicit def errorEntityEncoder[T: Encoder]: EntityEncoder[IO, T] = jsonEncoderOf[IO, T]
   implicit def errorEntityDecoder[T: Decoder]: EntityDecoder[IO, T] = jsonOf[IO, T]
 
@@ -31,17 +36,6 @@ case class SeasonRoutesTest() extends AnyFlatSpec with Matchers with BeforeAndAf
     val data = response.map(r => r.as[NotifySeasonDtoOut]).unsafeRunSync.unsafeRunSync()
     data.season should be("S1|1999")
     data.notified.isBefore(ZonedDateTime.now) should be(true)
-  }
-
-  private def check[A](actual: IO[Response[IO]], expectedStatus: Status, expectedBody: Option[A])(implicit
-    ev: EntityDecoder[IO, A]
-  ): Boolean = {
-    val actualResp  = actual.unsafeRunSync
-    val statusCheck = actualResp.status == expectedStatus
-    val bodyCheck = expectedBody.fold[Boolean](actualResp.body.compile.toVector.unsafeRunSync.isEmpty)(expected =>
-      actualResp.as[A].unsafeRunSync == expected
-    )
-    statusCheck && bodyCheck
   }
 
   private def cleanDb(): Flow[IO, Unit] =

@@ -6,13 +6,8 @@ import dev.rmaiun.soos.managers.{ GameManager, RealmManager, SeasonManager, User
 import dev.rmaiun.soos.repositories._
 import dev.rmaiun.soos.services._
 import doobie.hikari.HikariTransactor
-
-import java.util.concurrent.Executors
-import scala.concurrent.ExecutionContext
 object TestModule extends Loggable {
-  implicit val cs: ContextShift[IO] = IO.contextShift(
-    ExecutionContext.fromExecutor(Executors.newSingleThreadExecutor())
-  )
+
   implicit val cfg: ConfigProvider.Config   = ConfigProvider.provideConfig
   lazy val transactor: HikariTransactor[IO] = TransactorProvider.hikariTransactor[IO](cfg)
 

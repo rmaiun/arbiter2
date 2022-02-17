@@ -5,8 +5,8 @@ import cats.effect.Sync
 import dev.rmaiun.common.SeasonHelper
 import dev.rmaiun.errorhandling.ThrowableOps._
 import dev.rmaiun.flowtypes.Flow
-import dev.rmaiun.flowtypes.Flow.Flow
-import dev.rmaiun.soos.db.entities.{ Algorithm, Realm, Season }
+import dev.rmaiun.flowtypes.Flow.{Flow, MonadThrowable}
+import dev.rmaiun.soos.db.entities.{Algorithm, Realm, Season}
 import dev.rmaiun.soos.errors.SeasonErrors.SeasonNotFoundRuntimeException
 import dev.rmaiun.soos.errors.UserErrors.SameUsersInRoundException
 import dev.rmaiun.soos.helpers.ConfigProvider.Config
@@ -26,7 +26,7 @@ trait SeasonService[F[_]] {
 
 object SeasonService {
   def apply[F[_]](implicit ev: SeasonService[F]): SeasonService[F] = ev
-  def impl[F[_]: Monad: Sync](
+  def impl[F[_]: MonadThrowable](
     seasonRepo: SeasonRepo[F],
     realmService: RealmService[F],
     algorithmService: AlgorithmService[F],

@@ -1,22 +1,20 @@
 package dev.rmaiun.soos.repository
 
 import cats.data.NonEmptyList
-import cats.effect.{ ContextShift, IO }
+import cats.effect.IO
 import dev.rmaiun.soos.db.entities._
 import dev.rmaiun.soos.helpers.ConfigProvider.Config
 import dev.rmaiun.soos.helpers.{ ConfigProvider, TransactorProvider }
 import dev.rmaiun.soos.repositories.{ RealmRepo, RoleRepo, UserRepo }
+import dev.rmaiun.soos.utils.IoTestRuntime
 import doobie.ConnectionIO
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
-import doobie.util.ExecutionContexts
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{ BeforeAndAfterEach, OptionValues }
 
-class UserRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach with OptionValues {
-
-  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContexts.synchronous)
+class UserRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach with OptionValues with IoTestRuntime {
 
   private val config: Config = ConfigProvider.provideConfig
   private val transactor: HikariTransactor[IO] =

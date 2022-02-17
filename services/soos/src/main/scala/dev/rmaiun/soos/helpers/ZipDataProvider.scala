@@ -18,9 +18,9 @@ import io.circe.generic.semiauto.deriveEncoder
 import io.circe.syntax._
 
 import java.io.ByteArrayOutputStream
-import java.util.zip.{ ZipEntry, ZipOutputStream }
+import java.util.zip.{ZipEntry, ZipOutputStream}
 
-case class ZipDataProvider[F[_]: Monad: Sync](
+case class ZipDataProvider[F[_]: Sync](
   algorithmRepo: AlgorithmRepo[F],
   roleRepo: RoleRepo[F],
   realmRepo: RealmRepo[F],
@@ -92,7 +92,7 @@ object ZipDataProvider {
 
   def apply[F[_]](implicit ev: ZipDataProvider[F]): ZipDataProvider[F] = ev
 
-  def impl[F[_]: Monad: Sync](
+  def impl[F[_]: Sync](
     algorithmRepo: AlgorithmRepo[F],
     roleRepo: RoleRepo[F],
     realmRepo: RealmRepo[F],

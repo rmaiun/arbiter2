@@ -4,7 +4,7 @@ import cats.Monad
 import cats.effect.Sync
 import dev.rmaiun.errorhandling.ThrowableOps._
 import dev.rmaiun.flowtypes.Flow
-import dev.rmaiun.flowtypes.Flow.Flow
+import dev.rmaiun.flowtypes.Flow.{Flow, MonadThrowable}
 import dev.rmaiun.soos.db.entities.Realm
 import dev.rmaiun.soos.db.projections.RealmData
 import dev.rmaiun.soos.errors.RealmErrors.RealmNotFoundRuntimeException
@@ -24,7 +24,7 @@ trait RealmService[F[_]] {
 object RealmService {
   def apply[F[_]](implicit ev: RealmService[F]): RealmService[F] = ev
 
-  def impl[F[_]: Monad: Sync](
+  def impl[F[_]: MonadThrowable](
     realmRepo: RealmRepo[F],
     xa: HikariTransactor[F]
   ): RealmService[F] = new RealmService[F] {

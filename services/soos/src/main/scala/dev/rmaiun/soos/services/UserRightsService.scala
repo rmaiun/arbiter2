@@ -2,9 +2,9 @@ package dev.rmaiun.soos.services
 
 import cats.Monad
 import dev.rmaiun.flowtypes.Flow
-import dev.rmaiun.flowtypes.Flow.Flow
+import dev.rmaiun.flowtypes.Flow.{Flow, MonadThrowable}
 import dev.rmaiun.soos.db.entities.Role
-import dev.rmaiun.soos.errors.UserErrors.{ NoWritePermissionForUserFoundException, UserNotAuthorizedException }
+import dev.rmaiun.soos.errors.UserErrors.{NoWritePermissionForUserFoundException, UserNotAuthorizedException}
 import dev.rmaiun.soos.helpers.ConfigProvider.Config
 
 trait UserRightsService[F[_]] {
@@ -16,7 +16,7 @@ trait UserRightsService[F[_]] {
 
 object UserRightsService {
   def apply[F[_]](implicit ev: UserRightsService[F]): UserRightsService[F] = ev
-  def impl[F[_]: Monad](
+  def impl[F[_]: MonadThrowable](
     userService: UserService[F],
     roleService: RoleService[F]
   )(implicit cfg: Config): UserRightsService[F] = new UserRightsService[F] {

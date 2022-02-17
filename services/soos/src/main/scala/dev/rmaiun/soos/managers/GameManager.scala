@@ -20,7 +20,7 @@ trait GameManager[F[_]] {
 object GameManager {
   def apply[F[_]](implicit ev: GameManager[F]): GameManager[F] = ev
 
-  def impl[F[_]: Monad: Sync](
+  def impl[F[_]: Monad](
     gameService: GameService[F],
     userService: UserService[F],
     realmService: RealmService[F],

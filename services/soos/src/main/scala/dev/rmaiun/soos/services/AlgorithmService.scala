@@ -1,10 +1,8 @@
 package dev.rmaiun.soos.services
 
-import cats.Monad
-import cats.effect.Sync
 import dev.rmaiun.errorhandling.ThrowableOps._
 import dev.rmaiun.flowtypes.Flow
-import dev.rmaiun.flowtypes.Flow.Flow
+import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
 import dev.rmaiun.soos.db.entities.Algorithm
 import dev.rmaiun.soos.errors.AlgorithmErrors.AlgorithmNotFoundException
 import dev.rmaiun.soos.repositories.AlgorithmRepo
@@ -22,7 +20,7 @@ object AlgorithmService {
 
   def apply[F[_]](implicit ev: AlgorithmService[F]): AlgorithmService[F] = ev
 
-  def impl[F[_]: Monad: Sync](algorithmRepo: AlgorithmRepo[F], xa: HikariTransactor[F]): AlgorithmService[F] =
+  def impl[F[_]: MonadThrowable](algorithmRepo: AlgorithmRepo[F], xa: HikariTransactor[F]): AlgorithmService[F] =
     new AlgorithmService[F] {
       override def getAlgorithmByName(algorithm: String): Flow[F, Algorithm] = {
         val algorithmResult = for {

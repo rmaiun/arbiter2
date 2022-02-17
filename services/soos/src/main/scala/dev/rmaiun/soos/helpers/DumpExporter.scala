@@ -8,8 +8,8 @@ import com.dropbox.core.v2.files.WriteMode
 import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
 import dev.rmaiun.flowtypes.{ FLog, Flow }
 import dev.rmaiun.soos.helpers.ConfigProvider.Config
-import io.chrisdavenport.log4cats.SelfAwareStructuredLogger
-import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
+import org.typelevel.log4cats.SelfAwareStructuredLogger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 import java.io.ByteArrayInputStream
 

@@ -1,35 +1,26 @@
 package dev.rmaiun.soos.routes
 
-import cats.effect.Sync
-import cats.{ Applicative, Monad }
+import cats.effect.{Async, Sync}
+import cats.{Applicative, Monad}
 import dev.rmaiun.errorhandling.errors.AppRuntimeException
 import dev.rmaiun.errorhandling.errors.codec._
 import dev.rmaiun.flowtypes.Flow.Flow
-import dev.rmaiun.flowtypes.{ FLog, Flow }
-import dev.rmaiun.protocol.http.GameDtoSet.{
-  AddEloPointsDtoIn,
-  AddGameHistoryDtoIn,
-  ListEloPointsDtoIn,
-  ListGameHistoryDtoIn
-}
-import dev.rmaiun.protocol.http.RealmDtoSet.{ GetRealmDtoIn, RegisterRealmDtoIn, UpdateRealmAlgorithmDtoIn }
-import dev.rmaiun.protocol.http.SeasonDtoSet.{
-  CreateSeasonDtoIn,
-  FindSeasonWithoutNotificationDtoIn,
-  NotifySeasonDtoIn
-}
+import dev.rmaiun.flowtypes.{FLog, Flow}
+import dev.rmaiun.protocol.http.GameDtoSet.{AddEloPointsDtoIn, AddGameHistoryDtoIn, ListEloPointsDtoIn, ListGameHistoryDtoIn}
+import dev.rmaiun.protocol.http.RealmDtoSet.{GetRealmDtoIn, RegisterRealmDtoIn, UpdateRealmAlgorithmDtoIn}
+import dev.rmaiun.protocol.http.SeasonDtoSet.{CreateSeasonDtoIn, FindSeasonWithoutNotificationDtoIn, NotifySeasonDtoIn}
 import dev.rmaiun.protocol.http.UserDtoSet._
-import dev.rmaiun.soos.managers.{ GameManager, RealmManager, SeasonManager, UserManager }
-import io.chrisdavenport.log4cats.Logger
-import io.circe.{ Decoder, Encoder }
+import dev.rmaiun.soos.managers.{GameManager, RealmManager, SeasonManager, UserManager}
+import org.typelevel.log4cats.Logger
+import io.circe.{Decoder, Encoder}
 import org.http4s._
-import org.http4s.circe.{ jsonEncoderOf, jsonOf }
+import org.http4s.circe.{jsonEncoderOf, jsonOf}
 import org.http4s.dsl.Http4sDsl
-import org.http4s.dsl.impl.{ OptionalQueryParamDecoderMatcher, QueryParamDecoderMatcher }
+import org.http4s.dsl.impl.{OptionalQueryParamDecoderMatcher, QueryParamDecoderMatcher}
 object SoosRoutes {
 
   implicit def errorEntityEncoder[F[_]: Applicative, T: Encoder]: EntityEncoder[F, T] = jsonEncoderOf[F, T]
-  implicit def errorEntityDecoder[F[_]: Sync, T: Decoder]: EntityDecoder[F, T]        = jsonOf[F, T]
+  implicit def errorEntityDecoder[F[_]: Async, T: Decoder]: EntityDecoder[F, T]        = jsonOf[F, T]
   implicit val dataListQueryParamDecoder: QueryParamDecoder[List[String]] =
     QueryParamDecoder[String].map(_.split(",").toList)
 
@@ -40,7 +31,7 @@ object SoosRoutes {
   object OptTidQueryParamMatcher          extends OptionalQueryParamDecoderMatcher[Long]("tid")
   object UsersQueryParamMatcher           extends QueryParamDecoderMatcher[List[String]]("users")
 
-  def flowToResponse[F[_]: Sync: Monad: Logger, T](
+  def flowToResponse[F[_]: Async: Logger, T](
     flow: Flow[F, T]
   )(implicit ee: EntityEncoder[F, T]): F[Response[F]] = {
     val dsl = new Http4sDsl[F] {}
@@ -68,7 +59,7 @@ object SoosRoutes {
     }
   }
 
-  def realmRoutes[F[_]: Sync: Monad: Logger](realmManager: RealmManager[F]): HttpRoutes[F] = {
+  def realmRoutes[F[_]: Async: Logger](realmManager: RealmManager[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
     import dev.rmaiun.protocol.http.codec.FullCodec._
     import dsl._
@@ -93,7 +84,7 @@ object SoosRoutes {
     }
   }
 
-  def userRoutes[F[_]: Sync: Monad: Logger](userManager: UserManager[F]): HttpRoutes[F] = {
+  def userRoutes[F[_]: Async: Logger](userManager: UserManager[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
     import dev.rmaiun.protocol.http.codec.FullCodec._
     import dsl._
@@ -158,7 +149,7 @@ object SoosRoutes {
     }
   }
 
-  def gameHistoryRoutes[F[_]: Sync: Monad: Logger](gameManager: GameManager[F]): HttpRoutes[F] = {
+  def gameHistoryRoutes[F[_]: Async: Logger](gameManager: GameManager[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
     import dev.rmaiun.protocol.http.codec.FullCodec._
     import dsl._
@@ -179,7 +170,7 @@ object SoosRoutes {
     }
   }
 
-  def eloPointsRoutes[F[_]: Sync: Monad: Logger](gameManager: GameManager[F]): HttpRoutes[F] = {
+  def eloPointsRoutes[F[_]: Async: Logger](gameManager: GameManager[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
     import dev.rmaiun.protocol.http.codec.FullCodec._
     import dsl._
@@ -201,7 +192,7 @@ object SoosRoutes {
     }
   }
 
-  def seasonRoutes[F[_]: Sync: Monad: Logger](seasonManager: SeasonManager[F]): HttpRoutes[F] = {
+  def seasonRoutes[F[_]: Async: Logger](seasonManager: SeasonManager[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
     import dev.rmaiun.protocol.http.codec.FullCodec._
     import dsl._
@@ -229,7 +220,7 @@ object SoosRoutes {
     }
   }
 
-  def archiveRoutes[F[_]: Sync: Monad: Logger]: HttpRoutes[F] = {
+  def archiveRoutes[F[_]: Async: Logger]: HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
     import dsl._
 

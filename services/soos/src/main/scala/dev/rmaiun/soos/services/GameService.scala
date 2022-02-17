@@ -4,10 +4,10 @@ import cats.Monad
 import cats.data.NonEmptyList
 import cats.effect.Sync
 import dev.rmaiun.errorhandling.ThrowableOps._
-import dev.rmaiun.flowtypes.Flow.Flow
-import dev.rmaiun.soos.db.entities.{ EloPoints, GameHistory }
-import dev.rmaiun.soos.db.projections.{ EloPointExtended, EloPointsData, GameHistoryData }
-import dev.rmaiun.soos.dtos.{ EloPointsCriteria, GameHistoryCriteria }
+import dev.rmaiun.flowtypes.Flow.{Flow, MonadThrowable}
+import dev.rmaiun.soos.db.entities.{EloPoints, GameHistory}
+import dev.rmaiun.soos.db.projections.{EloPointExtended, EloPointsData, GameHistoryData}
+import dev.rmaiun.soos.dtos.{EloPointsCriteria, GameHistoryCriteria}
 import dev.rmaiun.soos.repositories.GameRepo
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
@@ -25,7 +25,7 @@ trait GameService[F[_]] {
 object GameService {
   def apply[F[_]](implicit ev: GameService[F]): GameService[F] = ev
 
-  def impl[F[_]: Monad: Sync](gameRepo: GameRepo[F], xa: HikariTransactor[F]): GameService[F] = new GameService[F] {
+  def impl[F[_]: MonadThrowable](gameRepo: GameRepo[F], xa: HikariTransactor[F]): GameService[F] = new GameService[F] {
     override def createEloPoint(ep: EloPoints): Flow[F, EloPoints] =
       gameRepo.createEloPoint(ep).transact(xa).attemptSql.adaptError
 
