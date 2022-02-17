@@ -4,7 +4,7 @@ import cats.Monad
 import cats.data.Kleisli
 import cats.effect.kernel.Ref
 import cats.effect.std.Dispatcher
-import cats.effect.{Async, Clock, Sync}
+import cats.effect.{ Async, Clock, Sync }
 import dev.profunktor.fs2rabbit.config.Fs2RabbitConfig
 import dev.profunktor.fs2rabbit.config.declaration._
 import dev.profunktor.fs2rabbit.interpreter.RabbitClient
@@ -26,11 +26,9 @@ import java.util.concurrent.Executors
 import scala.collection.immutable.Queue
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutorService}
+import scala.concurrent.{ ExecutionContext, ExecutionContextExecutorService }
 object Server {
   implicit def unsafeLogger[F[_]: Sync: Monad]: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]
-
-  val clientEC: ExecutionContextExecutorService = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool())
 
   def config(cfg: Config): Fs2RabbitConfig = Fs2RabbitConfig(
     virtualHost = cfg.broker.virtualHost,
@@ -110,7 +108,7 @@ object Server {
       // With Middlewares in place
       finalHttpApp = org.http4s.server.middleware.Logger.httpApp(logHeaders = true, logBody = true)(module.httpApp)
       exitCode <-
-        BlazeServerBuilder[F](clientEC)
+        BlazeServerBuilder[F]
           .bindHttp(cfg.server.port, cfg.server.host)
           .withHttpApp(finalHttpApp)
           .serve

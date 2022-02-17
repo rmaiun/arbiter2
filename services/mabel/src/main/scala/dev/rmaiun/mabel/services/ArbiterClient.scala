@@ -2,7 +2,7 @@ package dev.rmaiun.mabel.services
 
 import cats.data.EitherT
 import cats.effect.Async
-import cats.{Functor, Monad}
+import cats.{ Functor, Monad }
 import dev.rmaiun.errorhandling.errors.codec.ErrorDtoOut
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
@@ -11,12 +11,12 @@ import dev.rmaiun.mabel.services.ConfigProvider.Config
 import dev.rmaiun.mabel.utils.Constants
 import dev.rmaiun.protocol.http.GameDtoSet._
 import dev.rmaiun.protocol.http.RealmDtoSet._
-import dev.rmaiun.protocol.http.SeasonDtoSet.{FindSeasonWithoutNotificationDtoOut, NotifySeasonDtoOut}
+import dev.rmaiun.protocol.http.SeasonDtoSet.{ FindSeasonWithoutNotificationDtoOut, NotifySeasonDtoOut }
 import dev.rmaiun.protocol.http.UserDtoSet._
 import dev.rmaiun.protocol.http.codec.FullCodec._
 import dev.rmaiun.serverauth.middleware.Arbiter2Middleware
-import io.circe.{Decoder, Encoder}
-import org.http4s.Method.{GET, POST}
+import io.circe.{ Decoder, Encoder }
+import org.http4s.Method.{ GET, POST }
 import org.http4s.Status.BadRequest
 import org.http4s._
 import org.http4s.circe._

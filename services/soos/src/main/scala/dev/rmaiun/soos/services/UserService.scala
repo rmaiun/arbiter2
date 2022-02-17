@@ -4,8 +4,8 @@ import cats.Monad
 import cats.effect.Sync
 import dev.rmaiun.errorhandling.ThrowableOps._
 import dev.rmaiun.flowtypes.Flow
-import dev.rmaiun.flowtypes.Flow.{Flow, MonadThrowable}
-import dev.rmaiun.soos.db.entities.{User, UserRealmRole}
+import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
+import dev.rmaiun.soos.db.entities.{ User, UserRealmRole }
 import dev.rmaiun.soos.errors.UserErrors.UserNotFoundException
 import dev.rmaiun.soos.repositories.UserRepo
 import doobie.hikari.HikariTransactor

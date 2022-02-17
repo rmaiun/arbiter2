@@ -4,8 +4,8 @@ import cats.Monad
 import cats.effect.kernel.Async
 import cats.effect.Clock
 import dev.rmaiun.serverauth.middleware.Arbiter2Middleware
-import dev.rmaiun.soos.helpers.{ConfigProvider, DumpExporter, TransactorProvider, ZipDataProvider}
-import dev.rmaiun.soos.managers.{GameManager, RealmManager, SeasonManager, UserManager}
+import dev.rmaiun.soos.helpers.{ ConfigProvider, DumpExporter, TransactorProvider, ZipDataProvider }
+import dev.rmaiun.soos.managers.{ GameManager, RealmManager, SeasonManager, UserManager }
 import dev.rmaiun.soos.repositories._
 import dev.rmaiun.soos.routes.SoosRoutes
 import dev.rmaiun.soos.services._

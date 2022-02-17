@@ -5,13 +5,13 @@ import cats.effect.Sync
 import cats.syntax.apply._
 import cats.syntax.foldable._
 import dev.profunktor.fs2rabbit.model.AmqpEnvelope
-import dev.rmaiun.flowtypes.Flow.{Flow, MonadThrowable}
-import dev.rmaiun.flowtypes.{FLog, Flow}
-import dev.rmaiun.mabel.dtos.{BotRequest, CmdType, ProcessorResponse}
-import dev.rmaiun.mabel.errors.Errors.{NoProcessorFound, UserIsNotAuthorized}
+import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
+import dev.rmaiun.flowtypes.{ FLog, Flow }
+import dev.rmaiun.mabel.dtos.{ BotRequest, CmdType, ProcessorResponse }
+import dev.rmaiun.mabel.errors.Errors.{ NoProcessorFound, UserIsNotAuthorized }
 import dev.rmaiun.mabel.postprocessor.PostProcessor
 import dev.rmaiun.mabel.processors.Processor
-import dev.rmaiun.mabel.utils.Constants.{PREFIX, SUFFIX}
+import dev.rmaiun.mabel.utils.Constants.{ PREFIX, SUFFIX }
 import dev.rmaiun.mabel.utils.IdGen
 import io.circe.parser._
 import org.http4s.client.ConnectionFailure

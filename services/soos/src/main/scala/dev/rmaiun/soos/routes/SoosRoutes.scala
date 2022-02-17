@@ -1,26 +1,35 @@
 package dev.rmaiun.soos.routes
 
-import cats.effect.{Async, Sync}
-import cats.{Applicative, Monad}
+import cats.effect.{ Async, Sync }
+import cats.{ Applicative, Monad }
 import dev.rmaiun.errorhandling.errors.AppRuntimeException
 import dev.rmaiun.errorhandling.errors.codec._
 import dev.rmaiun.flowtypes.Flow.Flow
-import dev.rmaiun.flowtypes.{FLog, Flow}
-import dev.rmaiun.protocol.http.GameDtoSet.{AddEloPointsDtoIn, AddGameHistoryDtoIn, ListEloPointsDtoIn, ListGameHistoryDtoIn}
-import dev.rmaiun.protocol.http.RealmDtoSet.{GetRealmDtoIn, RegisterRealmDtoIn, UpdateRealmAlgorithmDtoIn}
-import dev.rmaiun.protocol.http.SeasonDtoSet.{CreateSeasonDtoIn, FindSeasonWithoutNotificationDtoIn, NotifySeasonDtoIn}
+import dev.rmaiun.flowtypes.{ FLog, Flow }
+import dev.rmaiun.protocol.http.GameDtoSet.{
+  AddEloPointsDtoIn,
+  AddGameHistoryDtoIn,
+  ListEloPointsDtoIn,
+  ListGameHistoryDtoIn
+}
+import dev.rmaiun.protocol.http.RealmDtoSet.{ GetRealmDtoIn, RegisterRealmDtoIn, UpdateRealmAlgorithmDtoIn }
+import dev.rmaiun.protocol.http.SeasonDtoSet.{
+  CreateSeasonDtoIn,
+  FindSeasonWithoutNotificationDtoIn,
+  NotifySeasonDtoIn
+}
 import dev.rmaiun.protocol.http.UserDtoSet._
-import dev.rmaiun.soos.managers.{GameManager, RealmManager, SeasonManager, UserManager}
+import dev.rmaiun.soos.managers.{ GameManager, RealmManager, SeasonManager, UserManager }
 import org.typelevel.log4cats.Logger
-import io.circe.{Decoder, Encoder}
+import io.circe.{ Decoder, Encoder }
 import org.http4s._
-import org.http4s.circe.{jsonEncoderOf, jsonOf}
+import org.http4s.circe.{ jsonEncoderOf, jsonOf }
 import org.http4s.dsl.Http4sDsl
-import org.http4s.dsl.impl.{OptionalQueryParamDecoderMatcher, QueryParamDecoderMatcher}
+import org.http4s.dsl.impl.{ OptionalQueryParamDecoderMatcher, QueryParamDecoderMatcher }
 object SoosRoutes {
 
   implicit def errorEntityEncoder[F[_]: Applicative, T: Encoder]: EntityEncoder[F, T] = jsonEncoderOf[F, T]
-  implicit def errorEntityDecoder[F[_]: Async, T: Decoder]: EntityDecoder[F, T]        = jsonOf[F, T]
+  implicit def errorEntityDecoder[F[_]: Async, T: Decoder]: EntityDecoder[F, T]       = jsonOf[F, T]
   implicit val dataListQueryParamDecoder: QueryParamDecoder[List[String]] =
     QueryParamDecoder[String].map(_.split(",").toList)
 

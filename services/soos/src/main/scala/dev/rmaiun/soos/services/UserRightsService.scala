@@ -2,9 +2,9 @@ package dev.rmaiun.soos.services
 
 import cats.Monad
 import dev.rmaiun.flowtypes.Flow
-import dev.rmaiun.flowtypes.Flow.{Flow, MonadThrowable}
+import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
 import dev.rmaiun.soos.db.entities.Role
-import dev.rmaiun.soos.errors.UserErrors.{NoWritePermissionForUserFoundException, UserNotAuthorizedException}
+import dev.rmaiun.soos.errors.UserErrors.{ NoWritePermissionForUserFoundException, UserNotAuthorizedException }
 import dev.rmaiun.soos.helpers.ConfigProvider.Config
 
 trait UserRightsService[F[_]] {

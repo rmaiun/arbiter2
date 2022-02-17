@@ -4,7 +4,7 @@ import cats.Monad
 import cats.effect.Sync
 import dev.rmaiun.errorhandling.ThrowableOps._
 import dev.rmaiun.flowtypes.Flow
-import dev.rmaiun.flowtypes.Flow.{Flow, MonadThrowable}
+import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
 import dev.rmaiun.soos.db.entities.Role
 import dev.rmaiun.soos.db.projections.UserRole
 import dev.rmaiun.soos.errors.RoleErrors.RoleNotFoundRuntimeException

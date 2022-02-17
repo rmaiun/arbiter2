@@ -10,7 +10,7 @@ import dev.rmaiun.mabel.dtos.CmdType.ADD_PLAYER_CMD
 import dev.rmaiun.mabel.dtos._
 import dev.rmaiun.mabel.services.ArbiterClient
 import dev.rmaiun.mabel.utils.Constants._
-import dev.rmaiun.mabel.utils.{Constants, IdGen}
+import dev.rmaiun.mabel.utils.{ Constants, IdGen }
 import dev.rmaiun.protocol.http.UserDtoSet._
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger

@@ -33,7 +33,7 @@ case class SeasonRoutesTest()
     val response = service.run(
       Request(method = GET, uri = uri"/notify".withQueryParam("season", "S1|1999").withQueryParam("realm", "test2"))
     )
-    val data = response.map(r => r.as[NotifySeasonDtoOut]).unsafeRunSync.unsafeRunSync()
+    val data = response.map(r => r.as[NotifySeasonDtoOut]).unsafeRunSync().unsafeRunSync()
     data.season should be("S1|1999")
     data.notified.isBefore(ZonedDateTime.now) should be(true)
   }

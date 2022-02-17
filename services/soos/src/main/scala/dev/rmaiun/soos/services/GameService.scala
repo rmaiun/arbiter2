@@ -4,10 +4,10 @@ import cats.Monad
 import cats.data.NonEmptyList
 import cats.effect.Sync
 import dev.rmaiun.errorhandling.ThrowableOps._
-import dev.rmaiun.flowtypes.Flow.{Flow, MonadThrowable}
-import dev.rmaiun.soos.db.entities.{EloPoints, GameHistory}
-import dev.rmaiun.soos.db.projections.{EloPointExtended, EloPointsData, GameHistoryData}
-import dev.rmaiun.soos.dtos.{EloPointsCriteria, GameHistoryCriteria}
+import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
+import dev.rmaiun.soos.db.entities.{ EloPoints, GameHistory }
+import dev.rmaiun.soos.db.projections.{ EloPointExtended, EloPointsData, GameHistoryData }
+import dev.rmaiun.soos.dtos.{ EloPointsCriteria, GameHistoryCriteria }
 import dev.rmaiun.soos.repositories.GameRepo
 import doobie.hikari.HikariTransactor
 import doobie.implicits._

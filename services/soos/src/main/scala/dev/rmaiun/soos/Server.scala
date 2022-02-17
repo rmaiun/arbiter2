@@ -12,14 +12,10 @@ import org.http4s.server.middleware.Logger
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-import java.util.concurrent.Executors
-import scala.concurrent.{ ExecutionContext, ExecutionContextExecutorService }
-
 object Server {
   implicit def unsafeLogger[F[_]: Sync]: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]
 
-  val clientEC: ExecutionContextExecutorService = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool())
-  implicit val cfg: ConfigProvider.Config       = ConfigProvider.provideConfig
+  implicit val cfg: ConfigProvider.Config = ConfigProvider.provideConfig
 
   def dumpCronEvaluation[F[_]: Async](exporter: DumpExporter[F])(implicit T: Clock[F]): Stream[F, Unit] = {
     val cronScheduler: Scheduler[F, CronExpr] = Cron4sScheduler.systemDefault[F]

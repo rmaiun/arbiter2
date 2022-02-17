@@ -1,21 +1,21 @@
 package dev.rmaiun.mabel.routes
 
-import cats.effect.{Concurrent, Sync}
-import cats.{Applicative, Monad}
+import cats.effect.{ Concurrent, Sync }
+import cats.{ Applicative, Monad }
 import dev.rmaiun.errorhandling.errors.AppRuntimeException
 import dev.rmaiun.errorhandling.errors.codec._
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.services.PingManager
-import io.circe.{Decoder, Encoder}
-import org.http4s.circe.{jsonEncoderOf, jsonOf}
+import io.circe.{ Decoder, Encoder }
+import org.http4s.circe.{ jsonEncoderOf, jsonOf }
 import org.http4s.dsl.Http4sDsl
-import org.http4s.{EntityDecoder, EntityEncoder, HttpRoutes, Response}
+import org.http4s.{ EntityDecoder, EntityEncoder, HttpRoutes, Response }
 import org.typelevel.log4cats.Logger
 
 object SysRoutes {
 
-  implicit def errorEntityEncoder[F[_]: Applicative, T: Encoder]: EntityEncoder[F, T] = jsonEncoderOf[F, T]
-  implicit def errorEntityDecoder[F[_]: Sync:Concurrent, T: Decoder]: EntityDecoder[F, T]        = jsonOf[F, T]
+  implicit def errorEntityEncoder[F[_]: Applicative, T: Encoder]: EntityEncoder[F, T]      = jsonEncoderOf[F, T]
+  implicit def errorEntityDecoder[F[_]: Sync: Concurrent, T: Decoder]: EntityDecoder[F, T] = jsonOf[F, T]
 
   def flowToResponse[F[_]: Sync: Logger, T](
     flow: Flow[F, T]
