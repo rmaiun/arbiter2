@@ -111,6 +111,7 @@ lazy val dependencies =
     val fs2cron        = "eu.timepit"                  %% "fs2-cron-cron4s"      % "0.7.1"
     val scaffeine      = "com.github.blemale"          %% "scaffeine"            % "5.1.2"
     val tapirHttp4s    = "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"  % "0.20.0-M9"
+    val tapirJsonCirce = "com.softwaremill.sttp.tapir" %% "tapir-json-circe"     % "0.20.0-M9"
 
     val scalatest = "org.scalatest"     %% "scalatest"   % ScalaTestVersion % Test
     val spec2Core = "org.specs2"        %% "specs2-core" % Specs2Version    % Test
@@ -190,6 +191,7 @@ lazy val mabelDependencies = Seq(
   dependencies.fs2rabbit,
   dependencies.scaffeine,
   dependencies.tapirHttp4s,
+  dependencies.tapirJsonCirce,
   dependencies.scalatest,
   dependencies.spec2Core,
   dependencies.mockito

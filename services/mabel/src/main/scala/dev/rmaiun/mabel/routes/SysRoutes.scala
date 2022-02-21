@@ -1,15 +1,16 @@
 package dev.rmaiun.mabel.routes
 
-import cats.effect.{ Concurrent, Sync }
-import cats.{ Applicative, Monad }
+import cats.effect.{Concurrent, Sync}
+import cats.{Applicative, Monad}
 import dev.rmaiun.errorhandling.errors.AppRuntimeException
 import dev.rmaiun.errorhandling.errors.codec._
 import dev.rmaiun.flowtypes.Flow.Flow
+import dev.rmaiun.mabel.Program.InternalCache
 import dev.rmaiun.mabel.services.PingManager
-import io.circe.{ Decoder, Encoder }
-import org.http4s.circe.{ jsonEncoderOf, jsonOf }
+import io.circe.{Decoder, Encoder}
+import org.http4s.circe.{jsonEncoderOf, jsonOf}
 import org.http4s.dsl.Http4sDsl
-import org.http4s.{ EntityDecoder, EntityEncoder, HttpRoutes, Response }
+import org.http4s.{EntityDecoder, EntityEncoder, HttpRoutes, Response}
 import org.typelevel.log4cats.Logger
 
 object SysRoutes {
@@ -52,6 +53,18 @@ object SysRoutes {
     HttpRoutes.of[F] { case GET -> Root / "ping" =>
       flowToResponse(pingMng.ping())
     }
+  }
+
+  def cacheMetrics[F[_]:Sync](cache:InternalCache):HttpRoutes[F] = {
+    import sttp.tapir._
+    import sttp.tapir.json.circe._
+    import sttp.tapir.generic.auto._
+
+    val baseEndpoint = endpoint.in("api"/"v1")
+      .errorOut(statusCode.and(jsonBody[ErrorDtoOut]))
+
+    val cacheMetricsEndpoint = baseEndpoint
+      .in("cache" / "metrics")
   }
 
 }
