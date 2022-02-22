@@ -75,7 +75,8 @@ object Program {
 
     //http app
     lazy val httpApp = Router[F](
-      "/sys" -> SysRoutes.sysRoutes(pingManager)
+      "/sys" -> SysRoutes.sysRoutes(pingManager),
+      "/proto" -> SysRoutes.cacheMetrics(cache)
     ).orNotFound
     // query publisher
     lazy val seasonResultsTrigger = SeasonResultsTrigger.impl(arbiterClient, amqpStructures.botInPublisher)

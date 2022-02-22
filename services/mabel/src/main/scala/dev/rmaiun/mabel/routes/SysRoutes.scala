@@ -1,17 +1,19 @@
 package dev.rmaiun.mabel.routes
 
-import cats.effect.{Concurrent, Sync}
+import cats.effect.{Async, Concurrent, Sync}
 import cats.{Applicative, Monad}
 import dev.rmaiun.errorhandling.errors.AppRuntimeException
 import dev.rmaiun.errorhandling.errors.codec._
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.Program.InternalCache
 import dev.rmaiun.mabel.services.PingManager
+import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder}
 import org.http4s.circe.{jsonEncoderOf, jsonOf}
 import org.http4s.dsl.Http4sDsl
 import org.http4s.{EntityDecoder, EntityEncoder, HttpRoutes, Response}
 import org.typelevel.log4cats.Logger
+import sttp.model.StatusCode
 
 object SysRoutes {
 
@@ -46,7 +48,15 @@ object SysRoutes {
     }
   }
 
-  def sysRoutes[F[_]: Sync: Logger](pingMng: PingManager[F]): HttpRoutes[F] = {
+  case class MetricCriteria(value: String)
+  implicit val MetricCriteriaEncoder: Encoder[MetricCriteria] = deriveEncoder[MetricCriteria]
+  implicit val MetricCriteriaDecoder: Decoder[MetricCriteria] = deriveDecoder[MetricCriteria]
+
+  case class MetricResult(cache: String, data: Map[String, String])
+  implicit val MetricResultEncoder: Encoder[MetricResult]   = deriveEncoder[MetricResult]
+  implicit val MetricResultInDecoder: Decoder[MetricResult] = deriveDecoder[MetricResult]
+
+  def sysRoutes[F[_]: Async: Logger](pingMng: PingManager[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}
     import dsl._
 
@@ -55,16 +65,39 @@ object SysRoutes {
     }
   }
 
-  def cacheMetrics[F[_]:Sync](cache:InternalCache):HttpRoutes[F] = {
+  def cacheMetrics[F[_]: Async](cache: InternalCache): HttpRoutes[F] = {
     import sttp.tapir._
-    import sttp.tapir.json.circe._
+    import sttp.tapir.docs.openapi._
     import sttp.tapir.generic.auto._
+    import sttp.tapir.json.circe._
+    import sttp.tapir.openapi.circe.yaml._
+    import sttp.tapir.server.http4s._
 
-    val baseEndpoint = endpoint.in("api"/"v1")
+    val baseEndpoint = endpoint
+      .in("api" / "v1")
       .errorOut(statusCode.and(jsonBody[ErrorDtoOut]))
 
-    val cacheMetricsEndpoint = baseEndpoint
-      .in("cache" / "metrics")
+    val body = jsonBody[MetricCriteria]
+      .description("Metric input dto description, where value is oneOf['cache']")
+      .example(MetricCriteria("cache"))
+
+    val cacheMetricsEndpoint: Endpoint[Unit, MetricCriteria, (StatusCode, ErrorDtoOut), MetricResult, Any] =
+      baseEndpoint.get
+        .in("metrics")
+        .in(body)
+        .out(jsonBody[MetricResult])
+
+    val docs = OpenAPIDocsInterpreter().toOpenAPI(cacheMetricsEndpoint, "Mabel", "1.0")
+    println(docs.toYaml)
+    Http4sServerInterpreter().toRoutes(cacheMetricsEndpoint.serverLogic(dtoIn => cacheStats(dtoIn, cache)))
   }
+
+  private def cacheStats[F[_]](dtoIn: MetricCriteria, cache: InternalCache)(implicit
+    F: Sync[F]
+  ): F[Either[(StatusCode, ErrorDtoOut), MetricResult]] =
+    dtoIn.value match {
+      case "cache" => F.pure(Right(MetricResult("test", cache.asMap().toMap)))
+      case _       => F.pure(Left((StatusCode.BadRequest, ErrorDtoOut("invalidCriteria", "Invalid criteria", Some("mabel")))))
+    }
 
 }

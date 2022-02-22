@@ -106,7 +106,7 @@ object Server {
       module      = Program.initHttpApp(client, structs, ref)
 
       // With Middlewares in place
-      finalHttpApp = org.http4s.server.middleware.Logger.httpApp(logHeaders = true, logBody = true)(module.httpApp)
+      finalHttpApp = org.http4s.server.middleware.Logger.httpApp(logHeaders = true, logBody = false)(module.httpApp)
       exitCode <-
         BlazeServerBuilder[F]
           .bindHttp(cfg.server.port, cfg.server.host)
