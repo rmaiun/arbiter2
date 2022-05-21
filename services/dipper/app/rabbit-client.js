@@ -42,14 +42,15 @@ class RabbitClient {
         try {
           console.log(`Sending message to telegram chatId: ${data.chatId}, msgId: ${data.msgId}`)
           await bot.telegram.sendMessage(data.chatId, data.result, {
-            parse_mode: 'Markdown', reply_markup: JSON.stringify({
+            parse_mode: 'Markdown',
+            reply_markup: JSON.stringify({
               keyboard: [[{ text: 'Season Stats \uD83D\uDCC8' }, { text: 'Elo Rating \uD83D\uDDFF' }], [{ text: 'Last Games \uD83D\uDCCB' }]], resize_keyboard: true
             })
           })
-          consChannel.ack(msg)
         } catch (e) {
           console.error(e)
-          consChannel.nack(msg)
+        } finally {
+          consChannel.ack(msg)
         }
       }
     })
