@@ -7,7 +7,7 @@ import dev.rmaiun.mabel.dtos.BotRequest
 import dev.rmaiun.mabel.dtos.CmdType.SEASON_RESULTS_CMD
 import dev.rmaiun.mabel.postprocessor.SeasonResultPostProcessor
 import dev.rmaiun.mabel.services.ConfigProvider.AppCfg
-import dev.rmaiun.mabel.services.{ ArbiterClient, PublisherProxy }
+import dev.rmaiun.mabel.services.ArbiterClient
 import dev.rmaiun.mabel.utils.Loggable
 import dev.rmaiun.protocol.http.GameDtoSet.{ ListGameHistoryDtoOut, StoredGameHistoryDto }
 import dev.rmaiun.protocol.http.SeasonDtoSet.{ FindSeasonWithoutNotificationDtoOut, NotifySeasonDtoOut, SeasonDto }
@@ -18,6 +18,7 @@ import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import cats.effect.unsafe.implicits.global
+import dev.rmaiun.mabel.helpers.PublisherProxy
 
 class SeasonResultsPostProcessorSuite extends AnyFlatSpec with Matchers with EitherValues with Loggable {
   "SeasonResultsPostProcessor" should "send right number of messages for unrated players" in {

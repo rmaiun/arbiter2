@@ -11,10 +11,10 @@
     </encoder>
   </appender>
 
-  <logger name="dev.rmaiun.mabel.services.ReportCache" level="DEBUG" additivity="false">
+  <logger name="dev.rmaiun.mabel.helpers.ReportCache" level="DEBUG" additivity="false">
     <appender-ref ref="STDOUT"/>
   </logger>
-  <logger name="dev.rmaiun.mabel.services.RateLimitedPublisher" level="INFO" additivity="false">
+  <logger name="dev.rmaiun.mabel.helpers.RateLimitedPublisher" level="INFO" additivity="false">
     <appender-ref ref="STDOUT"/>
   </logger>
 

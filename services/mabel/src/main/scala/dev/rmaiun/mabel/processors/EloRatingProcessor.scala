@@ -4,9 +4,10 @@ import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.dtos.CmdType._
 import dev.rmaiun.mabel.dtos.{ BotRequest, Definition, ProcessorResponse }
+import dev.rmaiun.mabel.helpers.ReportCache
 import dev.rmaiun.mabel.services.ReportCache.EloRatingReport
-import dev.rmaiun.mabel.services.{ ArbiterClient, ReportCache }
-import dev.rmaiun.mabel.utils.Constants.{ LINE_SEPARATOR, _ }
+import dev.rmaiun.mabel.services.ArbiterClient
+import dev.rmaiun.mabel.utils.Constants._
 import dev.rmaiun.mabel.utils.IdGen
 import dev.rmaiun.protocol.http.GameDtoSet.ListEloPointsDtoOut
 case class EloRatingProcessor[F[_]: Monad](ac: ArbiterClient[F], cache: ReportCache[F]) extends Processor[F] {

@@ -1,7 +1,7 @@
 package dev.rmaiun.mabel.commands
 
-import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
-import io.circe.{ Decoder, Encoder }
+import io.circe.Codec
+import io.circe.generic.semiauto.deriveCodec
 
 import java.time.ZonedDateTime
 
@@ -17,6 +17,5 @@ case class AddRoundCmd(
 )
 
 object AddRoundCmd {
-  implicit val AddRoundCmdDecoder: Decoder[AddRoundCmd] = deriveDecoder[AddRoundCmd]
-  implicit val AddRoundCmdEncoder: Encoder[AddRoundCmd] = deriveEncoder[AddRoundCmd]
+  implicit val AddRoundCmdCodec: Codec[AddRoundCmd] = deriveCodec[AddRoundCmd]
 }

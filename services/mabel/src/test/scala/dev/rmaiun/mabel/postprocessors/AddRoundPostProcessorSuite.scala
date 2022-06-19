@@ -6,7 +6,7 @@ import dev.rmaiun.mabel.commands.AddRoundCmd
 import dev.rmaiun.mabel.dtos.BotRequest
 import dev.rmaiun.mabel.dtos.CmdType.ADD_ROUND_CMD
 import dev.rmaiun.mabel.postprocessor.AddRoundPostProcessor
-import dev.rmaiun.mabel.services.{ ArbiterClient, PublisherProxy }
+import dev.rmaiun.mabel.services.ArbiterClient
 import dev.rmaiun.mabel.utils.Loggable
 import dev.rmaiun.protocol.http.UserDtoSet.{ FindRealmAdminsDtoOut, FindUserDtoOut, UserDto, UserRoleData }
 import org.mockito.ArgumentMatchers.any
@@ -15,6 +15,7 @@ import org.scalatest.EitherValues
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import cats.effect.unsafe.implicits.global
+import dev.rmaiun.mabel.helpers.PublisherProxy
 
 class AddRoundPostProcessorSuite extends AnyFlatSpec with Matchers with EitherValues with Loggable {
   private val arbiterClient = mock(classOf[ArbiterClient[IO]])

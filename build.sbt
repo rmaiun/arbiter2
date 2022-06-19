@@ -76,6 +76,12 @@ lazy val mabel = (project in file("services/mabel"))
     libraryDependencies ++= mabelDependencies,
     Test / parallelExecution := false
   )
+  .settings(
+    flywayUrl := s"jdbc:mysql://${System.getProperty("fw.host", "localhost")}:3306/arbiter?allowPublicKeyRetrieval=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8",
+    flywayUser := System.getProperty("fw.user", "root"),
+    flywayPassword := System.getProperty("fw.pass", "rootpassword"),
+    flywayLocations += System.getProperty("fw.locations", "db/test")
+  )
   .dependsOn(common, tftypes, validation, errorHandling, protocol, serverAuth)
   .enablePlugins(FlywayPlugin)
 
@@ -190,9 +196,12 @@ lazy val mabelDependencies = Seq(
   dependencies.fs2rabbit,
   dependencies.scaffeine,
   dependencies.tapirHttp4s,
+  dependencies.mockito,
+  dependencies.dropboxSdk,
+  dependencies.commons,
+  dependencies.fs2cron,
   dependencies.scalatest,
-  dependencies.spec2Core,
-  dependencies.mockito
+  dependencies.spec2Core
 )
 
 lazy val settings = Seq(

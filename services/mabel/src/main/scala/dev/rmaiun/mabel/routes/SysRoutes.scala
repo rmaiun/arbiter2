@@ -5,7 +5,7 @@ import cats.{ Applicative, Monad }
 import dev.rmaiun.errorhandling.errors.AppRuntimeException
 import dev.rmaiun.errorhandling.errors.codec._
 import dev.rmaiun.flowtypes.Flow.Flow
-import dev.rmaiun.mabel.services.PingManager
+import dev.rmaiun.mabel.helpers.PingManager
 import io.circe.{ Decoder, Encoder }
 import org.http4s.circe.{ jsonEncoderOf, jsonOf }
 import org.http4s.dsl.Http4sDsl

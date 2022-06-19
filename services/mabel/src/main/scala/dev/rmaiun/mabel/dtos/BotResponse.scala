@@ -1,11 +1,10 @@
 package dev.rmaiun.mabel.dtos
 
-import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
-import io.circe.{ Decoder, Encoder }
+import io.circe.{Codec, Decoder}
+import io.circe.generic.semiauto.deriveCodec
 
 case class BotResponse(chatId: Long, msgId: Int, result: String)
 
 object BotResponse {
-  implicit val BotResponseDecoder: Decoder[BotResponse] = deriveDecoder[BotResponse]
-  implicit val BotResponseEncoder: Encoder[BotResponse] = deriveEncoder[BotResponse]
+  implicit val BotResponseCodec: Codec[BotResponse] = deriveCodec[BotResponse]
 }
