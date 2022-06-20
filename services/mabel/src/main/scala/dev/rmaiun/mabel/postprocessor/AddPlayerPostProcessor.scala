@@ -7,15 +7,15 @@ import dev.rmaiun.mabel.commands.AddPlayerCmd
 import dev.rmaiun.mabel.dtos.CmdType.ADD_PLAYER_CMD
 import dev.rmaiun.mabel.dtos.{ BotRequest, BotResponse, Definition }
 import dev.rmaiun.mabel.helpers.PublisherProxy
-import dev.rmaiun.mabel.services.ArbiterClient
+import dev.rmaiun.mabel.managers.UserManager
 import dev.rmaiun.mabel.utils.Constants._
-import dev.rmaiun.mabel.utils.IdGen
-import dev.rmaiun.protocol.http.UserDtoSet.UserRoleData
+import dev.rmaiun.mabel.utils.{ Constants, IdGen }
+import dev.rmaiun.protocol.http.UserDtoSet.{ FindRealmAdminsDtoIn, UserRoleData }
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 case class AddPlayerPostProcessor[F[_]: Sync](
-  arbiterClient: ArbiterClient[F],
+  userManager: UserManager[F],
   cmdPublisher: PublisherProxy[F]
 ) extends PostProcessor[F] {
   implicit val logger: SelfAwareStructuredLogger[F] = Slf4jLogger.getLoggerFromClass[F](getClass)
@@ -31,7 +31,7 @@ case class AddPlayerPostProcessor[F[_]: Sync](
 
   private def notifyAdmins(cmd: AddPlayerCmd): Flow[F, Unit] =
     for {
-      adminsDto <- arbiterClient.findRealmAdmins()
+      adminsDto <- userManager.findRealmAdmins(FindRealmAdminsDtoIn(Constants.defaultRealm))
       admins     = adminsDto.adminUsers.filter(urd => urd.tid.fold(false)(tid => tid != cmd.moderator))
       _         <- sendToAdministrators(admins, cmd.surname)
     } yield ()
@@ -51,8 +51,8 @@ case class AddPlayerPostProcessor[F[_]: Sync](
 object AddPlayerPostProcessor {
   def apply[F[_]](implicit ev: AddPlayerPostProcessor[F]): AddPlayerPostProcessor[F] = ev
   def impl[F[_]: Sync](
-    ac: ArbiterClient[F],
+    userManager: UserManager[F],
     cmdPublisher: PublisherProxy[F]
   ): AddPlayerPostProcessor[F] =
-    new AddPlayerPostProcessor[F](ac, cmdPublisher)
+    new AddPlayerPostProcessor[F](userManager, cmdPublisher)
 }

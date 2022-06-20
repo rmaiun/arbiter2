@@ -1,11 +1,11 @@
-package dev.rmaiun.soos.repository
+package dev.rmaiun.mabel.repository
 
 import cats.effect.IO
-import dev.rmaiun.soos.db.entities.{ Algorithm, Realm, Season }
-import dev.rmaiun.soos.helpers.ConfigProvider.Config
-import dev.rmaiun.soos.helpers.{ ConfigProvider, TransactorProvider }
-import dev.rmaiun.soos.repositories.{ AlgorithmRepo, RealmRepo, SeasonRepo }
-import dev.rmaiun.soos.utils.IoTestRuntime
+import dev.rmaiun.mabel.db.entities.{ Algorithm, Realm, Season }
+import dev.rmaiun.mabel.helpers.ConfigProvider.Config
+import dev.rmaiun.mabel.helpers.{ ConfigProvider, TransactorProvider }
+import dev.rmaiun.mabel.repositories.{ AlgorithmRepo, RealmRepo, SeasonRepo }
+import dev.rmaiun.mabel.utils.IoTestRuntime
 import doobie.ConnectionIO
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
@@ -42,9 +42,9 @@ class SeasonRepoTest extends AnyFlatSpec with Matchers with BeforeAndAfterEach w
 
   it should "successfully get by season name and realm name" in {
     val action = for {
-      alg     <- createTestAlgorithm
+      _ <- createTestAlgorithm
       _       <- createTestRealm
-      created <- createSeason(defaultSeason)
+      _ <- createSeason(defaultSeason)
       found   <- seasonRepo.getBySeasonNameRealm(defaultSeason.name, defaultRealm.name)
     } yield found
 

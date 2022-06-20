@@ -1,7 +1,7 @@
 package dev.rmaiun.mabel.processors
 
-import cats.Monad
 import cats.effect.Sync
+import cats.syntax.option._
 import dev.rmaiun.common.{ DateFormatter, SeasonHelper }
 import dev.rmaiun.flowtypes.FLog
 import dev.rmaiun.flowtypes.Flow.Flow
@@ -10,18 +10,19 @@ import dev.rmaiun.mabel.commands.AddRoundCmd._
 import dev.rmaiun.mabel.dtos.CmdType._
 import dev.rmaiun.mabel.dtos.EloRatingDto.{ CalculatedPoints, EloPlayers, UserCalculatedPoints }
 import dev.rmaiun.mabel.dtos.{ BotRequest, Definition, ProcessorResponse }
-import dev.rmaiun.mabel.helpers.{EloPointsCalculator, ReportCache}
-import dev.rmaiun.mabel.services.ReportCache.{ EloRatingReport, SeasonReport }
-import dev.rmaiun.mabel.services.ArbiterClient
+import dev.rmaiun.mabel.helpers.ReportCache.{ EloRatingReport, SeasonReport }
+import dev.rmaiun.mabel.helpers.{ EloPointsCalculator, ReportCache }
+import dev.rmaiun.mabel.managers.{ GameManager, UserManager }
 import dev.rmaiun.mabel.utils.Constants._
 import dev.rmaiun.mabel.utils.{ Constants, IdGen }
 import dev.rmaiun.protocol.http.GameDtoSet._
-import dev.rmaiun.protocol.http.UserDtoSet.FindUserDtoOut
+import dev.rmaiun.protocol.http.UserDtoSet.{ FindUserDtoIn, FindUserDtoOut }
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 case class AddRoundProcessor[F[_]: Sync](
-  arbiterClient: ArbiterClient[F],
+  gameManager: GameManager[F],
+  userManager: UserManager[F],
   eloPointsCalculator: EloPointsCalculator[F],
   cache: ReportCache[F]
 ) extends Processor[F] {
@@ -61,10 +62,10 @@ case class AddRoundProcessor[F[_]: Sync](
       dto.shutout,
       dto.created
     )
-    arbiterClient.storeGameHistory(AddGameHistoryDtoIn(ghDto, dto.moderator))
+    gameManager.storeGameHistory(AddGameHistoryDtoIn(ghDto, dto.moderator))
   }
   private def loadPlayer(surname: String): Flow[F, FindUserDtoOut] =
-    arbiterClient.findPlayerBySurname(surname.toLowerCase)
+    userManager.findUser(FindUserDtoIn(surname.toLowerCase.some))
 
   private def calculateEloPoints(
     w1: FindUserDtoOut,
@@ -80,10 +81,10 @@ case class AddRoundProcessor[F[_]: Sync](
     val l1Dto = formDto(data.l1, moderatorTid)
     val l2Dto = formDto(data.l2, moderatorTid)
     for {
-      out1 <- arbiterClient.storeEloPoints(w1Dto)
-      out2 <- arbiterClient.storeEloPoints(w2Dto)
-      out3 <- arbiterClient.storeEloPoints(l1Dto)
-      out4 <- arbiterClient.storeEloPoints(l2Dto)
+      out1 <- gameManager.addEloPoints(w1Dto)
+      out2 <- gameManager.addEloPoints(w2Dto)
+      out3 <- gameManager.addEloPoints(l1Dto)
+      out4 <- gameManager.addEloPoints(l2Dto)
     } yield List(out1.id, out2.id, out3.id, out4.id)
   }
 
@@ -94,9 +95,10 @@ case class AddRoundProcessor[F[_]: Sync](
 object AddRoundProcessor {
   def apply[F[_]](implicit ev: AddRoundProcessor[F]): AddRoundProcessor[F] = ev
   def impl[F[_]: Sync](
-    ac: ArbiterClient[F],
+    gameManager: GameManager[F],
+    userManager: UserManager[F],
     epc: EloPointsCalculator[F],
     cache: ReportCache[F]
   ): AddRoundProcessor[F] =
-    new AddRoundProcessor[F](ac, epc, cache)
+    new AddRoundProcessor[F](gameManager, userManager, epc, cache)
 }

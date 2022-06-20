@@ -7,13 +7,14 @@ import dev.rmaiun.mabel.commands.SeasonStatsCmd
 import dev.rmaiun.mabel.dtos.CmdType.SHORT_STATS_CMD
 import dev.rmaiun.mabel.dtos.stats.SeasonShortStats
 import dev.rmaiun.mabel.dtos.{ BotRequest, Definition, ProcessorResponse }
-import dev.rmaiun.mabel.helpers.{ReportCache, StatsCalculator}
-import dev.rmaiun.mabel.services.ReportCache.SeasonReport
-import dev.rmaiun.mabel.services.ArbiterClient
+import dev.rmaiun.mabel.helpers.ReportCache.SeasonReport
+import dev.rmaiun.mabel.helpers.{ ReportCache, StatsCalculator }
+import dev.rmaiun.mabel.managers.GameManager
 import dev.rmaiun.mabel.utils.Constants._
 import dev.rmaiun.mabel.utils.IdGen
+import dev.rmaiun.protocol.http.GameDtoSet.ListGameHistoryDtoIn
 
-class ShortSeasonStatsProcessor[F[_]: Monad](ac: ArbiterClient[F], cache: ReportCache[F]) extends Processor[F] {
+class ShortSeasonStatsProcessor[F[_]: Monad](gameManager: GameManager[F], cache: ReportCache[F]) extends Processor[F] {
   override def definition: Definition = Definition.query(SHORT_STATS_CMD)
 
   override def process(input: BotRequest): Flow[F, Option[ProcessorResponse]] =
@@ -25,7 +26,7 @@ class ShortSeasonStatsProcessor[F[_]: Monad](ac: ArbiterClient[F], cache: Report
   def processInternal(input: BotRequest): Flow[F, Option[ProcessorResponse]] = {
     val action = for {
       dto         <- parseDto[SeasonStatsCmd](input.data)
-      historyList <- ac.listGameHistory(defaultRealm, dto.season)
+      historyList <- gameManager.listGameHistory(ListGameHistoryDtoIn(defaultRealm, dto.season))
     } yield {
       val stats = StatsCalculator.calculate(dto.season, historyList.games)
       val msg   = message(stats)
@@ -87,6 +88,6 @@ class ShortSeasonStatsProcessor[F[_]: Monad](ac: ArbiterClient[F], cache: Report
 
 object ShortSeasonStatsProcessor {
   def apply[F[_]](implicit ev: ShortSeasonStatsProcessor[F]): ShortSeasonStatsProcessor[F] = ev
-  def impl[F[_]: Monad](ac: ArbiterClient[F], cache: ReportCache[F]): ShortSeasonStatsProcessor[F] =
-    new ShortSeasonStatsProcessor[F](ac, cache)
+  def impl[F[_]: Monad](gameManager: GameManager[F], cache: ReportCache[F]): ShortSeasonStatsProcessor[F] =
+    new ShortSeasonStatsProcessor[F](gameManager, cache)
 }

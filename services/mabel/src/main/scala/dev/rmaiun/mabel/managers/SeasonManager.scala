@@ -3,11 +3,11 @@ package dev.rmaiun.mabel.managers
 import cats.Monad
 import dev.rmaiun.common.DateFormatter
 import dev.rmaiun.flowtypes.Flow.Flow
+import dev.rmaiun.mabel.db.entities.Season
+import dev.rmaiun.mabel.helpers.ConfigProvider.AppConfig
+import dev.rmaiun.mabel.services.{ AlgorithmService, RealmService, SeasonService }
+import dev.rmaiun.mabel.validations.SeasonValidationSet._
 import dev.rmaiun.protocol.http.SeasonDtoSet._
-import dev.rmaiun.soos.db.entities.Season
-import dev.rmaiun.soos.helpers.ConfigProvider.AppConfig
-import dev.rmaiun.soos.services.{ AlgorithmService, RealmService, SeasonService }
-import dev.rmaiun.soos.validations.SeasonValidationSet._
 import dev.rmaiun.validation.Validator
 
 trait SeasonManager[F[_]] {

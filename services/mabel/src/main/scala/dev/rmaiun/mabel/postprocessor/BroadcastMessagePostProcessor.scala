@@ -2,18 +2,19 @@ package dev.rmaiun.mabel.postprocessor
 
 import cats.Monad
 import cats.syntax.foldable._
+import cats.syntax.option._
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.commands.BroadcastMessageCmd
 import dev.rmaiun.mabel.dtos.CmdType.BROADCAST_MSG_CMD
 import dev.rmaiun.mabel.dtos.{ BotRequest, BotResponse, Definition }
 import dev.rmaiun.mabel.helpers.PublisherProxy
-import dev.rmaiun.mabel.services.ArbiterClient
+import dev.rmaiun.mabel.managers.UserManager
 import dev.rmaiun.mabel.utils.Constants._
-import dev.rmaiun.mabel.utils.IdGen
-import dev.rmaiun.protocol.http.UserDtoSet.UserDto
+import dev.rmaiun.mabel.utils.{ Constants, IdGen }
+import dev.rmaiun.protocol.http.UserDtoSet.{ FindAllUsersDtoIn, UserDto }
 
 case class BroadcastMessagePostProcessor[F[_]: Monad](
-  arbiterClient: ArbiterClient[F],
+  userManager: UserManager[F],
   publisherProxy: PublisherProxy[F]
 ) extends PostProcessor[F] {
   override def definition: Definition = Definition.internal(BROADCAST_MSG_CMD)
@@ -47,12 +48,16 @@ case class BroadcastMessagePostProcessor[F[_]: Monad](
       .sequence_
 
   private def findRelevantPlayers: Flow[F, List[UserDto]] =
-    arbiterClient.findAllPlayers
+    userManager
+      .findAllUsers(FindAllUsersDtoIn(Constants.defaultRealm, true.some))
       .map(_.items)
       .map(_.filter(_.tid.isDefined))
 }
 object BroadcastMessagePostProcessor {
   def apply[F[_]](implicit ev: BroadcastMessagePostProcessor[F]): BroadcastMessagePostProcessor[F] = ev
-  def impl[F[_]: Monad](ac: ArbiterClient[F], publisherProxy: PublisherProxy[F]): BroadcastMessagePostProcessor[F] =
-    new BroadcastMessagePostProcessor[F](ac, publisherProxy)
+  def impl[F[_]: Monad](
+    userManager: UserManager[F],
+    publisherProxy: PublisherProxy[F]
+  ): BroadcastMessagePostProcessor[F] =
+    new BroadcastMessagePostProcessor[F](userManager, publisherProxy)
 }

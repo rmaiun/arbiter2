@@ -1,18 +1,19 @@
 package dev.rmaiun.mabel.postprocessor
 
 import cats.syntax.foldable._
+import cats.syntax.option._
 import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
 import dev.rmaiun.mabel.commands.AddRoundCmd
 import dev.rmaiun.mabel.dtos.CmdType.ADD_ROUND_CMD
 import dev.rmaiun.mabel.dtos.{ BotRequest, BotResponse, Definition }
 import dev.rmaiun.mabel.helpers.PublisherProxy
-import dev.rmaiun.mabel.services.ArbiterClient
+import dev.rmaiun.mabel.managers.UserManager
 import dev.rmaiun.mabel.utils.Constants._
-import dev.rmaiun.mabel.utils.IdGen
-import dev.rmaiun.protocol.http.UserDtoSet.UserRoleData
+import dev.rmaiun.mabel.utils.{ Constants, IdGen }
+import dev.rmaiun.protocol.http.UserDtoSet.{ FindRealmAdminsDtoIn, FindUserDtoIn, UserRoleData }
 
 case class AddRoundPostProcessor[F[_]: MonadThrowable](
-  arbiterClient: ArbiterClient[F],
+  userManager: UserManager[F],
   cmdPublisher: PublisherProxy[F]
 ) extends PostProcessor[F] {
 
@@ -30,14 +31,14 @@ case class AddRoundPostProcessor[F[_]: MonadThrowable](
 
   private def sendNotificationToUser(player: String, opponents: String, win: Boolean): Flow[F, Unit] =
     for {
-      userDto    <- arbiterClient.findPlayerBySurname(player.toLowerCase)
+      userDto    <- userManager.findUser(FindUserDtoIn(player.toLowerCase.some))
       botResponse = BotResponse(userDto.user.tid.getOrElse(-1), IdGen.msgId, createOutput(opponents, win))
       _          <- cmdPublisher.publishToBot(botResponse)(userDto.user.active && botResponse.chatId > 0)
     } yield ()
 
   private def notifyRealmAdmins(cmd: AddRoundCmd): Flow[F, Unit] =
     for {
-      adminsDto <- arbiterClient.findRealmAdmins()
+      adminsDto <- userManager.findRealmAdmins(FindRealmAdminsDtoIn(Constants.defaultRealm))
       _         <- sendMsgToAdmins(cmd, adminsWithoutModeratorAndPlayers(cmd, adminsDto.adminUsers))
     } yield ()
 
@@ -69,8 +70,8 @@ case class AddRoundPostProcessor[F[_]: MonadThrowable](
 object AddRoundPostProcessor {
   def apply[F[_]](implicit ev: AddRoundPostProcessor[F]): AddRoundPostProcessor[F] = ev
   def impl[F[_]: MonadThrowable](
-    ac: ArbiterClient[F],
+    userManager: UserManager[F],
     cmdPublisher: PublisherProxy[F]
   ): AddRoundPostProcessor[F] =
-    new AddRoundPostProcessor[F](ac, cmdPublisher)
+    new AddRoundPostProcessor[F](userManager, cmdPublisher)
 }

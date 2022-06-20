@@ -53,22 +53,6 @@ lazy val protocol = (project in file("libs/protocol"))
   )
   .disablePlugins(AssemblyPlugin)
 
-lazy val soos = (project in file("services/soos"))
-  .settings(
-    name := "soos",
-    settings,
-    libraryDependencies ++= soosDependencies,
-    Test / parallelExecution := false
-  )
-  .settings(
-    flywayUrl := s"jdbc:mysql://${System.getProperty("fw.host", "localhost")}:3306/arbiter?allowPublicKeyRetrieval=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8",
-    flywayUser := System.getProperty("fw.user", "root"),
-    flywayPassword := System.getProperty("fw.pass", "rootpassword"),
-    flywayLocations += System.getProperty("fw.locations", "db/test")
-  )
-  .dependsOn(common, tftypes, validation, errorHandling, protocol, serverAuth)
-  .enablePlugins(FlywayPlugin)
-
 lazy val mabel = (project in file("services/mabel"))
   .settings(
     name := "mabel",
@@ -158,27 +142,6 @@ lazy val protocolDependencies = Seq(
   dependencies.circeOptics
 )
 
-lazy val soosDependencies = Seq(
-  dependencies.blazeServer,
-  dependencies.blazeClient,
-  dependencies.http4sCirce,
-  dependencies.httpDsl,
-  dependencies.circeGeneric,
-  dependencies.circeParser,
-  dependencies.circeOptics,
-  dependencies.logbackClassic,
-  dependencies.log4cats,
-  dependencies.pureConfig,
-  dependencies.mysql,
-  dependencies.doobieCore,
-  dependencies.doobieHikari,
-  dependencies.dropboxSdk,
-  dependencies.commons,
-  dependencies.fs2cron,
-  dependencies.scalatest,
-  dependencies.spec2Core
-)
-
 lazy val mabelDependencies = Seq(
   dependencies.blazeServer,
   dependencies.blazeClient,
@@ -228,6 +191,4 @@ lazy val formatAll = taskKey[Unit]("Run scala formatter for all projects")
 formatAll := {
   (mabel / Compile / scalafmt).value
   (mabel / Test / scalafmt).value
-  (soos / Compile / scalafmt).value
-  (soos / Test / scalafmt).value
 }

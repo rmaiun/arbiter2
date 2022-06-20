@@ -7,12 +7,13 @@ import dev.rmaiun.mabel.commands.BroadcastMessageCmd
 import dev.rmaiun.mabel.dtos.CmdType.BROADCAST_MSG_CMD
 import dev.rmaiun.mabel.dtos.{ BotRequest, Definition, ProcessorResponse }
 import dev.rmaiun.mabel.errors.Errors.NotEnoughRights
-import dev.rmaiun.mabel.services.ArbiterClient
+import dev.rmaiun.mabel.managers.UserManager
 import dev.rmaiun.mabel.utils.Constants.{ PREFIX, SUFFIX }
 import dev.rmaiun.mabel.utils.{ Constants, IdGen }
+import dev.rmaiun.protocol.http.UserDtoSet.FindRealmAdminsDtoIn
 
 case class BroadcastMessageProcessor[F[_]: Monad](
-  arbiterClient: ArbiterClient[F]
+  userManager: UserManager[F]
 ) extends Processor[F] {
   override def definition: Definition = Definition.persistence(BROADCAST_MSG_CMD)
 
@@ -26,8 +27,8 @@ case class BroadcastMessageProcessor[F[_]: Monad](
     }
 
   private def checkUserIsAdmin(tid: Long): Flow[F, Unit] =
-    arbiterClient
-      .findRealmAdmins(Constants.defaultRealm)
+    userManager
+      .findRealmAdmins(FindRealmAdminsDtoIn(Constants.defaultRealm))
       .map(dto => dto.adminUsers.find(_.tid.contains(tid)))
       .flatMap {
         case Some(_) => Flow.unit
@@ -37,6 +38,6 @@ case class BroadcastMessageProcessor[F[_]: Monad](
 
 object BroadcastMessageProcessor {
   def apply[F[_]](implicit ev: BroadcastMessageProcessor[F]): BroadcastMessageProcessor[F] = ev
-  def impl[F[_]: Monad](ac: ArbiterClient[F]): BroadcastMessageProcessor[F] =
-    new BroadcastMessageProcessor[F](ac)
+  def impl[F[_]: Monad](userManager: UserManager[F]): BroadcastMessageProcessor[F] =
+    new BroadcastMessageProcessor[F](userManager)
 }

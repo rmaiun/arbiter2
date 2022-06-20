@@ -1,16 +1,16 @@
-package dev.rmaiun.soos.repository
+package dev.rmaiun.mabel.repository
 
 import cats.data.NonEmptyList
 import cats.effect.IO
 import cats.syntax.foldable._
 import dev.rmaiun.common.DateFormatter
-import dev.rmaiun.soos.db.PageInfo
-import dev.rmaiun.soos.db.entities._
-import dev.rmaiun.soos.dtos.{ EloPointsCriteria, GameHistoryCriteria }
-import dev.rmaiun.soos.helpers.ConfigProvider.Config
-import dev.rmaiun.soos.helpers.{ ConfigProvider, TransactorProvider }
-import dev.rmaiun.soos.repositories._
-import dev.rmaiun.soos.utils.IoTestRuntime
+import dev.rmaiun.mabel.db.PageInfo
+import dev.rmaiun.mabel.db.entities._
+import dev.rmaiun.mabel.dtos.{ EloPointsCriteria, GameHistoryCriteria }
+import dev.rmaiun.mabel.helpers.ConfigProvider.Config
+import dev.rmaiun.mabel.helpers.{ ConfigProvider, TransactorProvider }
+import dev.rmaiun.mabel.repositories._
+import dev.rmaiun.mabel.utils.IoTestRuntime
 import doobie.ConnectionIO
 import doobie.hikari.HikariTransactor
 import doobie.implicits._

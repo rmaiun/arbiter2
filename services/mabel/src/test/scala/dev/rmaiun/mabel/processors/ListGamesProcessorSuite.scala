@@ -1,11 +1,12 @@
 package dev.rmaiun.mabel.processors
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import dev.rmaiun.common.{ DateFormatter, SeasonHelper }
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.mabel.commands.LastGamesCmd
 import dev.rmaiun.mabel.dtos.BotRequest
-import dev.rmaiun.mabel.services.ArbiterClient
+import dev.rmaiun.mabel.managers.GameManager
 import dev.rmaiun.mabel.utils.Loggable
 import dev.rmaiun.protocol.http.GameDtoSet.{ ListGameHistoryDtoOut, StoredGameHistoryDto }
 import org.mockito.ArgumentMatchers.any
@@ -13,7 +14,6 @@ import org.mockito.Mockito.{ mock, when }
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{ BeforeAndAfterEach, OptionValues }
-import cats.effect.unsafe.implicits.global
 
 class ListGamesProcessorSuite
     extends AnyFlatSpec
@@ -22,14 +22,14 @@ class ListGamesProcessorSuite
     with OptionValues
     with Loggable {
 
-  private val arbiterClient = mock(classOf[ArbiterClient[IO]])
-  private val processor     = LastGamesProcessor.impl[IO](arbiterClient)
+  private val gameManager = mock(classOf[GameManager[IO]])
+  private val processor   = LastGamesProcessor.impl[IO](gameManager)
 
   "Last Games" should "should work correctly for [games > 0] " in {
-    when(arbiterClient.listGameHistory(any(), any()))
+    when(gameManager.listGameHistory(any()))
       .thenReturn(Flow.pure(ListGameHistoryDtoOut(prepareGameHistoryList(0))))
     val dto   = LastGamesCmd()
-    val input = BotRequest("lastGames", 1234, 4444, "testuser", Some(LastGamesCmd.LastGamesCmdEncoder(dto)))
+    val input = BotRequest("lastGames", 1234, 4444, "testuser", Some(LastGamesCmd.LastGamesCmdCodec(dto)))
     val res   = processor.process(input).value.unsafeRunSync()
     val r     = res.fold(_ => fail(), x => x)
     r.value.error should be(false)
@@ -38,10 +38,10 @@ class ListGamesProcessorSuite
   }
 
   it should "should work correctly for [0 < games < 10]" in {
-    when(arbiterClient.listGameHistory(any(), any()))
+    when(gameManager.listGameHistory(any()))
       .thenReturn(Flow.pure(ListGameHistoryDtoOut(prepareGameHistoryList(4))))
     val dto   = LastGamesCmd(Some(SeasonHelper.currentSeason))
-    val input = BotRequest("lastGames", 1234, 4444, "testuser", Some(LastGamesCmd.LastGamesCmdEncoder(dto)))
+    val input = BotRequest("lastGames", 1234, 4444, "testuser", Some(LastGamesCmd.LastGamesCmdCodec(dto)))
     val res   = processor.process(input).value.unsafeRunSync()
     val r     = res.fold(_ => fail(), x => x)
     r.value.error should be(false)
@@ -52,10 +52,10 @@ class ListGamesProcessorSuite
   }
 
   it should "should work correctly for [games > 10]" in {
-    when(arbiterClient.listGameHistory(any(), any()))
+    when(gameManager.listGameHistory(any()))
       .thenReturn(Flow.pure(ListGameHistoryDtoOut(prepareGameHistoryList(56))))
     val dto   = LastGamesCmd()
-    val input = BotRequest("lastGames", 1234, 4444, "testuser", Some(LastGamesCmd.LastGamesCmdEncoder(dto)))
+    val input = BotRequest("lastGames", 1234, 4444, "testuser", Some(LastGamesCmd.LastGamesCmdCodec(dto)))
     val res   = processor.process(input).value.unsafeRunSync()
     val r     = res.fold(_ => fail(), x => x)
     r.value.error should be(false)

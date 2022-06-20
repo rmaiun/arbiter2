@@ -1,14 +1,13 @@
 package dev.rmaiun.mabel.managers
 
 import cats.Monad
-import cats.effect.Sync
 import dev.rmaiun.common.DateFormatter
 import dev.rmaiun.flowtypes.Flow.Flow
+import dev.rmaiun.mabel.db.entities.{ EloPoints, GameHistory }
+import dev.rmaiun.mabel.dtos.GameHistoryCriteria
+import dev.rmaiun.mabel.services._
+import dev.rmaiun.mabel.validations.GameValidationSet._
 import dev.rmaiun.protocol.http.GameDtoSet._
-import dev.rmaiun.soos.db.entities.{ EloPoints, GameHistory }
-import dev.rmaiun.soos.dtos.GameHistoryCriteria
-import dev.rmaiun.soos.services._
-import dev.rmaiun.soos.validations.GameValidationSet._
 import dev.rmaiun.validation.Validator
 
 trait GameManager[F[_]] {

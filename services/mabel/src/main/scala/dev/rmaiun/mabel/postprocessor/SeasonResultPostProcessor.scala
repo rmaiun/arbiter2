@@ -3,28 +3,35 @@ package dev.rmaiun.mabel.postprocessor
 import cats.Monad
 import cats.syntax.apply._
 import cats.syntax.foldable._
+import cats.syntax.option._
 import dev.rmaiun.common.{ DateFormatter, SeasonHelper }
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.flowtypes.{ FLog, Flow }
 import dev.rmaiun.mabel.dtos.CmdType.SEASON_RESULTS_CMD
 import dev.rmaiun.mabel.dtos._
 import dev.rmaiun.mabel.dtos.stats.{ PlayerStats, SeasonShortStats, UnrankedStats }
-import dev.rmaiun.mabel.helpers.{PublisherProxy, StatsCalculator}
-import dev.rmaiun.mabel.services.ConfigProvider.AppCfg
-import dev.rmaiun.mabel.services.ArbiterClient
+import dev.rmaiun.mabel.helpers.ConfigProvider.AppConfig
+import dev.rmaiun.mabel.helpers.{ PublisherProxy, StatsCalculator }
+import dev.rmaiun.mabel.managers.{ GameManager, SeasonManager, UserManager }
 import dev.rmaiun.mabel.utils.Constants._
-import dev.rmaiun.mabel.utils.IdGen
-import dev.rmaiun.protocol.http.GameDtoSet.StoredGameHistoryDto
-import dev.rmaiun.protocol.http.SeasonDtoSet.FindSeasonWithoutNotificationDtoOut
-import dev.rmaiun.protocol.http.UserDtoSet.UserDto
+import dev.rmaiun.mabel.utils.{ Constants, IdGen }
+import dev.rmaiun.protocol.http.GameDtoSet.{ ListGameHistoryDtoIn, StoredGameHistoryDto }
+import dev.rmaiun.protocol.http.SeasonDtoSet.{
+  FindSeasonWithoutNotificationDtoIn,
+  FindSeasonWithoutNotificationDtoOut,
+  NotifySeasonDtoIn
+}
+import dev.rmaiun.protocol.http.UserDtoSet.{ FindAllUsersDtoIn, UserDto }
 import org.typelevel.log4cats.Logger
 
 import java.time.ZonedDateTime
 
 class SeasonResultPostProcessor[F[_]: Monad: Logger](
-  arbiterClient: ArbiterClient[F],
+  seasonManager: SeasonManager[F],
+  gameManager: GameManager[F],
+  userManager: UserManager[F],
   publisherProxy: PublisherProxy[F],
-  cfg: AppCfg
+  cfg: AppConfig
 ) extends PostProcessor[F] {
 
   override def definition: Definition = Definition.internal(SEASON_RESULTS_CMD)
@@ -39,8 +46,9 @@ class SeasonResultPostProcessor[F[_]: Monad: Logger](
     if (cfg.notifications) {
       val now = DateFormatter.now(cfg.reportTimezone)
       for {
-        _                <- FLog.info(s"Check that ${now.toString} equals to last day of current season where time = 20:00")
-        seasonDto        <- arbiterClient.findSeasonWithoutNotifications
+        _ <- FLog.info(s"Check that ${now.toString} equals to last day of current season where time = 20:00")
+        seasonDto <-
+          seasonManager.findSeasonWithoutNotification(FindSeasonWithoutNotificationDtoIn(Constants.defaultRealm))
         notificationData <- takeNotificationData(seasonDto, now)
         _                <- processSeasonResultPreparation(notificationData)
       } yield ()
@@ -56,7 +64,7 @@ class SeasonResultPostProcessor[F[_]: Monad: Logger](
           _        <- FLog.info(s"Prepared ${messages.size} messages with season results")
           _        <- sendMessages(messages)
           _        <- FLog.info("Messages were successfully sent")
-          season   <- arbiterClient.notifySeason(season)
+          season   <- seasonManager.notifySeason(NotifySeasonDtoIn(season, Constants.defaultRealm))
           _        <- FLog.info(s"Season $season was updated with enabled notification")
         } yield ()
       case _ =>
@@ -65,7 +73,7 @@ class SeasonResultPostProcessor[F[_]: Monad: Logger](
 
   private def prepareStatsData(season: String): Flow[F, List[BotResponse]] =
     for {
-      gameHistoryDto <- arbiterClient.listGameHistory(defaultRealm, season)
+      gameHistoryDto <- gameManager.listGameHistory(ListGameHistoryDtoIn(defaultRealm, season))
       players        <- loadActivePlayersForRealm
       messages       <- prepareMessagesToSend(season, players, gameHistoryDto.games)
     } yield messages
@@ -123,7 +131,8 @@ class SeasonResultPostProcessor[F[_]: Monad: Logger](
   }
 
   private def loadActivePlayersForRealm: Flow[F, Map[String, UserDto]] =
-    arbiterClient.findAllPlayers
+    userManager
+      .findAllUsers(FindAllUsersDtoIn(Constants.defaultRealm, true.some))
       .map(dtoOut => dtoOut.items.map(i => i.surname -> i).toMap)
 
   private def takeNotificationData(
@@ -161,9 +170,11 @@ class SeasonResultPostProcessor[F[_]: Monad: Logger](
 object SeasonResultPostProcessor {
   def apply[F[_]](implicit ev: SeasonResultPostProcessor[F]): SeasonResultPostProcessor[F] = ev
   def impl[F[_]: Monad: Logger](
-    ac: ArbiterClient[F],
+    seasonManager: SeasonManager[F],
+    gameManager: GameManager[F],
+    userManager: UserManager[F],
     publisherProxy: PublisherProxy[F],
-    cfg: AppCfg
+    cfg: AppConfig
   ): SeasonResultPostProcessor[F] =
-    new SeasonResultPostProcessor[F](ac, publisherProxy, cfg)
+    new SeasonResultPostProcessor[F](seasonManager, gameManager, userManager, publisherProxy, cfg)
 }

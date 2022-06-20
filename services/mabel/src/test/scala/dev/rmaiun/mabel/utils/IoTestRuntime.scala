@@ -1,4 +1,4 @@
-package dev.rmaiun.soos.utils
+package dev.rmaiun.mabel.utils
 
 import cats.effect.unsafe.IORuntime
 

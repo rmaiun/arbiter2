@@ -1,6 +1,5 @@
 package dev.rmaiun.mabel.processors
 
-import cats.Monad
 import cats.effect.Sync
 import dev.rmaiun.flowtypes.FLog
 import dev.rmaiun.flowtypes.Flow.Flow
@@ -8,14 +7,14 @@ import dev.rmaiun.mabel.commands.AddPlayerCmd
 import dev.rmaiun.mabel.commands.AddPlayerCmd._
 import dev.rmaiun.mabel.dtos.CmdType.ADD_PLAYER_CMD
 import dev.rmaiun.mabel.dtos._
-import dev.rmaiun.mabel.services.ArbiterClient
+import dev.rmaiun.mabel.managers.UserManager
 import dev.rmaiun.mabel.utils.Constants._
 import dev.rmaiun.mabel.utils.{ Constants, IdGen }
 import dev.rmaiun.protocol.http.UserDtoSet._
 import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-case class AddPlayerProcessor[F[_]: Sync](arbiterClient: ArbiterClient[F]) extends Processor[F] {
+case class AddPlayerProcessor[F[_]: Sync](userManager: UserManager[F]) extends Processor[F] {
   implicit val logger: SelfAwareStructuredLogger[F] = Slf4jLogger.getLoggerFromClass[F](getClass)
 
   override def definition: Definition = Definition.persistence(ADD_PLAYER_CMD)
@@ -34,19 +33,19 @@ case class AddPlayerProcessor[F[_]: Sync](arbiterClient: ArbiterClient[F]) exten
 
   private def registerPlayer(dto: AddPlayerCmd): Flow[F, RegisterUserDtoOut] = {
     val userData = UserData(dto.surname, dto.tid)
-    arbiterClient.addPlayer(RegisterUserDtoIn(userData, dto.moderator))
+    userManager.registerUser(RegisterUserDtoIn(userData, dto.moderator))
   }
 
   private def assignUserToRealm(dto: AddPlayerCmd): Flow[F, AssignUserToRealmDtoOut] = {
     val role = if (dto.admin) Some("RealmAdmin") else None
     val requestDto =
       AssignUserToRealmDtoIn(dto.surname.toLowerCase, Constants.defaultRealm, role, Some(true), dto.moderator)
-    arbiterClient.assignUserToRealm(requestDto)
+    userManager.assignUserToRealm(requestDto)
   }
 }
 
 object AddPlayerProcessor {
   def apply[F[_]](implicit ev: AddPlayerProcessor[F]): AddPlayerProcessor[F] = ev
-  def impl[F[_]: Sync](ac: ArbiterClient[F]): AddPlayerProcessor[F] =
-    new AddPlayerProcessor[F](ac)
+  def impl[F[_]: Sync](userManager: UserManager[F]): AddPlayerProcessor[F] =
+    new AddPlayerProcessor[F](userManager)
 }

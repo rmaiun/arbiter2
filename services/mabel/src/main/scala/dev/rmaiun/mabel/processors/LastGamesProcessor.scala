@@ -6,12 +6,12 @@ import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.commands.LastGamesCmd
 import dev.rmaiun.mabel.dtos.CmdType.LAST_GAMES_CMD
 import dev.rmaiun.mabel.dtos._
-import dev.rmaiun.mabel.services.ArbiterClient
+import dev.rmaiun.mabel.managers.GameManager
 import dev.rmaiun.mabel.utils.Constants.{ LINE_SEPARATOR, _ }
 import dev.rmaiun.mabel.utils.{ Constants, IdGen }
-import dev.rmaiun.protocol.http.GameDtoSet.StoredGameHistoryDto
+import dev.rmaiun.protocol.http.GameDtoSet.{ ListGameHistoryDtoIn, StoredGameHistoryDto }
 
-case class LastGamesProcessor[F[_]: Monad](arbiterClient: ArbiterClient[F]) extends Processor[F] {
+case class LastGamesProcessor[F[_]: Monad](gameManager: GameManager[F]) extends Processor[F] {
 
   override def definition: Definition = Definition.query(LAST_GAMES_CMD)
 
@@ -27,7 +27,7 @@ case class LastGamesProcessor[F[_]: Monad](arbiterClient: ArbiterClient[F]) exte
     }
 
   private def loadHistory(season: String): Flow[F, List[StoredGameHistoryDto]] =
-    arbiterClient.listGameHistory(Constants.defaultRealm, season).map { dtoOut =>
+    gameManager.listGameHistory(ListGameHistoryDtoIn(Constants.defaultRealm, season)).map { dtoOut =>
       if (dtoOut.games.size <= 10) {
         dtoOut.games
       } else {
@@ -60,6 +60,6 @@ case class LastGamesProcessor[F[_]: Monad](arbiterClient: ArbiterClient[F]) exte
 
 object LastGamesProcessor {
   def apply[F[_]](implicit ev: LastGamesProcessor[F]): LastGamesProcessor[F] = ev
-  def impl[F[_]: Monad](ac: ArbiterClient[F]): LastGamesProcessor[F] =
-    new LastGamesProcessor[F](ac)
+  def impl[F[_]: Monad](gameManager: GameManager[F]): LastGamesProcessor[F] =
+    new LastGamesProcessor[F](gameManager)
 }

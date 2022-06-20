@@ -1,12 +1,12 @@
-package dev.rmaiun.soos.repository
+package dev.rmaiun.mabel.repository
 
 import cats.data.NonEmptyList
 import cats.effect.IO
-import dev.rmaiun.soos.db.entities._
-import dev.rmaiun.soos.helpers.ConfigProvider.Config
-import dev.rmaiun.soos.helpers.{ ConfigProvider, TransactorProvider }
-import dev.rmaiun.soos.repositories.{ RealmRepo, RoleRepo, UserRepo }
-import dev.rmaiun.soos.utils.IoTestRuntime
+import dev.rmaiun.mabel.db.entities._
+import dev.rmaiun.mabel.helpers.ConfigProvider.Config
+import dev.rmaiun.mabel.helpers.{ ConfigProvider, TransactorProvider }
+import dev.rmaiun.mabel.repositories.{ RealmRepo, RoleRepo, UserRepo }
+import dev.rmaiun.mabel.utils.IoTestRuntime
 import doobie.ConnectionIO
 import doobie.hikari.HikariTransactor
 import doobie.implicits._

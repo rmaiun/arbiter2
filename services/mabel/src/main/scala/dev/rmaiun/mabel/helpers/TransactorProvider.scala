@@ -2,6 +2,7 @@ package dev.rmaiun.mabel.helpers
 
 import cats.effect.Async
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
+import dev.rmaiun.mabel.helpers.ConfigProvider.Config
 import doobie.hikari.HikariTransactor
 
 import java.util.concurrent.Executors

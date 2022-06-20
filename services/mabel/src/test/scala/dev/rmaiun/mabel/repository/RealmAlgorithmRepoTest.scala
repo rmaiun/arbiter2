@@ -1,11 +1,11 @@
-package dev.rmaiun.soos.repository
+package dev.rmaiun.mabel.repository
 
 import cats.effect.IO
-import dev.rmaiun.soos.db.entities.{ Algorithm, Realm }
-import dev.rmaiun.soos.helpers.ConfigProvider.Config
-import dev.rmaiun.soos.helpers.{ ConfigProvider, TransactorProvider }
-import dev.rmaiun.soos.repositories.{ AlgorithmRepo, RealmRepo }
-import dev.rmaiun.soos.utils.IoTestRuntime
+import dev.rmaiun.mabel.db.entities.{ Algorithm, Realm }
+import dev.rmaiun.mabel.helpers.ConfigProvider.Config
+import dev.rmaiun.mabel.helpers.{ ConfigProvider, TransactorProvider }
+import dev.rmaiun.mabel.repositories.{ AlgorithmRepo, RealmRepo }
+import dev.rmaiun.mabel.utils.IoTestRuntime
 import doobie.ConnectionIO
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
@@ -40,7 +40,7 @@ class RealmAlgorithmRepoTest extends AnyFlatSpec with Matchers with BeforeAndAft
     data._3.value should be("TestAlgo")
   }
 
-  it should "should successfully update Algorithm" in {
+  it should "successfully update Algorithm" in {
     val alg = createTestAlgorithm.transact(transactor).attemptSql.unsafeRunSync()
     alg.isRight should be(true)
     val result = alg.getOrElse(fail("alg either was not Right!"))

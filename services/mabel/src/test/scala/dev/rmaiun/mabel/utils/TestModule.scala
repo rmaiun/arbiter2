@@ -1,10 +1,10 @@
-package dev.rmaiun.soos.utils
+package dev.rmaiun.mabel.utils
 
 import cats.effect._
-import dev.rmaiun.soos.helpers.{ ConfigProvider, DumpExporter, TransactorProvider, ZipDataProvider }
-import dev.rmaiun.soos.managers.{ GameManager, RealmManager, SeasonManager, UserManager }
-import dev.rmaiun.soos.repositories._
-import dev.rmaiun.soos.services._
+import dev.rmaiun.mabel.helpers.{ConfigProvider, DumpExporter, TransactorProvider, ZipDataProvider}
+import dev.rmaiun.mabel.managers._
+import dev.rmaiun.mabel.repositories._
+import dev.rmaiun.mabel.services._
 import doobie.hikari.HikariTransactor
 object TestModule extends Loggable {
 

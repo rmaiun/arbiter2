@@ -4,7 +4,8 @@ import cats.Monad
 import cats.data.Kleisli
 import cats.effect.kernel.Ref
 import cats.effect.std.Dispatcher
-import cats.effect.{ Async, Clock, Sync }
+import cats.effect.{Async, Clock, Sync}
+import cron4s.{Cron, CronExpr}
 import dev.profunktor.fs2rabbit.config.Fs2RabbitConfig
 import dev.profunktor.fs2rabbit.config.declaration._
 import dev.profunktor.fs2rabbit.interpreter.RabbitClient
@@ -13,8 +14,10 @@ import dev.profunktor.fs2rabbit.model._
 import dev.rmaiun.flowtypes.FLog
 import dev.rmaiun.flowtypes.Flow.MonadThrowable
 import dev.rmaiun.mabel.dtos.AmqpStructures
-import dev.rmaiun.mabel.services.ConfigProvider
-import dev.rmaiun.mabel.services.ConfigProvider.Config
+import dev.rmaiun.mabel.helpers.{ConfigProvider, DumpExporter}
+import dev.rmaiun.mabel.helpers.ConfigProvider.Config
+import eu.timepit.fs2cron.Scheduler
+import eu.timepit.fs2cron.cron4s.Cron4sScheduler
 import fs2.Stream
 import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.blaze.server.BlazeServerBuilder
@@ -22,11 +25,8 @@ import org.typelevel.log4cats.SelfAwareStructuredLogger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
 import java.nio.charset.Charset
-import java.util.concurrent.Executors
 import scala.collection.immutable.Queue
-import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{ ExecutionContext, ExecutionContextExecutorService }
 object Server {
   implicit def unsafeLogger[F[_]: Sync: Monad]: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]
 
@@ -93,6 +93,14 @@ object Server {
     } yield AmqpStructures(inPub, outPub, y, x)
   }
 
+  def dumpCronEvaluation[F[_]: Async](exporter: DumpExporter[F])(implicit T: Clock[F]): Stream[F, Unit] = {
+    val cronScheduler: Scheduler[F, CronExpr] = Cron4sScheduler.systemDefault[F]
+    val cronTick                              = Cron.unsafeParse("0 0 20 ? * *")
+    cronScheduler
+      .awakeEvery(cronTick)
+      .evalTap(_ => exporter.exportDump().value)
+  }
+
   def stream[F[_]](implicit T: Clock[F], M: Monad[F], A: Async[F]): Stream[F, Nothing] = {
     implicit val cfg: Config = ConfigProvider.provideConfig
     for {
@@ -116,6 +124,7 @@ object Server {
           .concurrently(structs.botInPersistConsumer.flatMap(x => Stream.eval(module.persistHandler.process(x).value)))
           .concurrently(Stream.awakeDelay[F](4 hours).evalTap(_ => module.queryPublisher.run().value))
           .concurrently(Stream.awakeDelay[F](166 milliseconds).evalTap(_ => module.rlPublisher.safePublish().value))
+          .concurrently(dumpCronEvaluation(module.dumpExporter))
     } yield exitCode
   }.drain
 }

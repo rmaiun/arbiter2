@@ -1,16 +1,23 @@
 package dev.rmaiun.mabel.processors
 import cats.Monad
+import cats.syntax.option._
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.mabel.dtos.CmdType._
 import dev.rmaiun.mabel.dtos.{ BotRequest, Definition, ProcessorResponse }
 import dev.rmaiun.mabel.helpers.ReportCache
-import dev.rmaiun.mabel.services.ReportCache.EloRatingReport
-import dev.rmaiun.mabel.services.ArbiterClient
+import dev.rmaiun.mabel.helpers.ReportCache.EloRatingReport
+import dev.rmaiun.mabel.managers.{ GameManager, UserManager }
 import dev.rmaiun.mabel.utils.Constants._
-import dev.rmaiun.mabel.utils.IdGen
-import dev.rmaiun.protocol.http.GameDtoSet.ListEloPointsDtoOut
-case class EloRatingProcessor[F[_]: Monad](ac: ArbiterClient[F], cache: ReportCache[F]) extends Processor[F] {
+import dev.rmaiun.mabel.utils.{ Constants, IdGen }
+import dev.rmaiun.protocol.http.GameDtoSet.{ ListEloPointsDtoIn, ListEloPointsDtoOut }
+import dev.rmaiun.protocol.http.UserDtoSet.FindAllUsersDtoIn
+
+case class EloRatingProcessor[F[_]: Monad](
+  gameManager: GameManager[F],
+  userManager: UserManager[F],
+  cache: ReportCache[F]
+) extends Processor[F] {
 
   override def definition: Definition = Definition.query(ELO_RATING_CMD)
 
@@ -47,14 +54,20 @@ case class EloRatingProcessor[F[_]: Monad](ac: ArbiterClient[F], cache: ReportCa
   }
 
   private def loadActiveUsers: Flow[F, List[String]] =
-    ac.findAllPlayers.map(_.items.map(i => i.surname.toLowerCase))
+    userManager
+      .findAllUsers(FindAllUsersDtoIn(Constants.defaultRealm, true.some))
+      .map(_.items.map(i => i.surname.toLowerCase))
 
   private def loadEloPoints(users: List[String]): Flow[F, ListEloPointsDtoOut] =
-    ac.listCalculatedEloPoints(users)
+    gameManager.listCalculatedEloPoints(ListEloPointsDtoIn(users.some))
 }
 
 object EloRatingProcessor {
   def apply[F[_]](implicit ev: EloRatingProcessor[F]): EloRatingProcessor[F] = ev
-  def impl[F[_]: Monad](ac: ArbiterClient[F], cache: ReportCache[F]): EloRatingProcessor[F] =
-    new EloRatingProcessor[F](ac, cache)
+  def impl[F[_]: Monad](
+    gameManager: GameManager[F],
+    userManager: UserManager[F],
+    cache: ReportCache[F]
+  ): EloRatingProcessor[F] =
+    new EloRatingProcessor[F](gameManager, userManager, cache)
 }

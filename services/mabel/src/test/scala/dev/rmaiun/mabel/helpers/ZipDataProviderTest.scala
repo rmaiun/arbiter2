@@ -1,6 +1,6 @@
-package dev.rmaiun.soos.helpers
+package dev.rmaiun.mabel.helpers
 
-import dev.rmaiun.soos.utils.{ IoTestRuntime, TestModule }
+import dev.rmaiun.mabel.utils.{ IoTestRuntime, TestModule }
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 

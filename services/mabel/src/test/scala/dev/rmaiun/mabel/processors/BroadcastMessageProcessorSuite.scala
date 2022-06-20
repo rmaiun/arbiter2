@@ -1,19 +1,19 @@
 package dev.rmaiun.mabel.processors
 
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.mabel.commands.BroadcastMessageCmd
 import dev.rmaiun.mabel.dtos.BotRequest
 import dev.rmaiun.mabel.errors.Errors.NotEnoughRights
-import dev.rmaiun.mabel.services.ArbiterClient
+import dev.rmaiun.mabel.managers.UserManager
 import dev.rmaiun.mabel.utils.Loggable
 import dev.rmaiun.protocol.http.UserDtoSet.{ FindRealmAdminsDtoOut, UserRoleData }
-import org.mockito.ArgumentMatchers.anyString
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{ BeforeAndAfterEach, EitherValues }
-import cats.effect.unsafe.implicits.global
 
 class BroadcastMessageProcessorSuite
     extends AnyFlatSpec
@@ -21,9 +21,9 @@ class BroadcastMessageProcessorSuite
     with BeforeAndAfterEach
     with EitherValues
     with Loggable {
-  private val arbiterClient = mock(classOf[ArbiterClient[IO]])
+  private val userManager = mock(classOf[UserManager[IO]])
 
-  private val processor = BroadcastMessageProcessor.impl[IO](arbiterClient)
+  private val processor = BroadcastMessageProcessor.impl[IO](userManager)
 
   "BroadCaseMessageProcessor" should "allow message broadcast" in {
     val userRoles = List(
@@ -33,10 +33,10 @@ class BroadcastMessageProcessorSuite
       UserRoleData("user4", Some(4), "Admin")
     )
     val dtoOut = FindRealmAdminsDtoOut(userRoles)
-    when(arbiterClient.findRealmAdmins(anyString())).thenReturn(Flow.pure(dtoOut))
+    when(userManager.findRealmAdmins(any())).thenReturn(Flow.pure(dtoOut))
     val dto = BroadcastMessageCmd("Test msg", 1)
     val input =
-      BotRequest("broadcastMessage", 1234, 4444, "testuser", Some(BroadcastMessageCmd.BroadcastMessageCmdEncoder(dto)))
+      BotRequest("broadcastMessage", 1234, 4444, "testuser", Some(BroadcastMessageCmd.BroadcastMessageCmdCodec(dto)))
     val res = processor.process(input).value.unsafeRunSync()
     res.isRight should be(true)
     val r = res.fold(_ => fail(), x => x)
@@ -51,10 +51,10 @@ class BroadcastMessageProcessorSuite
       UserRoleData("user4", Some(4), "Admin")
     )
     val dtoOut = FindRealmAdminsDtoOut(userRoles)
-    when(arbiterClient.findRealmAdmins(anyString())).thenReturn(Flow.pure(dtoOut))
+    when(userManager.findRealmAdmins(any())).thenReturn(Flow.pure(dtoOut))
     val dto = BroadcastMessageCmd("Test msg", 1)
     val input =
-      BotRequest("broadcastMessage", 1234, 4444, "testuser", Some(BroadcastMessageCmd.BroadcastMessageCmdEncoder(dto)))
+      BotRequest("broadcastMessage", 1234, 4444, "testuser", Some(BroadcastMessageCmd.BroadcastMessageCmdCodec(dto)))
     val res = processor.process(input).value.unsafeRunSync()
     res.isLeft should be(true)
     res.left.value shouldBe a[NotEnoughRights]

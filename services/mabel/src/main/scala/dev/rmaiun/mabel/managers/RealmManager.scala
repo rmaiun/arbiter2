@@ -3,10 +3,13 @@ package dev.rmaiun.mabel.managers
 import cats.Monad
 import cats.effect.Sync
 import dev.rmaiun.flowtypes.Flow.Flow
+import dev.rmaiun.mabel.db.entities.Realm
+import dev.rmaiun.mabel.helpers.DtoMapper.realmToDto
+import dev.rmaiun.mabel.services.{AlgorithmService, RealmService, UserService}
 import dev.rmaiun.protocol.http.RealmDtoSet._
-import dev.rmaiun.soos.db.entities.Realm
-import dev.rmaiun.soos.helpers.DtoMapper.realmToDto
-import dev.rmaiun.soos.services.{ AlgorithmService, RealmService, UserService }
+import dev.rmaiun.mabel.db.entities.Realm
+import dev.rmaiun.mabel.helpers.DtoMapper.realmToDto
+import dev.rmaiun.mabel.services.{AlgorithmService, RealmService, UserService}
 
 trait RealmManager[F[_]] {
   def registerRealm(dtoIn: RegisterRealmDtoIn): Flow[F, RegisterRealmDtoOut]
