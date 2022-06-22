@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  test-build-mabel:
+  test-build-arbiter2:
     docker:
       # specify the version you desire here
       - image: circleci/openjdk:8-jdk
@@ -15,7 +15,7 @@ jobs:
     environment:
       # Customize the JVM maximum heap limit
       SBT_VERSION: 1.5.5
-      MABEL_IMAGE_NAME: mairo/mabel
+      ARBITER2_IMAGE_NAME: mairo/arbiter2
       JVM_OPTS: -Xmx3200m
       TERM: dumb
     steps:
@@ -32,12 +32,12 @@ jobs:
             echo Failed waiting for MySQL && exit 1
       - run:
           name: Prepare mysql for tests
-          command: cat /dev/null | sbt mabel/flywayClean mabel/flywayMigrate
+          command: cat /dev/null | sbt flywayClean flywayMigrate
       - run:
           name: Prepare jar
-          command: cat /dev/null | sbt mabel/clean mabel/assembly
+          command: cat /dev/null | sbt clean assembly
 
-  build-mabel:
+  build-arbiter2:
     docker:
       # specify the version you desire here
       - image: circleci/openjdk:8-jdk
@@ -55,7 +55,7 @@ jobs:
     environment:
       # Customize the JVM maximum heap limit
       SBT_VERSION: 1.5.5
-      MABEL_IMAGE_NAME: mairo/mabel
+      ARBITER2_IMAGE_NAME: mairo/arbiter2
       JVM_OPTS: -Xmx3200m
       TERM: dumb
     steps:
@@ -72,21 +72,21 @@ jobs:
             echo Failed waiting for MySQL && exit 1
       - run:
           name: Prepare mysql for tests
-          command: cat /dev/null | sbt mabel/flywayClean mabel/flywayMigrate
+          command: cat /dev/null | sbt flywayClean flywayMigrate
       - run:
           name: Prepare jar
-          command: cat /dev/null | sbt mabel/clean mabel/assembly
+          command: cat /dev/null | sbt clean assembly
       - setup_remote_docker
       - run:
           name: Build docker image
-          command: docker build -t $MABEL_IMAGE_NAME:latest services/mabel
+          command: docker build -t $ARBITER2_IMAGE_NAME:latest .
       - run:
           name: Save docker image
-          command: docker save -o image_mabel.tar $MABEL_IMAGE_NAME:latest
+          command: docker save -o image_arbiter2.tar $ARBITER2_IMAGE_NAME:latest
       - persist_to_workspace:
           root: .
           paths:
-            - ./image_mabel.tar
+            - ./image_arbiter2.tar
 
   build-dipper:
     docker:
@@ -119,9 +119,9 @@ jobs:
       - checkout
       - run:
           name: Migrate prod env
-          command: cat /dev/null | sbt -Dfw.user=$PROD_MYSQL_USER -Dfw.pass=$PROD_MYSQL_PASS -Dfw.locations=db/migration -Dfw.host=$PROD_MYSQL_URI "mabel/flywayMigrate"
+          command: cat /dev/null | sbt -Dfw.user=$PROD_MYSQL_USER -Dfw.pass=$PROD_MYSQL_PASS -Dfw.locations=db/migration -Dfw.host=$PROD_MYSQL_URI "flywayMigrate"
 
-  publish-mabel-image:
+  publish-arbiter2-image:
     docker:
       - image: circleci/openjdk:8-jdk
       - image: circleci/buildpack-deps:stretch
@@ -131,13 +131,13 @@ jobs:
       - setup_remote_docker
       - run:
           name: Load docker image
-          command: docker load -i /tmp/workspace/image_mabel.tar
+          command: docker load -i /tmp/workspace/image_arbiter2.tar
       - run:
           name: Login to dockerhub
           command: cat /dev/null | echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
       - run:
           name: Publish new docker image
-          command: cat /dev/null | docker push mairo/mabel:latest
+          command: cat /dev/null | docker push mairo/arbiter2:latest
 
   publish-dipper-image:
     environment:
@@ -172,13 +172,13 @@ workflows:
   version: 2
   build-master:
     jobs:
-      - test-build-mabel:
+      - test-build-arbiter2:
           context: myctx
           filters:
             branches:
               ignore:
                 - dev
-      - build-mabel:
+      - build-arbiter2:
           context: myctx
           filters:
             branches:
@@ -187,15 +187,15 @@ workflows:
       - migrate-prod-mysq:
           context: myctx
           requires:
-            - build-mabel
+            - build-arbiter2
           filters:
             branches:
               only:
                 - dev
-      - publish-mabel-image:
+      - publish-arbiter2-image:
           context: myctx
           requires:
-            - build-mabel
+            - build-arbiter2
           filters:
             branches:
               only:
@@ -217,7 +217,7 @@ workflows:
       - redeploy-services:
           context: myctx
           requires:
-            - publish-mabel-image
+            - publish-arbiter2-image
             - publish-dipper-image
           filters:
             branches:

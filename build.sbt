@@ -53,11 +53,11 @@ lazy val protocol = (project in file("libs/protocol"))
   )
   .disablePlugins(AssemblyPlugin)
 
-lazy val mabel = (project in file("services/mabel"))
+lazy val arbiter2 = (project in file("."))
   .settings(
-    name := "mabel",
+    name := "arbiter2",
     settings,
-    libraryDependencies ++= mabelDependencies,
+    libraryDependencies ++= arbiterDependencies,
     Test / parallelExecution := false
   )
   .settings(
@@ -142,7 +142,7 @@ lazy val protocolDependencies = Seq(
   dependencies.circeOptics
 )
 
-lazy val mabelDependencies = Seq(
+lazy val arbiterDependencies = Seq(
   dependencies.blazeServer,
   dependencies.blazeClient,
   dependencies.http4sCirce,
@@ -189,6 +189,6 @@ lazy val settings = Seq(
 lazy val formatAll = taskKey[Unit]("Run scala formatter for all projects")
 
 formatAll := {
-  (mabel / Compile / scalafmt).value
-  (mabel / Test / scalafmt).value
+  (arbiter2 / Compile / scalafmt).value
+  (arbiter2 / Test / scalafmt).value
 }
