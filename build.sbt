@@ -2,6 +2,18 @@ name := "arbiter2"
 version := "0.1"
 scalaVersion := "2.13.6"
 
+lazy val assemblySettings = Seq(
+  assembly / test := {},
+  assembly / mainClass := Some("dev.rmaiun.arbiter2.Main"),
+  assembly / assemblyJarName := "arbiter2.jar",
+  assembly / assemblyMergeStrategy := {
+    case x if x.contains("io.netty.versions.properties") => MergeStrategy.first
+    case x =>
+      val oldStrategy = (assembly / assemblyMergeStrategy).value
+      oldStrategy(x)
+  }
+)
+
 lazy val common = (project in file("libs/common"))
   .settings(
     name := "common",
@@ -66,6 +78,7 @@ lazy val arbiter2 = (project in file("."))
     flywayPassword := System.getProperty("fw.pass", "rootpassword"),
     flywayLocations += System.getProperty("fw.locations", "db/test")
   )
+  .settings(assemblySettings: _*)
   .dependsOn(common, tftypes, validation, errorHandling, protocol, serverAuth)
   .enablePlugins(FlywayPlugin)
 
