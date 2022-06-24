@@ -1,30 +1,22 @@
 package dev.rmaiun.protocol.http.codec
 
 import dev.rmaiun.protocol.http.RealmDtoSet._
-import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
-import io.circe.{ Decoder, Encoder }
+import io.circe.Codec
+import io.circe.generic.semiauto.deriveCodec
 
 trait RealmDtoCodec extends SubDtoCodec {
-  implicit val RegisterRealmDtoInEncoder: Encoder[RegisterRealmDtoIn] = deriveEncoder[RegisterRealmDtoIn]
-  implicit val RegisterRealmDtoInDecoder: Decoder[RegisterRealmDtoIn] = deriveDecoder[RegisterRealmDtoIn]
+  implicit val RegisterRealmDtoInCodec: Codec[RegisterRealmDtoIn] = deriveCodec[RegisterRealmDtoIn]
 
-  implicit val RegisterRealmDtoOutEncoder: Encoder[RegisterRealmDtoOut] = deriveEncoder[RegisterRealmDtoOut]
-  implicit val RegisterRealmDtoOutDecoder: Decoder[RegisterRealmDtoOut] = deriveDecoder[RegisterRealmDtoOut]
+  implicit val RegisterRealmDtoOutCodec: Codec[RegisterRealmDtoOut] = deriveCodec[RegisterRealmDtoOut]
 
-  implicit val UpdateRealmAlgorithmDtoInEncoder: Encoder[UpdateRealmAlgorithmDtoIn] =
-    deriveEncoder[UpdateRealmAlgorithmDtoIn]
-  implicit val UpdateRealmAlgorithmDtoInDecoder: Decoder[UpdateRealmAlgorithmDtoIn] =
-    deriveDecoder[UpdateRealmAlgorithmDtoIn]
+  implicit val UpdateRealmAlgorithmDtoInCodec: Codec[UpdateRealmAlgorithmDtoIn] =
+    deriveCodec[UpdateRealmAlgorithmDtoIn]
 
-  implicit val UpdateRealmAlgorithmDtoOutEncoder: Encoder[UpdateRealmAlgorithmDtoOut] =
-    deriveEncoder[UpdateRealmAlgorithmDtoOut]
-  implicit val UpdateRealmAlgorithmDtoOutDecoder: Decoder[UpdateRealmAlgorithmDtoOut] =
-    deriveDecoder[UpdateRealmAlgorithmDtoOut]
+  implicit val UpdateRealmAlgorithmDtoOutCodec: Codec[UpdateRealmAlgorithmDtoOut] =
+    deriveCodec[UpdateRealmAlgorithmDtoOut]
 
-  implicit val GetRealmDtoInEncoder: Encoder[GetRealmDtoIn] = deriveEncoder[GetRealmDtoIn]
-  implicit val GetRealmDtoInDecoder: Decoder[GetRealmDtoIn] = deriveDecoder[GetRealmDtoIn]
+  implicit val GetRealmDtoInCodec: Codec[GetRealmDtoIn] = deriveCodec[GetRealmDtoIn]
 
-  implicit val GetRealmDtoOutEncoder: Encoder[GetRealmDtoOut] = deriveEncoder[GetRealmDtoOut]
-  implicit val GetRealmDtoOutDecoder: Decoder[GetRealmDtoOut] = deriveDecoder[GetRealmDtoOut]
+  implicit val GetRealmDtoOutCodec: Codec[GetRealmDtoOut] = deriveCodec[GetRealmDtoOut]
 
 }

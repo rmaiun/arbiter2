@@ -7,9 +7,11 @@ import fs2.Stream
 
 case class AmqpStructures[F[_]: MonadThrowable](
   botInPublisher: AmqpPublisher[F],
+  botInPersistPublisher: AmqpPublisher[F],
   botOutPublisher: AmqpPublisher[F],
   botInPersistConsumer: AmqpConsumer[F],
-  botInConsumer: AmqpConsumer[F]
+  botInConsumer: AmqpConsumer[F],
+  botOutConsumer:AmqpConsumer[F]
 )
 
 object AmqpStructures {

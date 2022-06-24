@@ -7,15 +7,14 @@ import cats.syntax.foldable._
 import cats.syntax.option._
 import dev.profunktor.fs2rabbit.model.AmqpEnvelope
 import dev.rmaiun.arbiter2.dtos.{ BotRequest, CmdType, ProcessorResponse }
+import dev.rmaiun.arbiter2.errors.Errors.{ NoProcessorFound, UserIsNotAuthorized }
 import dev.rmaiun.arbiter2.managers.UserManager
 import dev.rmaiun.arbiter2.postprocessor.PostProcessor
 import dev.rmaiun.arbiter2.processors.Processor
+import dev.rmaiun.arbiter2.utils.Constants.{ PREFIX, SUFFIX }
 import dev.rmaiun.arbiter2.utils.IdGen
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.flowtypes.{ FLog, Flow }
-import dev.rmaiun.arbiter2.dtos.{ BotRequest, CmdType, ProcessorResponse }
-import dev.rmaiun.arbiter2.errors.Errors.{ NoProcessorFound, UserIsNotAuthorized }
-import dev.rmaiun.arbiter2.utils.Constants.{ PREFIX, SUFFIX }
 import dev.rmaiun.protocol.http.UserDtoSet.FindUserDtoIn
 import io.circe.parser._
 import org.http4s.client.ConnectionFailure

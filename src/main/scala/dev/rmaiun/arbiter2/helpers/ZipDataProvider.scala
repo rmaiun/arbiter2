@@ -3,15 +3,13 @@ package dev.rmaiun.arbiter2.helpers
 import cats.data.NonEmptyList
 import cats.effect.Sync
 import cats.syntax.traverse._
-import dev.rmaiun.arbiter2.db.entities.{ Algorithm, EloPoints, GameHistory, Realm, Role, Season, User }
+import dev.rmaiun.arbiter2.db.PageInfo
+import dev.rmaiun.arbiter2.db.entities._
+import dev.rmaiun.arbiter2.helpers.ZipDataProvider._
+import dev.rmaiun.arbiter2.repositories._
 import dev.rmaiun.errorhandling.ThrowableOps._
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
-import dev.rmaiun.arbiter2.db.entities._
-import ZipDataProvider._
-import dev.rmaiun.arbiter2.db.PageInfo
-import dev.rmaiun.arbiter2.repositories.{ AlgorithmRepo, GameRepo, RealmRepo, RoleRepo, SeasonRepo, UserRepo }
-import dev.rmaiun.arbiter2.repositories._
 import doobie.hikari.HikariTransactor
 import doobie.implicits._
 import io.circe.Encoder

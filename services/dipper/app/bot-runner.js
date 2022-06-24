@@ -34,7 +34,7 @@ class BotRunner {
     // this._bot.command('/linkTid', (ctx) => CmdHandlers.linkTidCmdHandler(ctx, false))
     // this._bot.command('/bc', (ctx) => CmdHandlers.loadDumpCmdHandler(ctx))
 
-    await this._rc.initConsumer(this._bot)
+    // await this._rc.initConsumer(this._bot)
     return this._bot
   }
 }

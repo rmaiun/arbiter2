@@ -2,19 +2,15 @@ package dev.rmaiun.arbiter2.processors
 
 import cats.Monad
 import cats.syntax.option._
+import dev.rmaiun.arbiter2.dtos.CmdType._
 import dev.rmaiun.arbiter2.dtos.{ BotRequest, Definition, ProcessorResponse }
 import dev.rmaiun.arbiter2.helpers.ReportCache
 import dev.rmaiun.arbiter2.helpers.ReportCache.EloRatingReport
 import dev.rmaiun.arbiter2.managers.{ GameManager, UserManager }
+import dev.rmaiun.arbiter2.utils.Constants._
 import dev.rmaiun.arbiter2.utils.{ Constants, IdGen }
 import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.Flow
-import dev.rmaiun.arbiter2.dtos.CmdType._
-import dev.rmaiun.arbiter2.dtos.{ BotRequest, Definition, ProcessorResponse }
-import ReportCache.EloRatingReport
-import dev.rmaiun.arbiter2.managers.{ GameManager, UserManager }
-import Constants._
-import dev.rmaiun.arbiter2.utils.{ Constants, IdGen }
 import dev.rmaiun.protocol.http.GameDtoSet.{ ListEloPointsDtoIn, ListEloPointsDtoOut }
 import dev.rmaiun.protocol.http.UserDtoSet.FindAllUsersDtoIn
 

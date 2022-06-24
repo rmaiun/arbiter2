@@ -102,9 +102,11 @@ lazy val dependencies =
     val scaffeine      = "com.github.blemale"          %% "scaffeine"            % "5.1.2"
     val tapirHttp4s    = "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"  % "0.20.0-M9"
 
-    val scalatest = "org.scalatest"     %% "scalatest"   % ScalaTestVersion % Test
-    val spec2Core = "org.specs2"        %% "specs2-core" % Specs2Version    % Test
-    val mockito   = "org.scalatestplus" %% "mockito-3-4" % "3.2.10.0"       % Test
+    val bot4s      = "com.bot4s"                     %% "telegram-core"                  % "5.4.2"
+    val sttpClient = "com.softwaremill.sttp.client3" %% "async-http-client-backend-cats" % "3.6.2"
+    val scalatest  = "org.scalatest"                 %% "scalatest"                      % ScalaTestVersion % Test
+    val spec2Core  = "org.specs2"                    %% "specs2-core"                    % Specs2Version    % Test
+    val mockito    = "org.scalatestplus"             %% "mockito-3-4"                    % "3.2.10.0"       % Test
 
   }
 
@@ -163,6 +165,8 @@ lazy val arbiterDependencies = Seq(
   dependencies.dropboxSdk,
   dependencies.commons,
   dependencies.fs2cron,
+  dependencies.bot4s,
+  dependencies.sttpClient,
   dependencies.scalatest,
   dependencies.spec2Core
 )
