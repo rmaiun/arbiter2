@@ -7,10 +7,8 @@ lazy val assemblySettings = Seq(
   assembly / mainClass := Some("dev.rmaiun.arbiter2.Main"),
   assembly / assemblyJarName := "arbiter2.jar",
   assembly / assemblyMergeStrategy := {
-    case x if x.contains("io.netty.versions.properties") => MergeStrategy.first
-    case x =>
-      val oldStrategy = (assembly / assemblyMergeStrategy).value
-      oldStrategy(x)
+    case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+    case x => MergeStrategy.first
   }
 )
 
@@ -89,8 +87,8 @@ lazy val dependencies =
     val LogbackVersion    = "1.2.3"
     val CatsCoreVersion   = "2.7.0"
     val CatsEffectVersion = "3.3.5"
-    val Specs2Version     = "4.10.0"
-    val ScalaTestVersion  = "3.2.2"
+    val Specs2Version     = "4.16.0"
+    val ScalaTestVersion  = "3.2.12"
 
     val catsCore       = "org.typelevel"               %% "cats-core"            % CatsCoreVersion
     val catsEffect     = "org.typelevel"               %% "cats-effect"          % CatsEffectVersion
@@ -115,8 +113,8 @@ lazy val dependencies =
     val scaffeine      = "com.github.blemale"          %% "scaffeine"            % "5.1.2"
     val tapirHttp4s    = "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"  % "0.20.0-M9"
 
-    val bot4s      = "com.bot4s"                     %% "telegram-core"                  % "5.4.2"          % Provided
-    val sttpClient = "com.softwaremill.sttp.client3" %% "async-http-client-backend-cats" % "3.6.2"          % Provided
+    val bot4s      = "com.bot4s"                     %% "telegram-core"                  % "5.4.2"          /*% Provided*/
+    val sttpClient = "com.softwaremill.sttp.client3" %% "async-http-client-backend-cats" % "3.6.2"          /*% Provided*/
     val scalatest  = "org.scalatest"                 %% "scalatest"                      % ScalaTestVersion % Test
     val spec2Core  = "org.specs2"                    %% "specs2-core"                    % Specs2Version    % Test
     val mockito    = "org.scalatestplus"             %% "mockito-3-4"                    % "3.2.10.0"       % Test

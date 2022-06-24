@@ -29,7 +29,8 @@ object ConfigProvider {
   )
   case class ArchiveConfig(key: String, secret: String, token: String)
   case class ServerConfig(host: String, port: Int, tokens: String)
-  case class Config(db: DbConfig, broker: BrokerConfig, app: AppConfig, archive: ArchiveConfig, server: ServerConfig)
+  case class BotConfig(token: String)
+  case class Config(db: DbConfig, broker: BrokerConfig, app: AppConfig, archive: ArchiveConfig, server: ServerConfig, bot:BotConfig)
 
   def provideConfig: Config =
     ConfigSource.default.loadOrThrow[Config]

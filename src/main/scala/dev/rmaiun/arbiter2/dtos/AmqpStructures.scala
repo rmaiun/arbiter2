@@ -11,7 +11,7 @@ case class AmqpStructures[F[_]: MonadThrowable](
   botOutPublisher: AmqpPublisher[F],
   botInPersistConsumer: AmqpConsumer[F],
   botInConsumer: AmqpConsumer[F],
-  botOutConsumer:AmqpConsumer[F]
+  botOutConsumer: AmqpConsumer[F]
 )
 
 object AmqpStructures {

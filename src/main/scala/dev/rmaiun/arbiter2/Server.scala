@@ -122,7 +122,7 @@ object Server {
       rc         <- Stream.eval(RabbitClient[F](config(cfg), dispatcher))
       _          <- Stream.eval(initRabbitRoutes(rc))
       structs    <- createRabbitConnection(rc)
-      bot        <- Stream.eval(A.pure(new ArbiterBot("1721059759:AAEyozK5-R3-7EN4yNz2jo-QvpOMoIF-iBI", structs)))
+      bot        <- Stream.eval(A.pure(new ArbiterBot(cfg.bot.token, structs)))
       module      = Program.initHttpApp(client, structs, ref)
 
       // With Middlewares in place
