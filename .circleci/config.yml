@@ -3,9 +3,9 @@ jobs:
   test-build-arbiter2:
     docker:
       # specify the version you desire here
-      - image: circleci/openjdk:8-jdk
+      - image: cimg/openjdk:8.0
       - image: cimg/base:stable
-      - image: circleci/mysql:8.0.4
+      - image: cimg/mysql:8.0
         environment:
           MYSQL_ROOT_PASSWORD: rootpassword
           MYSQL_DATABASE: arbiter
@@ -40,9 +40,9 @@ jobs:
   build-arbiter2:
     docker:
       # specify the version you desire here
-      - image: circleci/openjdk:8-jdk
+      - image: cimg/openjdk:8.0
       - image: cimg/base:stable
-      - image: circleci/mysql:8.0.4
+      - image: cimg/mysql:8.0
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS
@@ -90,7 +90,7 @@ jobs:
 
   build-dipper:
     docker:
-      - image: circleci/buildpack-deps:stretch
+      - image: cimg/buildpack-deps:stretch
     working_directory: ~/repo
     environment:
       BOT_IMAGE_NAME: mairo/dipper
@@ -112,7 +112,7 @@ jobs:
       JVM_OPTS: -Xmx3200m
       TERM: dumb
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: cimg/openjdk:8.0
       - image: cimg/base:stable
     working_directory: ~/repo
     steps:
@@ -123,7 +123,7 @@ jobs:
 
   publish-arbiter2-image:
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: cimg/openjdk:8.0
       - image: cimg/base
     steps:
       - attach_workspace:
@@ -154,7 +154,7 @@ jobs:
 
   redeploy-services:
     docker:
-      - image: circleci/buildpack-deps:stretch
+      - image: cimg/base:stable
     steps:
       - add_ssh_keys
       - attach_workspace:
