@@ -34,7 +34,7 @@ class SeasonResultsPostProcessorSuite extends AnyFlatSpec with Matchers with Eit
     val gameManager   = mock(classOf[GameManager[IO]])
     val userManager   = mock(classOf[UserManager[IO]])
     val publisher     = mock(classOf[PublisherProxy[IO]])
-    val appCfg        = AppConfig(notifications = true, "Europe/Kiev", "", "", 20, 20, 20, "", "", 1)
+    val appCfg        = AppConfig(notifications = true, "Europe/Kiev", 1L, "", 20, 20, 20, "", "", 1)
     val postProcessor = SeasonResultPostProcessor.impl[IO](seasonManager, gameManager, userManager, publisher, appCfg)
     val now           = DateFormatter.now(appCfg.reportTimezone)
     when(seasonManager.findSeasonWithoutNotification(any())).thenReturn(

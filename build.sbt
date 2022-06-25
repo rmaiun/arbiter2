@@ -8,7 +8,7 @@ lazy val assemblySettings = Seq(
   assembly / assemblyJarName := "arbiter2.jar",
   assembly / assemblyMergeStrategy := {
     case PathList("META-INF", xs @ _*) => MergeStrategy.discard
-    case x => MergeStrategy.first
+    case x                             => MergeStrategy.first
   }
 )
 
@@ -113,12 +113,13 @@ lazy val dependencies =
     val scaffeine      = "com.github.blemale"          %% "scaffeine"            % "5.1.2"
     val tapirHttp4s    = "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"  % "0.20.0-M9"
 
-    val bot4s      = "com.bot4s"                     %% "telegram-core"                  % "5.4.2"          /*% Provided*/
-    val sttpClient = "com.softwaremill.sttp.client3" %% "async-http-client-backend-cats" % "3.6.2"          /*% Provided*/
-    val scalatest  = "org.scalatest"                 %% "scalatest"                      % ScalaTestVersion % Test
-    val spec2Core  = "org.specs2"                    %% "specs2-core"                    % Specs2Version    % Test
-    val mockito    = "org.scalatestplus"             %% "mockito-3-4"                    % "3.2.10.0"       % Test
+    val bot4s      = "com.bot4s"                     %% "telegram-core"                  % "5.4.2" /*% Provided*/
+    val sttpClient = "com.softwaremill.sttp.client3" %% "async-http-client-backend-cats" % "3.6.2" /*% Provided*/
 
+    val scalatest = "org.scalatest"       %% "scalatest"    % ScalaTestVersion % Test
+    val spec2Core = "org.specs2"          %% "specs2-core"  % Specs2Version    % Test
+    val mockito   = "org.scalatestplus"   %% "mockito-3-4"  % "3.2.10.0"       % Test
+    val flexmark  = "com.vladsch.flexmark" % "flexmark-all" % "0.62.2"        % Test
   }
 
 lazy val tfTypesDependencies = Seq(
@@ -179,7 +180,8 @@ lazy val arbiterDependencies = Seq(
   dependencies.bot4s,
   dependencies.sttpClient,
   dependencies.scalatest,
-  dependencies.spec2Core
+  dependencies.spec2Core,
+  dependencies.flexmark
 )
 
 lazy val settings = Seq(
@@ -207,3 +209,8 @@ formatAll := {
   (arbiter2 / Compile / scalafmt).value
   (arbiter2 / Test / scalafmt).value
 }
+
+Test / testOptions ++= Seq(
+  Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
+  Tests.Argument(TestFrameworks.ScalaTest, "-h", "target/test-reports")
+)

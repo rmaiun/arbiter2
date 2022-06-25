@@ -34,8 +34,28 @@ jobs:
           name: Prepare mysql for tests
           command: cat /dev/null | sbt flywayClean flywayMigrate
       - run:
-          name: Prepare jar
-          command: cat /dev/null | sbt clean assembly
+          name: Sbt clean
+          command: | 
+            sbt clean
+      - run:
+          name: Run tests
+          command: |
+            sbt test
+      - run:
+          name: Create folder for test reports
+          command: |
+            mkdir -p scalaTest-reports
+      - run:
+          name: Save test results
+          command: |
+            cp -R target/test-reports/. scalaTest-reports/
+      - run:
+          name: Test results monitoring
+          command: |
+            cd scalaTest-reports
+            ls -la
+      - store_test_results:
+          path: scalaTest-reports
 
   build-arbiter2:
     docker:
