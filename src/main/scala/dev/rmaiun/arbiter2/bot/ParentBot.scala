@@ -8,7 +8,7 @@ import com.bot4s.telegram.methods.ParseMode
 import com.bot4s.telegram.models._
 import com.typesafe.scalalogging.Logger
 import dev.profunktor.fs2rabbit.model.{ AmqpEnvelope, AmqpMessage, AmqpProperties }
-import dev.rmaiun.arbiter2.bot.ParentBot.{ EloRatingButtonLabel, ListGamesButtonLabel, SeasonStatsButtonLabel }
+import dev.rmaiun.arbiter2.bot.ParentBot.{ EloRatingButtonLabel, LastGamesButtonLabel, SeasonStatsButtonLabel }
 import dev.rmaiun.arbiter2.dtos.{ BotRequest, BotResponse }
 import dev.rmaiun.flowtypes.Flow.MonadThrowable
 import io.circe.Codec
@@ -19,20 +19,16 @@ import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
 import java.util.Date
 
 object ParentBot {
-  val StartCmd                  = "/start"
-  val SelfCmd                   = "/self"
-  val StatsCmd                  = "/stats"
-  val EloCmd                    = "/elo"
-  val LastCmd                   = "/last"
-  val AddRoundCmd               = "/add"
-  val RegisterCmd               = "/register"
-  val BroadcastMsgCmd           = "/bc"
-  val BroadcastMsgInTestModeCmd = "/bct"
-  val ADD_ROUND_CMD             = "/add"
+  val StartBotCmd                  = "/start"
+  val SelfBotCmd                   = "/self"
+  val AddRoundBotCmd               = "/add"
+  val RegisterUserBotCmd           = "/register"
+  val BroadcastMsgBotCmd           = "/bc"
+  val BroadcastMsgInTestModeBotCmd = "/bct"
 
   var SeasonStatsButtonLabel = "Season Stats \uD83D\uDCC8"
   var EloRatingButtonLabel   = "Elo Rating \uD83D\uDDFF"
-  var ListGamesButtonLabel   = "Last Games \uD83D\uDCCB"
+  var LastGamesButtonLabel   = "Last Games \uD83D\uDCCB"
 
   val NotAvailable = "n/a"
   val Error        = "*ERROR*:"
@@ -56,7 +52,7 @@ abstract class ParentBot[F[_]: Async: MonadThrowable](token: String)
   def defaultMarkup(): Option[ReplyKeyboardMarkup] = {
     val seasonStatsButton = KeyboardButton(SeasonStatsButtonLabel)
     val eloRatingButton   = KeyboardButton(EloRatingButtonLabel)
-    val lastGamesButton   = KeyboardButton(ListGamesButtonLabel)
+    val lastGamesButton   = KeyboardButton(LastGamesButtonLabel)
 
     val markup = ReplyKeyboardMarkup(
       Seq(Seq(seasonStatsButton, eloRatingButton), Seq(lastGamesButton)),
@@ -87,6 +83,12 @@ abstract class ParentBot[F[_]: Async: MonadThrowable](token: String)
     msg.from.fold(0L)(f => f.id),
     msg.from.fold(ParentBot.NotAvailable)(f => f.firstName),
     Some(codec(cmd))
+  )
+  def botRequest(cmdType: String)(implicit msg: Message): BotRequest = BotRequest(
+    cmdType,
+    msg.chat.id,
+    msg.from.fold(0L)(f => f.id),
+    msg.from.fold(ParentBot.NotAvailable)(f => f.firstName)
   )
 
   def processResponse(amqpEnvelope: AmqpEnvelope[String]): F[Unit] = {

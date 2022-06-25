@@ -8,6 +8,7 @@ import cats.syntax.option._
 import dev.profunktor.fs2rabbit.model.AmqpEnvelope
 import dev.rmaiun.arbiter2.dtos.{ BotRequest, CmdType, ProcessorResponse }
 import dev.rmaiun.arbiter2.errors.Errors.{ NoProcessorFound, UserIsNotAuthorized }
+import dev.rmaiun.arbiter2.helpers.ConfigProvider.Config
 import dev.rmaiun.arbiter2.managers.UserManager
 import dev.rmaiun.arbiter2.postprocessor.PostProcessor
 import dev.rmaiun.arbiter2.processors.Processor

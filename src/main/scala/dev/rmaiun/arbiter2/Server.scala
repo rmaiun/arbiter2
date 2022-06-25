@@ -122,7 +122,7 @@ object Server {
       rc         <- Stream.eval(RabbitClient[F](config(cfg), dispatcher))
       _          <- Stream.eval(initRabbitRoutes(rc))
       structs    <- createRabbitConnection(rc)
-      bot        <- Stream.eval(A.pure(new ArbiterBot(cfg.bot.token, structs)))
+      bot        <- Stream.eval(A.pure(new ArbiterBot(cfg.bot.token, structs, cfg.bot)))
       module      = Program.initHttpApp(client, structs, ref)
 
       // With Middlewares in place
@@ -136,7 +136,7 @@ object Server {
           .concurrently(structs.botInPersistConsumer.flatMap(x => Stream.eval(module.persistHandler.process(x).value)))
           .concurrently(Stream.awakeDelay[F](4 hours).evalTap(_ => module.queryPublisher.run().value))
           .concurrently(Stream.awakeDelay[F](166 milliseconds).evalTap(_ => module.rlPublisher.safePublish().value))
-//          .concurrently(dumpCronEvaluation(module.dumpExporter))
+          .concurrently(dumpCronEvaluation(module.dumpExporter))
           .concurrently(Stream.eval(bot.startPolling()))
           .concurrently(structs.botOutConsumer.flatMap(x => Stream.eval(bot.processResponse(x))))
     } yield exitCode
