@@ -108,23 +108,6 @@ jobs:
           paths:
             - ./image_arbiter2.tar
 
-  build-dipper:
-    docker:
-      - image: cimg/buildpack-deps:stretch
-    working_directory: ~/repo
-    environment:
-      BOT_IMAGE_NAME: mairo/dipper
-      TERM: dumb
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run: cd services/dipper && docker build -t $BOT_IMAGE_NAME:latest .
-      - run: cd services/dipper && docker save -o ../../image_dipper.tar $BOT_IMAGE_NAME:latest
-      - persist_to_workspace:
-          root: .
-          paths:
-            - ./image_dipper.tar
-
   migrate-prod-mysq:
     environment:
       # Customize the JVM maximum heap limit
@@ -158,19 +141,6 @@ jobs:
       - run:
           name: Publish new docker image
           command: cat /dev/null | docker push mairo/arbiter2:latest
-
-  publish-dipper-image:
-    environment:
-      BOT_IMAGE_NAME: mairo/dipper
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - attach_workspace:
-          at: /tmp/workspace
-      - setup_remote_docker
-      - run: docker load -i /tmp/workspace/image_dipper.tar
-      - run: cat /dev/null | docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASS"
-      - run: cat /dev/null | docker push mairo/dipper:latest
 
   redeploy-services:
     docker:
@@ -220,25 +190,10 @@ workflows:
             branches:
               only:
                 - dev
-      - build-dipper:
-          context: myctx
-          filters:
-            branches:
-              only:
-                - dev
-      - publish-dipper-image:
-          context: myctx
-          requires:
-            - build-dipper
-          filters:
-            branches:
-              only:
-                - dev
       - redeploy-services:
           context: myctx
           requires:
             - publish-arbiter2-image
-            - publish-dipper-image
           filters:
             branches:
               only:
