@@ -27,17 +27,15 @@ object SysRoutes {
       case Left(err) =>
         err match {
           case e: AppRuntimeException =>
-            val app = if (e.app.isEmpty) { Some("datamanager") }
-            else e.app
             for {
               _ <- Logger[F].error(err)("FLow ends with AppRuntimeException")
-              x <- Response[F](status = BadRequest).withEntity(ErrorDtoOut(e.code, e.message, app, e.params)).pure[F]
+              x <- Response[F](status = BadRequest).withEntity(ErrorDtoOut(e.code, e.message, e.params)).pure[F]
             } yield x
           case e: Throwable =>
             for {
               _ <- Logger[F].error(err)("FLow ends with Throwable")
               x <- Response[F](status = ServiceUnavailable)
-                     .withEntity(ErrorDtoOut("systemException", e.getMessage, Some("datamanager")))
+                     .withEntity(ErrorDtoOut("systemException", e.getMessage))
                      .pure[F]
             } yield x
         }

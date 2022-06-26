@@ -2,8 +2,8 @@ package dev.rmaiun.arbiter2.errors
 
 import dev.rmaiun.errorhandling.errors.AppRuntimeException
 
-object AlgorithmErrors extends ErrorInfo {
+object AlgorithmErrors {
   case class AlgorithmNotFoundException(p: Map[String, String])
-      extends AppRuntimeException("algorithmNotFound", "Algorithm is not found", app, Some(p))
+      extends AppRuntimeException("algorithmNotFound", s"Algorithm is not found", Some(p))
 
 }

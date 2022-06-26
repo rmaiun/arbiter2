@@ -23,8 +23,7 @@ object Arbiter2Middleware {
         } else {
           OptionT.pure(
             Response[F](status = Forbidden)
-              .withEntity(ErrorDtoOut("authException", err.msg, Some("datamanager")))
-          )
+              .withEntity(ErrorDtoOut("authException", err.msg)))
         },
       header =>
         if (allowedTokens.contains(header.head.value)) {
@@ -32,7 +31,7 @@ object Arbiter2Middleware {
         } else {
           OptionT.pure(
             Response[F](status = Forbidden)
-              .withEntity(ErrorDtoOut("authException", "Authentication failed", Some("datamanager")))
+              .withEntity(ErrorDtoOut("authException", "Authentication failed"))
           )
         }
     )

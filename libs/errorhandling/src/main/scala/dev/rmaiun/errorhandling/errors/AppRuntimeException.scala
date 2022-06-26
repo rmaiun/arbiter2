@@ -3,7 +3,6 @@ package dev.rmaiun.errorhandling.errors
 class AppRuntimeException(
   val code: String,
   val message: String,
-  val app: Option[String] = None,
   val params: Option[Map[String, String]] = None,
   val cause: Option[Throwable] = None
 ) extends RuntimeException {

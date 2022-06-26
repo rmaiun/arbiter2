@@ -1,9 +1,8 @@
 package dev.rmaiun.errorhandling.errors
 
-import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
-import io.circe.{ Decoder, Encoder }
+import io.circe.Codec
+import io.circe.generic.semiauto.deriveCodec
 object codec {
-  case class ErrorDtoOut(code: String, message: String, app: Option[String], params: Option[Map[String, String]] = None)
-  implicit val ErrorDtoOutCodec: Encoder[ErrorDtoOut] = deriveEncoder[ErrorDtoOut]
-  implicit val ErrorDtoOutDecoder: Decoder[ErrorDtoOut] = deriveDecoder[ErrorDtoOut]
+  case class ErrorDtoOut(code: String, message: String, params: Option[Map[String, String]] = None)
+  implicit val ErrorDtoOutCodec: Codec[ErrorDtoOut] = deriveCodec[ErrorDtoOut]
 }
