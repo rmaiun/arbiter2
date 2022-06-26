@@ -127,7 +127,7 @@ jobs:
   publish-arbiter2-image:
     docker:
       - image: cimg/openjdk:8.0
-      - image: cimg/base
+      - image: cimg/base:stable
     steps:
       - attach_workspace:
           at: /tmp/workspace
