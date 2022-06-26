@@ -1,5 +1,5 @@
 name := "arbiter2"
-version := "0.1"
+version := "2.1.0"
 scalaVersion := "2.13.6"
 
 lazy val assemblySettings = Seq(
@@ -66,6 +66,7 @@ lazy val protocol = (project in file("libs/protocol"))
 lazy val arbiter2 = (project in file("."))
   .settings(
     name := "arbiter2",
+    version := "2.1.0",
     settings,
     libraryDependencies ++= arbiterDependencies,
     Test / parallelExecution := false
