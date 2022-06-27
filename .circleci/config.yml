@@ -194,6 +194,7 @@ workflows:
           context: myctx
           requires:
             - publish-arbiter2-image
+            - migrate-prod-mysq
           filters:
             branches:
               only:
