@@ -2,19 +2,17 @@
 
 Second generation of the project for Table Football community
 
----
 [![CircleCI](https://circleci.com/gh/RMaiun/arbiter2/tree/dev.svg?style=shield)](https://app.circleci.com/pipelines/github/RMaiun/arbiter2)
 <a href="https://typelevel.org/cats/"><img src="https://typelevel.org/cats/img/cats-badge.svg" height="40px" align="right" alt="Cats friendly" /></a>
----
+
+# General Info
 Application which manages results for Table football league.
 Was created for educational purpose as a part of investigation of functional scala world
 as a potential candidate for replacement for application which was already written
 with Spring WebFlux.
 After positive experience whole system was migrated to scala stack.
----
 
-# Core functionality:
-
+# Core functionality
 - workspace initialization
     - algorithm management
     - round management
@@ -31,10 +29,7 @@ After positive experience whole system was migrated to scala stack.
     - archiving of all dataset
     - loading data dump to particular service
 
----
-
-# Tech stack:
-
+# Tech stack
 | Status | Tool      | Description                             |
 |--------|-----------|-----------------------------------------|
 | ✅      | MySql     | RDBM                                    |
