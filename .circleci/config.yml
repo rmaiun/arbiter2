@@ -151,7 +151,7 @@ workflows:
             - test
           filters:
             tags:
-              only: /^release-.*/
+              only: /release-.*/
             branches:
               ignore: /.*/
       - migrate-prod-mysq:
@@ -160,7 +160,7 @@ workflows:
             - build-jar
           filters:
             tags:
-              only: /^release-.*/
+              only: /release-.*/
             branches:
               ignore: /.*/
       - publish-arbiter2-image:
@@ -169,7 +169,7 @@ workflows:
             - build-jar
           filters:
             tags:
-              only: /^release-.*/
+              only: /release-.*/
             branches:
               ignore: /.*/
       - redeploy-services:
@@ -179,6 +179,6 @@ workflows:
             - migrate-prod-mysq
           filters:
             tags:
-              only: /^release-.*/
+              only: /release-.*/
             branches:
               ignore: /.*/
