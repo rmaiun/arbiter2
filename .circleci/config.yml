@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  test-build-arbiter2:
+  test:
     docker:
       # specify the version you desire here
       - image: cimg/openjdk:8.0
@@ -57,7 +57,7 @@ jobs:
       - store_test_results:
           path: scalaTest-reports
 
-  build-arbiter2:
+  build:
     docker:
       # specify the version you desire here
       - image: cimg/openjdk:8.0
@@ -82,7 +82,7 @@ jobs:
       - checkout
       - run:
           name: Prepare jar
-          command: cat /dev/null | sbt 'set test in assembly := {}' clean assembly
+          command: cat /dev/null | sbt 'set assembly/test := {}' clean assembly
       - setup_remote_docker
       - run:
           name: Build docker image
@@ -149,26 +149,26 @@ workflows:
   version: 2
   build-master:
     jobs:
-      - test-build-arbiter2:
+      - test:
           context: myctx
-      - build-arbiter2:
+      - build:
           context: myctx
           requires:
-            - test-build-arbiter2
+            - test
           filters:
             tags:
               only: /^release-.*/
       - migrate-prod-mysq:
           context: myctx
           requires:
-            - build-arbiter2
+            - build
           filters:
             tags:
               only: /^release-.*/
       - publish-arbiter2-image:
           context: myctx
           requires:
-            - build-arbiter2
+            - build
           filters:
             tags:
               only: /^release-.*/
