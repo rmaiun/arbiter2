@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  test-build-arbiter2:
+  test:
     docker:
       # specify the version you desire here
       - image: cimg/openjdk:8.0
@@ -11,7 +11,7 @@ jobs:
           MYSQL_DATABASE: arbiter
           MYSQL_USER: dev
           MYSQL_PASSWORD: password
-    working_directory: ~/repo
+    working_directory: ~/^repo
     environment:
       # Customize the JVM maximum heap limit
       SBT_VERSION: 1.5.5
@@ -57,21 +57,15 @@ jobs:
       - store_test_results:
           path: scalaTest-reports
 
-  build-arbiter2:
+  build-jar:
     docker:
       # specify the version you desire here
       - image: cimg/openjdk:8.0
       - image: cimg/base:stable
-      - image: cimg/mysql:8.0
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS
-        environment:
-          MYSQL_ROOT_PASSWORD: rootpassword
-          MYSQL_DATABASE: arbiter
-          MYSQL_USER: dev
-          MYSQL_PASSWORD: password
-    working_directory: ~/repo
+    working_directory: ~/^repo
     environment:
       # Customize the JVM maximum heap limit
       SBT_VERSION: 1.5.5
@@ -81,21 +75,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Waiting for MySQL to be ready
-          command: |
-            for i in `seq 1 20`;
-            do
-            nc -z 127.0.0.1 3306 && echo Success && exit 0
-            echo -n .
-            sleep 1
-            done
-            echo Failed waiting for MySQL && exit 1
-      - run:
-          name: Prepare mysql for tests
-          command: cat /dev/null | sbt flywayClean flywayMigrate
-      - run:
           name: Prepare jar
-          command: cat /dev/null | sbt clean assembly
+          command: cat /dev/null | sbt 'set assembly/test := {}' clean assembly
       - setup_remote_docker
       - run:
           name: Build docker image
@@ -117,7 +98,7 @@ jobs:
     docker:
       - image: cimg/openjdk:8.0
       - image: cimg/base:stable
-    working_directory: ~/repo
+    working_directory: ~/^repo
     steps:
       - checkout
       - run:
@@ -160,37 +141,53 @@ jobs:
 
 workflows:
   version: 2
-  build-master:
+  feature-tests:
     jobs:
-      - test-build-arbiter2:
+      - test:
           context: myctx
           filters:
+            branches:
+              only: /^feature-.*/
+  dev-tests:
+    jobs:
+      - test:
+          context: myctx
+          filters:
+            branches:
+              only: dev
             tags:
-              ignore: /^release-.*/
-      - build-arbiter2:
+              ignore: /.*/
+  prod-oper:
+    jobs:
+      - test:
           context: myctx
-          filters:
+          filters: &filters-production
+            branches:
+              ignore: /.*/
             tags:
               only: /^release-.*/
+      - build-jar:
+          context: myctx
+          requires:
+            - test
+          filters:
+            <<: *filters-production
       - migrate-prod-mysq:
           context: myctx
           requires:
-            - build-arbiter2
+            - build-jar
           filters:
-            tags:
-              only: /^release-.*/
+            <<: *filters-production
       - publish-arbiter2-image:
           context: myctx
           requires:
-            - build-arbiter2
+            - build-jar
           filters:
-            tags:
-              only: /^release-.*/
+            <<: *filters-production
       - redeploy-services:
           context: myctx
           requires:
             - publish-arbiter2-image
             - migrate-prod-mysq
           filters:
-            tags:
-              only: /^release-.*/
+            <<: *filters-production
