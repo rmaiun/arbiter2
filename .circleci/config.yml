@@ -11,7 +11,7 @@ jobs:
           MYSQL_DATABASE: arbiter
           MYSQL_USER: dev
           MYSQL_PASSWORD: password
-    working_directory: ~/repo
+    working_directory: ~/^repo
     environment:
       # Customize the JVM maximum heap limit
       SBT_VERSION: 1.5.5
@@ -65,7 +65,7 @@ jobs:
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS
-    working_directory: ~/repo
+    working_directory: ~/^repo
     environment:
       # Customize the JVM maximum heap limit
       SBT_VERSION: 1.5.5
@@ -98,7 +98,7 @@ jobs:
     docker:
       - image: cimg/openjdk:8.0
       - image: cimg/base:stable
-    working_directory: ~/repo
+    working_directory: ~/^repo
     steps:
       - checkout
       - run:
@@ -141,17 +141,26 @@ jobs:
 
 workflows:
   version: 2
-  build-master:
+  run-tests:
     jobs:
       - test:
           context: myctx
+  deploy-prod:
+    jobs:
+      - test:
+          context: myctx
+          filters:
+            tags:
+              only: /^release-.*/
+            branches:
+              ignore: /.*/
       - build-jar:
           context: myctx
           requires:
             - test
           filters:
             tags:
-              only: /release-.*/
+              only: /^release-.*/
             branches:
               ignore: /.*/
       - migrate-prod-mysq:
@@ -160,7 +169,7 @@ workflows:
             - build-jar
           filters:
             tags:
-              only: /release-.*/
+              only: /^release-.*/
             branches:
               ignore: /.*/
       - publish-arbiter2-image:
@@ -169,7 +178,7 @@ workflows:
             - build-jar
           filters:
             tags:
-              only: /release-.*/
+              only: /^release-.*/
             branches:
               ignore: /.*/
       - redeploy-services:
@@ -179,6 +188,6 @@ workflows:
             - migrate-prod-mysq
           filters:
             tags:
-              only: /release-.*/
+              only: /^release-.*/
             branches:
-              ignore: /.*/
+              ignore: /.*/            
