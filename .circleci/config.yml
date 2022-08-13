@@ -165,37 +165,32 @@ workflows:
       - test-build-arbiter2:
           context: myctx
           filters:
-            branches:
-              ignore:
-                - dev
+            tags:
+              ignore: /^release-.*/
       - build-arbiter2:
           context: myctx
           filters:
-            branches:
-              only:
-                - dev
+            tags:
+              only: /^release-.*/
       - migrate-prod-mysq:
           context: myctx
           requires:
             - build-arbiter2
           filters:
-            branches:
-              only:
-                - dev
+            tags:
+              only: /^release-.*/
       - publish-arbiter2-image:
           context: myctx
           requires:
             - build-arbiter2
           filters:
-            branches:
-              only:
-                - dev
+            tags:
+              only: /^release-.*/
       - redeploy-services:
           context: myctx
           requires:
             - publish-arbiter2-image
             - migrate-prod-mysq
           filters:
-            branches:
-              only:
-                - dev
+            tags:
+              only: /^release-.*/
