@@ -179,23 +179,26 @@ workflows:
           requires:
             - build-arbiter2
           filters:
+            tags:
+              only: /^release-.*/
             branches:
-              only:
-                - dev
+              ignore: /.*/
       - publish-arbiter2-image:
           context: myctx
           requires:
             - build-arbiter2
           filters:
+            tags:
+              only: /^release-.*/
             branches:
-              only:
-                - dev
+              ignore: /.*/
       - redeploy-services:
           context: myctx
           requires:
             - publish-arbiter2-image
             - migrate-prod-mysq
           filters:
+            tags:
+              only: /^release-.*/
             branches:
-              only:
-                - dev
+              ignore: /.*/
