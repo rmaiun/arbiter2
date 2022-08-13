@@ -81,21 +81,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Waiting for MySQL to be ready
-          command: |
-            for i in `seq 1 20`;
-            do
-            nc -z 127.0.0.1 3306 && echo Success && exit 0
-            echo -n .
-            sleep 1
-            done
-            echo Failed waiting for MySQL && exit 1
-      - run:
-          name: Prepare mysql for tests
-          command: cat /dev/null | sbt flywayClean flywayMigrate
-      - run:
           name: Prepare jar
-          command: cat /dev/null | sbt clean assembly
+          command: cat /dev/null | sbt 'set test in assembly := {}' clean assembly
       - setup_remote_docker
       - run:
           name: Build docker image
@@ -164,11 +151,10 @@ workflows:
     jobs:
       - test-build-arbiter2:
           context: myctx
-          filters:
-            tags:
-              ignore: /^release-.*/
       - build-arbiter2:
           context: myctx
+          requires:
+            - test-build-arbiter2
           filters:
             tags:
               only: /^release-.*/

@@ -1,6 +1,24 @@
 name := "arbiter2"
-version := "2.1.1"
 scalaVersion := "2.13.6"
+
+lazy val arbiter2 = (project in file("."))
+  .settings(
+    name := "arbiter2",
+    version := "2.2.1",
+    settings,
+    libraryDependencies ++= arbiterDependencies,
+    Test / parallelExecution := false
+  )
+  .settings(
+    flywayUrl := s"jdbc:mysql://${System.getProperty("fw.host", "localhost")}:3306/arbiter?allowPublicKeyRetrieval=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8",
+    flywayUser := System.getProperty("fw.user", "root"),
+    flywayPassword := System.getProperty("fw.pass", "rootpassword"),
+    flywayLocations += System.getProperty("fw.locations", "db/test")
+  )
+  .settings(assemblySettings: _*)
+  .dependsOn(common, tftypes, validation, errorHandling, protocol, serverAuth)
+  .enablePlugins(FlywayPlugin)
+
 
 lazy val assemblySettings = Seq(
   assembly / test := {},
@@ -62,24 +80,6 @@ lazy val protocol = (project in file("libs/protocol"))
     libraryDependencies ++= protocolDependencies
   )
   .disablePlugins(AssemblyPlugin)
-
-lazy val arbiter2 = (project in file("."))
-  .settings(
-    name := "arbiter2",
-    version := "2.1.1",
-    settings,
-    libraryDependencies ++= arbiterDependencies,
-    Test / parallelExecution := false
-  )
-  .settings(
-    flywayUrl := s"jdbc:mysql://${System.getProperty("fw.host", "localhost")}:3306/arbiter?allowPublicKeyRetrieval=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8",
-    flywayUser := System.getProperty("fw.user", "root"),
-    flywayPassword := System.getProperty("fw.pass", "rootpassword"),
-    flywayLocations += System.getProperty("fw.locations", "db/test")
-  )
-  .settings(assemblySettings: _*)
-  .dependsOn(common, tftypes, validation, errorHandling, protocol, serverAuth)
-  .enablePlugins(FlywayPlugin)
 
 lazy val dependencies =
   new {
