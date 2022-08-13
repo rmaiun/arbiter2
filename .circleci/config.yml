@@ -145,49 +145,42 @@ workflows:
     jobs:
       - test:
           context: myctx
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              ignore: /.*/
   deploy-prod:
     jobs:
       - test:
           context: myctx
-          filters:
-            tags:
-              only: /^release-.*/
+          filters: &filters-production
             branches:
               ignore: /.*/
+            tags:
+              only: /^release-.*/
       - build-jar:
           context: myctx
           requires:
             - test
           filters:
-            tags:
-              only: /^release-.*/
-            branches:
-              ignore: /.*/
+            <<: *filters-production
       - migrate-prod-mysq:
           context: myctx
           requires:
             - build-jar
           filters:
-            tags:
-              only: /^release-.*/
-            branches:
-              ignore: /.*/
+            <<: *filters-production
       - publish-arbiter2-image:
           context: myctx
           requires:
             - build-jar
           filters:
-            tags:
-              only: /^release-.*/
-            branches:
-              ignore: /.*/
+            <<: *filters-production
       - redeploy-services:
           context: myctx
           requires:
             - publish-arbiter2-image
             - migrate-prod-mysq
           filters:
-            tags:
-              only: /^release-.*/
-            branches:
-              ignore: /.*/            
+            <<: *filters-production
