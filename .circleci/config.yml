@@ -157,7 +157,7 @@ workflows:
       - migrate-prod-mysq:
           context: myctx
           requires:
-            - build
+            - build-jar
           filters:
             tags:
               only: /^release-.*/
@@ -166,7 +166,7 @@ workflows:
       - publish-arbiter2-image:
           context: myctx
           requires:
-            - build
+            - build-jar
           filters:
             tags:
               only: /^release-.*/
