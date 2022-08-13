@@ -57,20 +57,14 @@ jobs:
       - store_test_results:
           path: scalaTest-reports
 
-  build:
+  build-jar:
     docker:
       # specify the version you desire here
       - image: cimg/openjdk:8.0
       - image: cimg/base:stable
-      - image: cimg/mysql:8.0
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS
-        environment:
-          MYSQL_ROOT_PASSWORD: rootpassword
-          MYSQL_DATABASE: arbiter
-          MYSQL_USER: dev
-          MYSQL_PASSWORD: password
     working_directory: ~/repo
     environment:
       # Customize the JVM maximum heap limit
@@ -151,13 +145,15 @@ workflows:
     jobs:
       - test:
           context: myctx
-      - build:
+      - build-jar:
           context: myctx
           requires:
             - test
           filters:
             tags:
               only: /^release-.*/
+            branches:
+              ignore: /.*/
       - migrate-prod-mysq:
           context: myctx
           requires:
@@ -165,6 +161,8 @@ workflows:
           filters:
             tags:
               only: /^release-.*/
+            branches:
+              ignore: /.*/
       - publish-arbiter2-image:
           context: myctx
           requires:
@@ -172,6 +170,8 @@ workflows:
           filters:
             tags:
               only: /^release-.*/
+            branches:
+              ignore: /.*/
       - redeploy-services:
           context: myctx
           requires:
@@ -180,3 +180,5 @@ workflows:
           filters:
             tags:
               only: /^release-.*/
+            branches:
+              ignore: /.*/
