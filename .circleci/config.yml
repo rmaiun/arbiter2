@@ -141,16 +141,23 @@ jobs:
 
 workflows:
   version: 2
-  run-tests:
+  feature-tests:
     jobs:
       - test:
           context: myctx
           filters:
             branches:
-              only: /.*/
+              only: /^feature-.*/
+  dev-tests:
+    jobs:
+      - test:
+          context: myctx
+          filters:
+            branches:
+              only: dev
             tags:
               ignore: /.*/
-  deploy-prod:
+  prod-oper:
     jobs:
       - test:
           context: myctx
