@@ -3,10 +3,10 @@ package dev.rmaiun.arbiter2.helpers
 import cats.Show
 import cats.effect.Sync
 import cats.implicits.toShow
+import dev.rmaiun.arbiter2.Program.InternalCache
+import dev.rmaiun.arbiter2.helpers.ReportCache.ReportKey
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.flowtypes.{ FLog, Flow }
-import dev.rmaiun.arbiter2.Program.InternalCache
-import ReportCache.ReportKey
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
@@ -18,9 +18,9 @@ case class ReportCache[F[_]: Sync](cache: InternalCache) {
   def find(key: ReportKey)(action: => Flow[F, Option[String]]): Flow[F, Option[String]] =
     get(key).flatMap {
       case p @ Some(_) =>
-        FLog.info(s"Value found in cache for key: ${key.show}").flatMap(_ => Flow.pure(p))
+        FLog.info(s"Value is found in cache for key: ${key.show}").flatMap(_ => Flow.pure(p))
       case None =>
-        FLog.info(s"Value absent in cache for key: ${key.show}").flatMap(_ => action)
+        FLog.info(s"Value is absent in cache for key: ${key.show}").flatMap(_ => action)
     }
 
   def put(k: ReportKey, v: String): Flow[F, String] =
@@ -42,6 +42,11 @@ case class ReportCache[F[_]: Sync](cache: InternalCache) {
     FLog
       .info(s"Evicting cache for key ${k.toString}")
       .flatMap(_ => Flow.effect(Sync[F].delay(cache.invalidate(k.show))).map(_ => ()))
+
+  def evictAll: Flow[F, Unit] =
+    FLog
+      .info("Launching full cache eviction")
+      .flatMap(_ => Flow.effect(Sync[F].delay(cache.invalidateAll())))
 
 }
 object ReportCache {

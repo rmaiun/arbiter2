@@ -10,7 +10,7 @@ import dev.rmaiun.arbiter2.helpers.{
   CommandHandler,
   DumpExporter,
   EloPointsCalculator,
-  PingManager,
+  OperationalManager,
   PublisherProxy,
   RateLimitedPublisher,
   ReportCache,
@@ -132,7 +132,7 @@ object Program {
       CommandHandler.impl(Persistence)(userMng, processors, postProcessors, publisherProxy)
     lazy val queryCmdHandler =
       CommandHandler.impl(Query)(userMng, processors, postProcessors, publisherProxy)
-    lazy val pingManager = PingManager.impl
+    lazy val pingManager = OperationalManager.impl(reportCache)
 
     //http app
     lazy val httpApp = Router[F](
