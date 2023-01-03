@@ -4,7 +4,7 @@ scalaVersion := "2.13.6"
 lazy val arbiter2 = (project in file("."))
   .settings(
     name := "arbiter2",
-    version := "2.2.7",
+    version := "2.2.8",
     settings,
     libraryDependencies ++= arbiterDependencies,
     Test / parallelExecution := false
