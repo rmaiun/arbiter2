@@ -22,6 +22,7 @@ object UserValidationSet extends CustomValidationRules {
   implicit val FindAllUsersDtoInValidator: TransformedValidator[FindAllUsersDtoIn] = validator[FindAllUsersDtoIn] {
     dto =>
       dto.realm is notBlank and realm
+      dto.season.each should season
   }
 
   implicit val AssignUserToRealmDtoInValidator: TransformedValidator[AssignUserToRealmDtoIn] =

@@ -16,7 +16,7 @@ case class OperationalManager[F[_]: Clock: Sync](reportCache: ReportCache[F]) {
       _ <- FLog.info(s"current time $c")
     } yield c.toString
 
-  def evictCache: Flow[F,Unit] = reportCache.evictAll
+  def evictCache: Flow[F, Unit] = reportCache.evictAll
 }
 
 object OperationalManager {

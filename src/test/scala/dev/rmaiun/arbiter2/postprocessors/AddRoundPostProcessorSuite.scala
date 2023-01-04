@@ -4,12 +4,13 @@ import cats.effect.IO
 import cats.effect.unsafe.implicits.global
 import dev.rmaiun.arbiter2.commands.AddRoundCmd
 import dev.rmaiun.arbiter2.dtos.BotRequest
+import dev.rmaiun.arbiter2.dtos.CmdType.ADD_ROUND_CMD
 import dev.rmaiun.arbiter2.helpers.PublisherProxy
 import dev.rmaiun.arbiter2.managers.UserManager
 import dev.rmaiun.arbiter2.postprocessor.AddRoundPostProcessor
-import dev.rmaiun.flowtypes.Flow
-import dev.rmaiun.arbiter2.dtos.CmdType.ADD_ROUND_CMD
+import dev.rmaiun.arbiter2.services.GameService
 import dev.rmaiun.arbiter2.utils.Loggable
+import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.protocol.http.UserDtoSet.{ FindRealmAdminsDtoOut, FindUserDtoOut, UserDto, UserRoleData }
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
@@ -20,7 +21,8 @@ import org.scalatest.matchers.should.Matchers
 class AddRoundPostProcessorSuite extends AnyFlatSpec with Matchers with EitherValues with Loggable {
   private val userManager   = mock(classOf[UserManager[IO]])
   private val publisher     = mock(classOf[PublisherProxy[IO]])
-  private val postProcessor = AddRoundPostProcessor.impl[IO](userManager, publisher)
+  private val gameService   = mock(classOf[GameService[IO]])
+  private val postProcessor = AddRoundPostProcessor.impl[IO](userManager, gameService, publisher)
 
   "AddRoundPostProcessor" should "send right number of messages" in {
     when(publisher.publishToBot(any())(any())).thenReturn(Flow.unit)

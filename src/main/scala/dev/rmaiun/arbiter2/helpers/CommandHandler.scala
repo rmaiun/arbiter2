@@ -8,12 +8,12 @@ import cats.syntax.option._
 import dev.profunktor.fs2rabbit.model.AmqpEnvelope
 import dev.rmaiun.arbiter2.dtos.{ BotRequest, CmdType, ProcessorResponse }
 import dev.rmaiun.arbiter2.errors.Errors.{ NoProcessorFound, UserIsNotAuthorized }
-import dev.rmaiun.arbiter2.helpers.ConfigProvider.Config
 import dev.rmaiun.arbiter2.managers.UserManager
 import dev.rmaiun.arbiter2.postprocessor.PostProcessor
 import dev.rmaiun.arbiter2.processors.Processor
 import dev.rmaiun.arbiter2.utils.Constants.{ PREFIX, SUFFIX }
 import dev.rmaiun.arbiter2.utils.IdGen
+import dev.rmaiun.errorhandling.errors.AppRuntimeException
 import dev.rmaiun.flowtypes.Flow.Flow
 import dev.rmaiun.flowtypes.{ FLog, Flow }
 import dev.rmaiun.protocol.http.UserDtoSet.FindUserDtoIn
@@ -83,12 +83,13 @@ case class CommandHandler[F[_]: Sync](commandType: CmdType)(
     } yield result
     flow.leftFlatMap { err =>
       val msg = err match {
-        case _: ConnectionFailure => s"$PREFIX ERROR: Connection issue $SUFFIX"
-        case _                    => s"$PREFIX ERROR: ${err.getMessage} $SUFFIX"
+        case _: ConnectionFailure        => s"ERROR: Connection issue"
+        case appErr: AppRuntimeException => s"ERROR: ${appErr.message}"
+        case _                           => s"ERROR: ${err.getMessage}"
       }
-      FLog.error(s"$commandType| ${err.getMessage}") *>
+      FLog.error(s"$commandType| $msg") *>
         Flow.effect(Monad[F].pure(err.printStackTrace())) *>
-        Flow.pure(Some(ProcessorResponse.error(input.chatId, IdGen.msgId, msg)))
+        Flow.pure(Some(ProcessorResponse.error(input.chatId, IdGen.msgId, s"$PREFIX $msg $SUFFIX")))
     }
 
   }

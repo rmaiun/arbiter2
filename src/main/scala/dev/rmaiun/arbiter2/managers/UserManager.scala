@@ -4,19 +4,16 @@ import cats.Monad
 import cats.data.EitherT
 import cats.implicits._
 import dev.rmaiun.arbiter2.db.entities.{ EloPoints, User }
-import dev.rmaiun.arbiter2.errors.UserErrors.UserNotFoundException
-import dev.rmaiun.arbiter2.helpers.ConfigProvider.Config
-import dev.rmaiun.arbiter2.services.{ GameService, RealmService, RoleService, UserRightsService, UserService }
-import dev.rmaiun.common.DateFormatter
-import dev.rmaiun.flowtypes.Flow
-import dev.rmaiun.flowtypes.Flow.Flow
-import dev.rmaiun.protocol.http.UserDtoSet._
-import dev.rmaiun.arbiter2.db.entities.{ EloPoints, User }
+import dev.rmaiun.arbiter2.dtos.GameHistoryCriteria
 import dev.rmaiun.arbiter2.errors.UserErrors.{ UserAlreadyExistsException, UserNotFoundException }
 import dev.rmaiun.arbiter2.helpers.ConfigProvider.Config
 import dev.rmaiun.arbiter2.helpers.DtoMapper.userToDto
 import dev.rmaiun.arbiter2.services._
 import dev.rmaiun.arbiter2.validations.UserValidationSet._
+import dev.rmaiun.common.DateFormatter
+import dev.rmaiun.flowtypes.Flow
+import dev.rmaiun.flowtypes.Flow.Flow
+import dev.rmaiun.protocol.http.UserDtoSet._
 import dev.rmaiun.validation.Validator
 
 import java.time.{ ZoneOffset, ZonedDateTime }
@@ -67,9 +64,10 @@ object UserManager {
 
     override def findAllUsers(dtoIn: FindAllUsersDtoIn): Flow[F, FindAllUsersDtoOut] =
       for {
-        _     <- Validator.validateDto[F, FindAllUsersDtoIn](dtoIn)
-        users <- userService.list(dtoIn.realm, dtoIn.activeStatus)
-      } yield FindAllUsersDtoOut(users.map(userToDto))
+        _            <- Validator.validateDto[F, FindAllUsersDtoIn](dtoIn)
+        users        <- userService.list(dtoIn.realm, dtoIn.activeStatus)
+        checkedUsers <- findSeasonRelatedUsers(dtoIn.realm, dtoIn.season, users)
+      } yield FindAllUsersDtoOut(checkedUsers.map(userToDto))
 
     override def assignUserToRealm(dtoIn: AssignUserToRealmDtoIn): Flow[F, AssignUserToRealmDtoOut] =
       for {
@@ -154,5 +152,20 @@ object UserManager {
           },
           _ => Flow.error(UserAlreadyExistsException(Map("surname" -> surname)))
         )
+
+    private def findSeasonRelatedUsers(realm: String, season: Option[String], users: List[User]): Flow[F, List[User]] =
+      if (season.isDefined) {
+        for {
+          gameHistoryList <- gameService.listHistoryByCriteria(GameHistoryCriteria(realm, season))
+        } yield {
+          val userMap = users.map(u => u.surname -> u).toMap
+          gameHistoryList
+            .flatMap(ghd => List(ghd.winner1, ghd.winner2, ghd.loser1, ghd.loser2))
+            .distinct
+            .flatMap(userMap.get)
+        }
+      } else {
+        Flow.pure(users)
+      }
   }
 }

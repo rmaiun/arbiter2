@@ -3,21 +3,10 @@ package dev.rmaiun.arbiter2
 import cats.effect.{ Async, Clock, Ref }
 import com.github.blemale.scaffeine.{ Cache, Scaffeine }
 import dev.profunktor.fs2rabbit.model.AmqpMessage
-import dev.rmaiun.arbiter2.dtos.{ AmqpStructures, CmdType }
+import dev.rmaiun.arbiter2.dtos.AmqpStructures
 import dev.rmaiun.arbiter2.dtos.CmdType.{ Persistence, Query }
 import dev.rmaiun.arbiter2.helpers.ConfigProvider.Config
-import dev.rmaiun.arbiter2.helpers.{
-  CommandHandler,
-  DumpExporter,
-  EloPointsCalculator,
-  OperationalManager,
-  PublisherProxy,
-  RateLimitedPublisher,
-  ReportCache,
-  SeasonResultsTrigger,
-  TransactorProvider,
-  ZipDataProvider
-}
+import dev.rmaiun.arbiter2.helpers._
 import dev.rmaiun.arbiter2.managers.{ GameManager, RealmManager, SeasonManager, UserManager }
 import dev.rmaiun.arbiter2.postprocessor.{
   AddPlayerPostProcessor,
@@ -25,29 +14,9 @@ import dev.rmaiun.arbiter2.postprocessor.{
   BroadcastMessagePostProcessor,
   SeasonResultPostProcessor
 }
-import dev.rmaiun.arbiter2.processors.{
-  AddPlayerProcessor,
-  AddRoundProcessor,
-  BroadcastMessageProcessor,
-  EloRatingProcessor,
-  ForwardProcessor,
-  LastGamesProcessor,
-  ShortSeasonStatsProcessor
-}
-import dev.rmaiun.arbiter2.repositories.{ AlgorithmRepo, GameRepo, RealmRepo, RoleRepo, SeasonRepo, UserRepo }
-import dev.rmaiun.arbiter2.routes.SysRoutes
-import dev.rmaiun.arbiter2.services.{
-  AlgorithmService,
-  GameService,
-  RealmService,
-  RoleService,
-  SeasonService,
-  UserRightsService,
-  UserService
-}
-import dev.rmaiun.arbiter2.helpers.ConfigProvider.Config
 import dev.rmaiun.arbiter2.processors._
 import dev.rmaiun.arbiter2.repositories._
+import dev.rmaiun.arbiter2.routes.SysRoutes
 import dev.rmaiun.arbiter2.services._
 import org.http4s.HttpApp
 import org.http4s.client.Client
@@ -124,7 +93,7 @@ object Program {
     // post processors
     lazy val postProcessors = List(
       AddPlayerPostProcessor.impl(userMng, publisherProxy),
-      AddRoundPostProcessor.impl(userMng, publisherProxy),
+      AddRoundPostProcessor.impl(userMng, gameService, publisherProxy),
       SeasonResultPostProcessor.impl(seasonMng, gameMng, userMng, publisherProxy, cfg.app),
       BroadcastMessagePostProcessor.impl(userMng, publisherProxy)
     )

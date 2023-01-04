@@ -1,15 +1,15 @@
 package dev.rmaiun.arbiter2.routes
 
-import cats.effect.{Concurrent, Sync}
-import cats.{Applicative, Monad}
+import cats.effect.{ Concurrent, Sync }
+import cats.{ Applicative, Monad }
 import dev.rmaiun.arbiter2.helpers.OperationalManager
 import dev.rmaiun.errorhandling.errors.AppRuntimeException
 import dev.rmaiun.errorhandling.errors.codec._
 import dev.rmaiun.flowtypes.Flow.Flow
-import io.circe.{Decoder, Encoder}
-import org.http4s.circe.{jsonEncoderOf, jsonOf}
+import io.circe.{ Decoder, Encoder }
+import org.http4s.circe.{ jsonEncoderOf, jsonOf }
 import org.http4s.dsl.Http4sDsl
-import org.http4s.{EntityDecoder, EntityEncoder, HttpRoutes, Response}
+import org.http4s.{ EntityDecoder, EntityEncoder, HttpRoutes, Response }
 import org.typelevel.log4cats.Logger
 
 object SysRoutes {

@@ -17,7 +17,7 @@ object UserDtoSet {
   case class RegisterUserDtoIn(user: UserData, moderatorTid: Long)
   case class RegisterUserDtoOut(user: UserDto)
 
-  case class FindAllUsersDtoIn(realm: String, activeStatus: Option[Boolean])
+  case class FindAllUsersDtoIn(realm: String, activeStatus: Option[Boolean], season: Option[String] = None)
   case class FindAllUsersDtoOut(items: List[UserDto])
 
   case class FindUserDtoIn(surname: Option[String] = None, tid: Option[Long] = None)

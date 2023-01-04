@@ -3,19 +3,22 @@ package dev.rmaiun.arbiter2.postprocessor
 import cats.syntax.foldable._
 import cats.syntax.option._
 import dev.rmaiun.arbiter2.commands.AddRoundCmd
-import dev.rmaiun.arbiter2.dtos.{ BotRequest, BotResponse, Definition }
+import dev.rmaiun.arbiter2.dtos.CmdType.ADD_ROUND_CMD
+import dev.rmaiun.arbiter2.dtos.{ BotRequest, BotResponse, Definition, GameHistoryCriteria }
 import dev.rmaiun.arbiter2.helpers.PublisherProxy
 import dev.rmaiun.arbiter2.managers.UserManager
-import dev.rmaiun.arbiter2.utils.{ Constants, IdGen }
+import dev.rmaiun.arbiter2.services.GameService
+import dev.rmaiun.arbiter2.utils.Constants._
+import dev.rmaiun.arbiter2.utils.IdGen
+import dev.rmaiun.common.SeasonHelper.currentSeason
+import dev.rmaiun.flowtypes.Flow
 import dev.rmaiun.flowtypes.Flow.{ Flow, MonadThrowable }
-import dev.rmaiun.arbiter2.dtos.CmdType.ADD_ROUND_CMD
-import dev.rmaiun.arbiter2.dtos.{ BotRequest, BotResponse, Definition }
-import Constants._
-import dev.rmaiun.arbiter2.utils.{ Constants, IdGen }
-import dev.rmaiun.protocol.http.UserDtoSet.{ FindRealmAdminsDtoIn, FindUserDtoIn, UserRoleData }
+import dev.rmaiun.protocol.http.UserDtoSet._
+import io.circe.Json
 
 case class AddRoundPostProcessor[F[_]: MonadThrowable](
   userManager: UserManager[F],
+  gameService: GameService[F],
   cmdPublisher: PublisherProxy[F]
 ) extends PostProcessor[F] {
 
@@ -29,7 +32,37 @@ case class AddRoundPostProcessor[F[_]: MonadThrowable](
       _   <- sendNotificationToUser(cmd.l1, s"${cmd.w1.capitalize}/${cmd.w2.capitalize}", win = false)
       _   <- sendNotificationToUser(cmd.l2, s"${cmd.w1.capitalize}/${cmd.w2.capitalize}", win = false)
       _   <- notifyRealmAdmins(cmd)
+      _   <- notifySeasonParticipantsWithShutout(input.data)
     } yield ()
+
+  private def notifySeasonParticipantsWithShutout(data: Option[Json]): Flow[F, Unit] =
+    parseDto[AddRoundCmd](data).flatMap(dto =>
+      if (dto.shutout) {
+        val season = Some(currentSeason)
+        gameService.listHistoryByCriteria(GameHistoryCriteria(defaultRealm, season, Some(true))).flatMap {
+          listHistory =>
+            if (listHistory.size == 1) {
+              for {
+                users <- userManager.findAllUsers(FindAllUsersDtoIn(defaultRealm, Some(true), season))
+                _     <- users.items.map(u => sendShutoutNotificationToUser(u, dto.l1, dto.l2)).sequence_
+              } yield ()
+            } else {
+              Flow.unit
+            }
+        }
+      } else {
+        Flow.unit
+      }
+    )
+
+  private def sendShutoutNotificationToUser(user: UserDto, loser1: String, loser2: String): Flow[F, Unit] = {
+    val msg         = s"""Great plan, can't go wrong.
+                 |${loser1.capitalize} and ${loser2.capitalize} lost a first shutout in this season.
+                 |Your moms would be proud of you for that one.
+              """.stripMargin.toBotMsg
+    val botResponse = BotResponse(user.tid.getOrElse(-1), IdGen.msgId, msg)
+    cmdPublisher.publishToBot(botResponse)(user.active && botResponse.chatId > 0)
+  }
 
   private def sendNotificationToUser(player: String, opponents: String, win: Boolean): Flow[F, Unit] =
     for {
@@ -40,7 +73,7 @@ case class AddRoundPostProcessor[F[_]: MonadThrowable](
 
   private def notifyRealmAdmins(cmd: AddRoundCmd): Flow[F, Unit] =
     for {
-      adminsDto <- userManager.findRealmAdmins(FindRealmAdminsDtoIn(Constants.defaultRealm))
+      adminsDto <- userManager.findRealmAdmins(FindRealmAdminsDtoIn(defaultRealm))
       _         <- sendMsgToAdmins(cmd, adminsWithoutModeratorAndPlayers(cmd, adminsDto.adminUsers))
     } yield ()
 
@@ -73,7 +106,8 @@ object AddRoundPostProcessor {
   def apply[F[_]](implicit ev: AddRoundPostProcessor[F]): AddRoundPostProcessor[F] = ev
   def impl[F[_]: MonadThrowable](
     userManager: UserManager[F],
+    gameService: GameService[F],
     cmdPublisher: PublisherProxy[F]
   ): AddRoundPostProcessor[F] =
-    new AddRoundPostProcessor[F](userManager, cmdPublisher)
+    new AddRoundPostProcessor[F](userManager, gameService, cmdPublisher)
 }
