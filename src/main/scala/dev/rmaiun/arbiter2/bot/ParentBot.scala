@@ -1,21 +1,22 @@
 package dev.rmaiun.arbiter2.bot
 
-import cats.effect.kernel.{ Async, MonadCancelThrow, Sync }
+import cats.effect.kernel.{Async, MonadCancelThrow, Sync}
 import cats.implicits._
-import com.bot4s.telegram.api.declarative.{ Commands, RegexCommands }
-import com.bot4s.telegram.cats.{ Polling, TelegramBot }
-import com.bot4s.telegram.methods.ParseMode
+import com.bot4s.telegram.api.declarative.{Commands, RegexCommands}
+import com.bot4s.telegram.cats.{Polling, TelegramBot}
+import com.bot4s.telegram.methods.{ParseMode, SendPhoto}
 import com.bot4s.telegram.models._
 import com.typesafe.scalalogging.Logger
-import dev.profunktor.fs2rabbit.model.{ AmqpEnvelope, AmqpMessage, AmqpProperties }
-import dev.rmaiun.arbiter2.bot.ParentBot.{ EloRatingButtonLabel, LastGamesButtonLabel, SeasonStatsButtonLabel }
-import dev.rmaiun.arbiter2.dtos.{ BotRequest, BotResponse }
+import dev.profunktor.fs2rabbit.model.{AmqpEnvelope, AmqpMessage, AmqpProperties}
+import dev.rmaiun.arbiter2.bot.ParentBot.{EloRatingButtonLabel, LastGamesButtonLabel, SeasonStatsButtonLabel}
+import dev.rmaiun.arbiter2.dtos.{BotRequest, BotResponse}
 import dev.rmaiun.flowtypes.Flow.MonadThrowable
 import io.circe.Codec
 import io.circe.parser._
 import org.asynchttpclient.Dsl.asyncHttpClient
 import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
 
+import java.nio.file.{Files, Paths}
 import java.util.Date
 
 object ParentBot {
@@ -107,10 +108,16 @@ abstract class ParentBot[F[_]: Async: MonadThrowable](token: String)
           text = Some(dto.result),
           date = (new Date().getTime / 1000).toInt
         )
-        MonadCancelThrow[F].recover(replyWithMenu(dto.result)(msg))(err =>
+        val url = getClass.getResource("/bot/2022-01-11_09-32.png")
+        val binary = SendPhoto(
+          ChatId(dto.chatId),
+          InputFile("testpicture.png", Files.readAllBytes(Paths.get(url.getPath.toString))),
+          parseMode = Some(ParseMode.Markdown),
+          replyMarkup = defaultMarkup()
+        )
+        MonadCancelThrow[F].recover(request(binary).void)(err =>
           Sync[F].delay(log.error("Failed to deliver message", err))
         )
-
     }
   }
 }
