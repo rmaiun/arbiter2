@@ -8,7 +8,7 @@ object ConfigProvider {
   case class DbConfig(host: String, port: Int, database: String, username: String, password: String)
   case class BrokerConfig(
     host: String,
-    virtualHost: String,
+    vhost: String,
     port: Int,
     username: String,
     password: String,

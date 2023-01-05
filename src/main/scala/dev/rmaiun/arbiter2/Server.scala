@@ -34,7 +34,7 @@ object Server {
   implicit def unsafeLogger[F[_]: Sync: Monad]: SelfAwareStructuredLogger[F] = Slf4jLogger.getLogger[F]
 
   def config(cfg: Config): Fs2RabbitConfig = Fs2RabbitConfig(
-    virtualHost = cfg.broker.virtualHost,
+    virtualHost = cfg.broker.vhost,
     host = cfg.broker.host,
     port = cfg.broker.port,
     connectionTimeout = cfg.broker.timeout.seconds,
