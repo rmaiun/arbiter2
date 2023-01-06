@@ -6,11 +6,11 @@ object CmdType {
   case object Persistence extends CmdType
   case object Internal    extends CmdType
 
-  val ADD_PLAYER_CMD     = "addPlayer"
-  val ADD_ROUND_CMD      = "addRound"
-  val SHORT_STATS_CMD    = "shortStats"
-  val ELO_RATING_CMD     = "eloRating"
-  val LAST_GAMES_CMD     = "lastGames"
-  val SEASON_RESULTS_CMD = "seasonResults"
-  val BROADCAST_MSG_CMD  = "broadcastMessage"
+  val ADD_PLAYER_CMD     = "ADD_PLAYER_EVENT"
+  val ADD_ROUND_CMD      = "ADD_ROUND_EVENT"
+  val SHORT_STATS_CMD    = "SEASON_STATS_EVENT"
+  val ELO_RATING_CMD     = "ELO_RATING_EVENT"
+  val LAST_GAMES_CMD     = "LAST_GAMES_EVENT"
+  val SEASON_RESULTS_CMD = "SEASON_RESULTS_EVENT"
+  val BROADCAST_MSG_CMD  = "BROADCAST_MESSAGE_EVENT"
 }
