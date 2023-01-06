@@ -1,5 +1,5 @@
 name := "arbiter2"
-scalaVersion := "2.13.6"
+scalaVersion := "2.13.10"
 
 lazy val arbiter2 = (project in file("."))
   .settings(
